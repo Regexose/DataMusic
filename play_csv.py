@@ -29,6 +29,15 @@ def set_timer(index, prev_time):
     else:
         print("done")
 
+def scale_time(factor):
+    new_deltas = []
+    times = [str(x[11:]).replace("Z","") for x in df['time']]
+    deltas = pd.to_timedelta(times)
+    for i, d in enumerate(deltas):
+        new_deltas[i] = d.minute * factor
+
+    print(new_deltas[10:])
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(
@@ -38,6 +47,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = pd.read_csv(args.filename)
+    scale_time(1/60)
     first_row = df.iloc[0]
     first_time = datetime.datetime.strptime(first_row['time'], '%Y-%m-%dT%H:%M:%S.%fZ')
     set_timer(0, first_time)
