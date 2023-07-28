@@ -82,7 +82,6 @@ SynthDef(\baro, {
 SynthDef(\tgrains, {
 	var sig, env;
 	env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
-
 	sig = TGrains.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(40)),
@@ -91,9 +90,36 @@ SynthDef(\tgrains, {
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
 		pan: 0,
-		amp: \grainAmp.kr(1),
+		amp: \grainAmp.kr(0.3),
+		interp: \ip.kr(4)
 	);
-
 	sig = sig * env * \amp.kr(1);
 	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\br, {
+    arg buf, rate=1, start, end;
+    var sig, ptr, ptr2, env;
+	ptr = Select.ar(\which.kr(0),
+		[
+		SinOsc.ar(\sin.kr(0.2)),
+		LFNoise1.ar(\sin.kr(0.2)),
+		LFTri.ar(\sin.kr(0.2)),
+		]) * BufFrames.kr(buf);
+	ptr2 = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end, 0.0);
+    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+    sig = 2.collect({
+		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
+		lag = lag * s.sampleRate;
+		BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
+	}).sum ;
+    sig = sig * env * \amp.kr(0.3);
+    Out.ar(\out.kr(0), sig!2);
+}).add;
+
+// record stuff with mic
+SynthDef(\rec, {
+	var sig;
+	sig = In.ar(\in.kr(2));
+	Out.ar(0, sig!2 * \amp.kr(0.5));
 }).add;

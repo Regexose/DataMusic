@@ -85,80 +85,12 @@ s.waitForBoot({
 })
 
 )
-(#[300, 400, 500, 600] +.t [0,0.5]).cubed.sum
-[ 998.7137378093677, 998.7137378093677, 998.7137378093677 ] *0.001
-1.0 / 998.7137378093677
-(4096 / 282).floor
-282 * 14 + 148
-~baromabs.sort
-
-
 (
-
-
+var buf = ~buffers[\boris][19];
+x = Synth(\br, [\buf, buf, \start, 0, \end, buf.numFrames/4, \rate, 0.1, \sus, 10, \which, 3, \sin, 0.1 ])
+//x.set(\buf, ~buffers[\boris][3], \sus, 50, \dens, 2)
 )
 ~buffers[\wt].free
 ~makeWaveTable.(4096, ~baromabs, \baro)
 Synth(\oscfm, [\atk, 1, \rls, 3])
-(
-~test = Routine({
-		var syn = Synth( \arrayarg, [\amp, 0.03]);
-	~barotemps.clump(3).do({
-		|bt|
-		if (bt.isArray, {
-			bt.postln;
-			syn.setn(\freqs, bt[0], \temps, bt[1] );
-		} );
-		1.wait;
-	})
-}).play;
-)
-// wavetable
-(
-//sc_230727_201826_stereo
-~test = Routine({
-	var syn;
-	~barotemps.do({
-		|bt|
-		~makeWaveTable.(4096, ~temps, \temps);
-		~makeWaveTable.(4096, ~baromabs, \baro);
-		syn = Synth(\oscfm, [\buf1, ~buffers[\baro], \buf2, ~buffers[\temps], \atk, 0.2, \rls, 1, \modamp, bt[0]/2, \modfreq, bt[0], \freq, bt[1]]);
-		0.6.wait;
-	})
-}).play;
-)
 
-(
-// with voice samples
-~buffers[\boris][15].play
-
-
-)
-
-
-(
-//sc_230727_164424_stereo
-~test = Routine({
-	~barotemps.clump(3).do({
-		|bt|
-		var syn = Synth(\dynklank, [\amp, 0.2, \pan, rrand(-0.1, 0.1), \pLag, 0.3]);
-		if (bt.isArray, {
-			bt.postln;
-			syn.set(\freqs, bt[0], \rings, bt[1], \freqScale, bt[1][1], \decayScale, bt[1][0]);
-		} );
-		1.wait;
-	})
-}).play;
-)
-s.makeWindow
-
-(
-p = Pmono(\arrayarg,
-	\amp, 0.01,
-	\pan, Pwhite(-0.9, 0.9, inf),
-	\pLag, 0.1,
-	\freqIndex, Pseq((0..(~baromabs.clump(3).size -1)), inf).trace,
-	\freqs, Pfunc({|ev| ~baromabs.clump(3)[ev.freqIndex]}).trace,
-).play
-)
-~test.stop
