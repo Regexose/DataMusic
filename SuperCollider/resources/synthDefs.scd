@@ -117,6 +117,20 @@ SynthDef(\br, {
     Out.ar(\out.kr(0), sig!2);
 }).add;
 
+SynthDef(\brSec, {
+	// ptr1 triggers next or previous section, ptr2 reads the section,
+    arg buf, rate=1;
+    var sig, secStart, secEnd, ptr1, ptr2, env;
+	secStart = \sec.kr(1) * \secIdx.kr(1);
+	secEnd = secStart + \sec.kr(1);
+	ptr1 = Impulse.ar(\phTrig.kr(0.3)); // trigger sections
+	ptr2 = Phasor.ar(0.0, BufRateScale.kr(buf)* rate, secStart, secEnd, 0.0);
+    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+	sig = BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
+    sig = sig * env * \amp.kr(0.3);
+    Out.ar(\out.kr(0), sig!2);
+}).add;
+
 // record stuff with mic
 SynthDef(\rec, {
 	var sig;

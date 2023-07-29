@@ -87,10 +87,8 @@ s.waitForBoot({
 )
 (
 var buf = ~buffers[\boris][19];
-x = Synth(\br, [\buf, buf, \start, 0, \end, buf.numFrames/4, \rate, 0.1, \sus, 10, \which, 3, \sin, 0.1 ])
-//x.set(\buf, ~buffers[\boris][3], \sus, 50, \dens, 2)
+x = Synth(\brSec, [\buf, buf, \sec, buf.numFrames/100,  \rate, 1, \sus, 30, \secIdx, 3 ])
 )
-~buffers[\wt].free
-~makeWaveTable.(4096, ~baromabs, \baro)
-Synth(\oscfm, [\atk, 1, \rls, 3])
+x.set(\secIdx, 6, \sec, 2000)
+
 

@@ -114,12 +114,32 @@ s.recHeaderFormat = "wav"
 s.makeWindow
 
 (
-p = Pmono(\arrayarg,
-	\amp, 0.01,
-	\pan, Pwhite(-0.9, 0.9, inf),
-	\pLag, 0.1,
-	\freqIndex, Pseq((0..(~baromabs.clump(3).size -1)), inf).trace,
-	\freqs, Pfunc({|ev| ~baromabs.clump(3)[ev.freqIndex]}).trace,
+var buf = ~buffers[\boris][16];
+p = Pbind(
+	\instrument, \brSec,
+	\buf, buf,
+	\amp, 0.05,
+	\atk, 0.1,
+	\sus, 0.5,
+	\rls, 0.1,
+	\lp, 0.0,
+	\sec, buf.numFrames/49,
+	//\secIdx, Pseq((49..1), 1).trace,
+	\secIdx, Pseq((1..49), 1).trace,
+	\dur, 0.1,
 ).play
 )
 ~test.stop
+
+
+(
+var buf = ~buffers[\boris][6];
+  x = {
+        SmoothReversal.ar(
+            bufnum: buf,
+            playbackRate: MouseX.kr(0, 2),
+            switchDirectionTrigger: Dust.ar(4) > 0.5,
+            threshold: -15.dbamp
+        )
+    }.play;
+)
