@@ -81,7 +81,6 @@
 		var c, buf, maxInd, segment;
 		buf = ~buffers[\boris][7];
 		segment = buf.numFrames/(~temps.size * s.sampleRate);
-
 		syn = Synth(\tgrains, [\buf, buf, \pos, segment * i, \sus, 0.1, \atk, 0.001, \rls, 0.8, \grainAmp, 0.34, \grainDur, 0.2,  \dens, 3]);
 		c = case
 		{i%5==0}{syn.set(\harm, Array.fill(4, {|idx| idx / t }))}
@@ -112,24 +111,65 @@ s.recHeaderFormat = "wav"
 }).play;
 )
 s.makeWindow
-
 (
-var buf = ~buffers[\boris][16];
-p = Pbind(
+
+~baromabs)
+
+~buffers[\boris][4].play
+(
+var buf = ~buffers[\boris][4];
+~test = Routine({
+	var thres, syn, old, divider, duration;
+		s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/brBF01.wav", duration: 45);
+	wait(0.02);
+	duration = buf.numFrames /s.sampleRate;
+	thres = ~baromabs.mean;
+	divider = 20;
+
+	~baromabs.do({
+		|b, i|
+		[b, i].postln;
+		syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \secIdx, i%divider ]);
+		if(b >= thres, {
+			buf = ~buffers[\boris][4];
+			syn.set(\rate, 1, \harm, Array.fill(3, {[0, 12].choose}))},
+		{   buf = [~buffers[\boris][8], ~buffers[\boris][8], ~buffers[\boris][9]].choose;
+			duration = buf.numFrames/ s.sampleRate;
+			syn.set(\buf, buf, \rate, -1, \harm, Array.fill(3, {[0, -12].choose}))});
+		(duration/divider).wait;
+	})
+}).play
+
+)
+(
+Pbindef(\br,
 	\instrument, \brSec,
 	\buf, buf,
-	\amp, 0.05,
-	\atk, 0.1,
-	\sus, 0.5,
-	\rls, 0.1,
-	\lp, 0.0,
-	\sec, buf.numFrames/49,
-	//\secIdx, Pseq((49..1), 1).trace,
-	\secIdx, Pseq((1..49), 1).trace,
+	\amp, 0.2,
+	\sec, buf.numFrames / divider,
+	\secIdx, Pseq((1..~temps), inf),
 	\dur, 0.1,
 ).play
 )
+Pbindef(\br, \dur, 24.0.reciprocal, \rate, 2)
+
+(
+var buf = ~buffers[\boris][7], divider = 10;
+Pbindef(\bfb,
+	\instrument, \brBF,
+	\buf, buf,
+	\amp, 0.2,
+	\sec, buf.numFrames/divider,
+	\secIdx, Pseq((1..divider), inf),
+	\dur, 0.1,
+).play
+)
+Pbindef(\bfb, \dur, 0.3, \rate, 1, \harm, Pxrand([[9, 24, 21], [1, -5, -12], [12, -12, 24]], inf))
 ~test.stop
+(
+var buf = ~buffers[\boris][4];
+
+)
 
 
 (

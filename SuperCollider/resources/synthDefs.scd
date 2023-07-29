@@ -118,17 +118,60 @@ SynthDef(\br, {
 }).add;
 
 SynthDef(\brSec, {
-	// ptr1 triggers next or previous section, ptr2 reads the section,
+	// plays Section according to indices
     arg buf, rate=1;
-    var sig, secStart, secEnd, ptr1, ptr2, env;
+    var sig, secStart, secEnd, ptr, fadeIn, sus, fadeOut, env;
 	secStart = \sec.kr(1) * \secIdx.kr(1);
 	secEnd = secStart + \sec.kr(1);
-	ptr1 = Impulse.ar(\phTrig.kr(0.3)); // trigger sections
-	ptr2 = Phasor.ar(0.0, BufRateScale.kr(buf)* rate, secStart, secEnd, 0.0);
-    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
-	sig = BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
+	ptr = Phasor.ar(0.0, BufRateScale.kr(buf)* rate, secStart, secEnd, 0.0);
+	sus = \sec.kr(1) / s.sampleRate;
+	fadeIn = sus/10;
+	fadeOut = sus/5;
+	sus = sus - fadeIn - fadeOut;
+    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2);
+	sig = BufRd.ar(1, buf, ptr, \lp.kr(1.0));
+	sig = Pan2.ar( sig, \pan.kr(0));
+	sig = sig * env * \amp.kr(0.3);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\brBF, {
+	// backward and forward in sections
+    arg buf;
+    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut;
+	dirRate = \rate.kr(1);
+	trigForw = Trig.kr(dirRate > 0);
+	trigBack = Trig.kr(dirRate < 0);
+	secStart = \sec.kr(1) * \secIdx.kr(1);
+	secEnd = secStart + \sec.kr(1);
+	tracker = Phasor.ar(0, dirRate,  0, BufFrames.kr(buf));
+	phsF = Phasor.ar(trigForw, BufRateScale.kr(buf) * dirRate * \harm.kr([9, 3, 0]).midiratio, secStart, secEnd, tracker);
+	phsB = Phasor.ar(trigForw, BufRateScale.kr(buf) * dirRate * \harm.kr([9, 3, 0]).midiratio, secStart, secEnd, tracker);
+	forw = BufRd.ar(1, buf, phsF, 1);
+	back = BufRd.ar(1, buf, phsB, 1);
+	sus = (\sec.kr(1) / s.sampleRate);
+	fadeIn = sus/10;
+	fadeOut = sus/5;
+	sus = sus - fadeIn - fadeOut;
+    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2);
+	sig = XFade2.ar(back, forw, dirRate.lag(\dirlag.kr(0.2)));
     sig = sig * env * \amp.kr(0.3);
-    Out.ar(\out.kr(0), sig!2);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\samp, {
+	var buf = \buf.kr();
+	var rate = \rate.kr(1);
+	var trigForw = Trig.kr(rate > 0);
+	var trigBack = Trig.kr(rate < 0);
+	var tracker = Phasor.ar(0, rate, 0, BufFrames.kr(buf));
+	var phaseForw = Phasor.ar(trigForw, BufRateScale.kr(buf)* rate, 0, BufFrames.kr(buf), tracker);
+	var phaseBack = Phasor.ar(trigBack, BufRateScale.kr(buf)* rate, 0, BufFrames.kr(buf), tracker);
+
+	var back = BufRd.ar(1, buf, phaseBack)!2;
+	var forw = BufRd.ar(1, buf, phaseForw)!2;
+
+	Out.ar(\bus.kr(0), XFade2.ar(back, forw, rate.lag(\lt.kr(0.2)), level: \amp.kr(0.3)))
 }).add;
 
 // record stuff with mic
