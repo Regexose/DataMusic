@@ -160,7 +160,7 @@ SynthDef(\brBF, {
 }).add;
 
 SynthDef(\samp, {
-	var buf = \buf.kr();
+	var buf = \buf.kr(0);
 	var rate = \rate.kr(1);
 	var trigForw = Trig.kr(rate > 0);
 	var trigBack = Trig.kr(rate < 0);
@@ -176,7 +176,17 @@ SynthDef(\samp, {
 
 // record stuff with mic
 SynthDef(\rec, {
+	|len=4|
+	var input, phase;
+	input = SoundIn.ar(\in.kr(0));
+	//buf = LocalBuf(len * s.sampleRate);
+	RecordBuf.ar(input, ~liveBuffer, recLevel: 0.7, run: \run.kr(1.0), loop: 0.0, doneAction:2)
+}).add;
+
+//playback
+SynthDef(\playback, {
 	var sig;
-	sig = In.ar(\in.kr(2));
-	Out.ar(0, sig!2 * \amp.kr(0.5));
+	sig = PlayBuf.ar(1, \buf.kr(0));
+	FreeSelfWhenDone.kr(sig);
+	Out.ar(\out.kr(0), sig!2);
 }).add;

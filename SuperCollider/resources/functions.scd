@@ -18,3 +18,25 @@
 
 	}.play(AppClock);
 };
+
+~recOnOff = {
+	|len=4|
+	var notes, on, off, rec, play;
+	notes = (0..127);
+	on = MIDIFunc.noteOn({
+		|vel, num|
+	/*	rec = {
+			RecordBuf.ar(SoundIn.ar(0), ~liveBuffer, recLevel: 1.0.varlag(0.04), doneAction:2);
+		}.play;*/
+		rec = Synth(\rec, [\buf, ~liveBuffer]);
+		"recording on % ".format(notes[num]).postln;
+	});
+	off = MIDIFunc.noteOff({
+		 |vel, num|
+		"stopped recording".postln;
+		rec.free;
+	   //~liveBuffer.plot;
+		~liveBuffer.play;
+	});
+
+};

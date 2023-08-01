@@ -4,4 +4,7 @@ x = Synth(\brSec, [\buf, buf, \sec, buf.numFrames/100,  \rate, 1, \sus, 30, \sec
 )
 x.set(\secIdx, 6, \sec, 2000)
 
+MIDIFunc.trace(false);
+~recOnOff.()
+~liveBuffer.play
 

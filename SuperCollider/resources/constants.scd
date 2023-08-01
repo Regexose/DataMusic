@@ -4,3 +4,4 @@
 ~temps = List.new;
 ~barotemps = List.new;
 ~buffers = Dictionary.new;
+~liveBuffer = Buffer.alloc(s, 10 * s.sampleRate, 1);
