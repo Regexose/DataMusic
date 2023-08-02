@@ -17,23 +17,31 @@ MIDIFunc.trace(false);
 
 ~demos = List.new;
 // with voice samples
-~lambs = Routine({
-	var syn = Synth(\tgrains, [\buf, ~liveBuffer, \sus, 2, \grainAmp, 0.2, \dens, 1]);
-	~temps.do({
-		|t, i|
-		var c;
-		c = case
-		{i%18==0}{syn.set(\sus, 4, \grainAmp, 0.2, \dens, 4)}
-		{i%5==0} {syn.set(\harm, Array.fill(4, {|idx| idx / t }), \pos, i/t, \dens, i/3, \grainDur, i/t)}
-		{true}{("cases test done" ++ i).postln};
-		0.15.wait;
-		})
-	});
+~lambs = {
+	var buf, thres, syn, old, divider, duration;
+				buf = ~liveBuffer;
+	duration = buf.numFrames /s.sampleRate;
+	thres = ~baromabs.mean;
+	divider = 20;
 
+	~baromabs.do({
+		|b, i|
+		[b, i].postln;
+		syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \secIdx, i%divider ]);
+		if(b >= thres, {
+			buf = ~liveBuffer;
+			"set synth".postln;
+			syn.set(\rate, 1, \harm, Array.fill(3, {[0, 12].choose}))},
+		{"new buffer".postln;  buf = [~buffers[\boris][4], ~liveBuffer].choose;
+			duration = buf.numFrames/ s.sampleRate;
+			syn.set(\buf, buf, \rate, -1, \harm, Array.fill(3, {[0, -12].choose}))});
+		(duration/divider).wait;
+	})
+};
 ~demos.add(~lambs);
 
 // grains slowly moving forward
-~stutter = Routine({
+~stutter = {
 	var syn;
 	~temps.do({
 		|t, i|
@@ -47,6 +55,6 @@ MIDIFunc.trace(false);
 		{true}{("cases test done" ++ i).postln};
 		0.1.wait;
 		})
-	});
+	};
 ~demos.add(~stutter);
 )

@@ -31,12 +31,11 @@
 		|vel, num|
 		"stopped recording".postln;
 		rec.free;
-		if(num <=60, {
-			rout = Routine(~demos[0]).play
-			},
-			{rout = Routine(~demos[1]).play}
-		);
-		"playing demo %".format(demoNum).postln;
+		if (~rf.keys.includes(num.asSymbol),{
+			rout = Routine(~rf[num.asSymbol]).play
+		});
+
+		"playing demo %".format(~rf[num.asSymbol]).postln;
 
 		//wie kann diese Funktion sich wieder resetten, wenn eine neue Note gespielt wird
 		//MIDIdef.freeAll??

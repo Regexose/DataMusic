@@ -20,6 +20,7 @@ s.waitForBoot({
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
 	(~resourcePath ++ "functions.scd").load;
+	(~resourcePath ++ "routinefunction.scd").load;
 
 	"done".postln;
 })
@@ -29,4 +30,5 @@ s.waitForBoot({
 ~recOnOff.()
 ~liveBuffer.play
 ~liveBuffer.plot
+~buffers[\baro].plot
 
