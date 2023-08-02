@@ -20,23 +20,28 @@
 };
 
 ~recOnOff = {
-	|len=4|
-	var notes, on, off, rec, play;
-	notes = (0..127);
+	var notes, on, off, rec, play, rout, demoNum;
 	on = MIDIFunc.noteOn({
 		|vel, num|
-	/*	rec = {
-			RecordBuf.ar(SoundIn.ar(0), ~liveBuffer, recLevel: 1.0.varlag(0.04), doneAction:2);
-		}.play;*/
+		if ((rout != nil && rout.isPlaying), {rout.stop});
 		rec = Synth(\rec, [\buf, ~liveBuffer]);
-		"recording on % ".format(notes[num]).postln;
+		"recording on % ".format(num).postln;
 	});
 	off = MIDIFunc.noteOff({
-		 |vel, num|
+		|vel, num|
 		"stopped recording".postln;
 		rec.free;
-	   //~liveBuffer.plot;
-		~liveBuffer.play;
+		if(num <=60, {
+			rout = Routine(~demos[0]).play
+			},
+			{rout = Routine(~demos[1]).play}
+		);
+		"playing demo %".format(demoNum).postln;
+
+		//wie kann diese Funktion sich wieder resetten, wenn eine neue Note gespielt wird
+		//MIDIdef.freeAll??
+
 	});
+
 
 };

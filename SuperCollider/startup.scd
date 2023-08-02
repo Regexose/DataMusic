@@ -25,6 +25,7 @@ s.waitForBoot({
 })
 
 )
+~recOnOff = {}
 ~recOnOff.()
 ~liveBuffer.play
 ~liveBuffer.plot
