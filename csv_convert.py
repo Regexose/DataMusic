@@ -2,7 +2,12 @@ import pandas as pd
 import csv
 
 txt_file_path = 'data/test_data01.txt'
-csv_path = 'data/test_data.csv'
+csv_path = 'data/zku_noTime.csv'
+csv_file = 'data/2307zku.csv'
+df = pd.read_csv(csv_file, sep=';')
+print(list(df.columns.values)[1:])
+no_time = list(df.columns.values)[1:]
+df.to_csv(csv_path, columns=no_time)
 
 def convert_csv(t_path, c_path):
     read_file = pd.read_csv(t_path)
@@ -16,5 +21,4 @@ def csv_convert():
             writer = csv.writer(out_file)
             writer.writerows(lines)
 
-csv_convert()
-
+#csv_convert()
