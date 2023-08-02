@@ -10,7 +10,6 @@ ServerTree.removeAll; // löscht alle funktionen
 s.waitForBoot({
 	s.freeAll;
 	Buffer.freeAll;
-	Pbindef.all.do(_.clear);
 	s.sync;
 	/// load SynthDefs, Constants, Functions
 	(~resourcePath ++ "constants.scd").load;
