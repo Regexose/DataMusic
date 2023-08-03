@@ -1,16 +1,25 @@
-~csvFile = CSVFileReader.read(~dataPath ++ "/test_data.csv", true);
+~csvFile = CSVFileReader.read(~dataPath ++ "/zku_noTime.csv", true, true).postcs;
 ~csvFile.do({
-	|row, i|
-	var c;
-	c = case
-	{(i != 0) && row[1].isString}{
-		row[1] = row[1].asFloat;
-		row[2] = row[2].asFloat;
-		~baromabs.add(row[1]);
-		~temps.add(row[2]);
-		~barotemps.add([row[1], row[2]]);
-	}
-	{true}{"end csv.postln"}
+	|line, i|
+	if (i==0,
+		{ line.do({
+			|k, idx|
+			var header = k.toLower.replace(" ", "_").asSymbol;
+			~headers.add(header);
+			"the key at index %  is %".format(idx, header).postln;
+			~data.add(header -> List.new); // put headers in order of this iteration
+		})
+		},
+		{// rows with values
+			line.do({
+				|v, idx|
+				"the value in data row at key %  is %".format(~headers[idx], v).postln;
+				~data[~headers[idx]].add(v.asFloat); //add data element to corresponding key
+			})
+		};
+
+	);
+
 });
 
 MIDIClient.init;
@@ -32,3 +41,5 @@ PathName(~samplesPath).entries.do({
 		)
 	)
 });
+
+~data.temperature
