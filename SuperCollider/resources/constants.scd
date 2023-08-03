@@ -4,3 +4,5 @@
 ~temps = List.new;
 ~barotemps = List.new;
 ~buffers = Dictionary.new;
+~data = ();
+~headers = List.new;
