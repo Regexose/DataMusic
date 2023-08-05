@@ -1,12 +1,24 @@
 import pandas as pd
 import csv
+import re
 
 txt_file_path = 'data/test_data01.txt'
-csv_path = 'data/zku_noTime.csv'
-csv_file = 'data/2307zku.csv'
+csv_path = 'data/zku_3007-0508_noTime.csv'
+csv_file = 'data/zku_3007-0508.csv'
 df = pd.read_csv(csv_file, sep=';', thousands='.', decimal=',')
-print(list(df.columns.values)[1:])
-no_time = list(df.columns.values)[1:]
+df_columns = list(df.columns.values)[1:]
+print("df columns has {} names from {} ..... {}".format(len(df_columns), df_columns[0:2], df_columns[-2:]))
+no_brackets = []
+for x in list(df.columns.values):
+    #print("old name {}".format(x))
+    new_name = re.sub("([\(\[]).*?([\)\]])", "", x)
+    new_name = new_name.replace(" ", "_")
+    #print("new name  {}".format(new_name))
+    no_brackets.append(new_name)
+
+df.columns = no_brackets
+no_time = no_brackets[1:]
+print("no_time has {} names from {} ..... {}".format(len(no_time), no_time[0:2], no_time[-2:]))
 df.to_csv(csv_path, columns=no_time)
 
 def convert_csv(t_path, c_path):
@@ -22,3 +34,8 @@ def csv_convert():
             writer.writerows(lines)
 
 #csv_convert()
+#check if values are floats
+# for v in df.values:
+#     for e in v:
+#         print("is this {} a float? {}  ".format(e, isinstance(e, float)))
+
