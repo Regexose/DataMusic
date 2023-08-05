@@ -63,7 +63,7 @@ SynthDef(\baro, {
 	var sig, mod, env;
 	//modulator
 	mod = Osc.ar(\buf2.ir(0), \modfreq.kr(1000), mul:\modamp.kr(100));
-	//a chorus of 5 slightly detuned voices
+	//a chorus of 2 slightly detuned voices
 	sig = 2.collect({
 		Osc.ar(\buf1.ir(0), \freq.kr(200) + mod);
 	}).sum;

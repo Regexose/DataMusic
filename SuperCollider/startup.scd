@@ -20,7 +20,7 @@ s.waitForBoot({
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
 	(~resourcePath ++ "functions.scd").load;
-	(~resourcePath ++ "routinefunction.scd").load;
+	(~resourcePath ++ "routinefunctions.scd").load;
 
 	"done".postln;
 })
@@ -30,5 +30,11 @@ s.waitForBoot({
 ~recOnOff.()
 ~liveBuffer.play
 ~liveBuffer.plot
-~buffers[\baro].plot
+~data.keys.do(_.postln)
+~data.humidity.asArray.normalize
+~data.findKeyForValue( ~data.humidity)
+~buffers.keys.do({|k| k.postln})
+~makeWaveTable.(4096, ~data.solar, \solar);
+~buffers[\rainrate].numFrames
 
+Synth(\oscfm, [\buf1, ~buffers[\rainrate], \buf2, ~buffers[\solar]]) 

@@ -1,20 +1,17 @@
 ~makeWaveTable = {
 	|size=4096, external, name|
-	var sig, wt, buf ;
-	//external = external.wrapExtend(size.asInteger).asArray.normalize;
+	var sig, wt, buf;
+	external = external.sort.reverse.asArray;
+	external = external.normalize(external.last, external[0]/2);
+	external[0..15].postln;
 	r{
 		buf = Buffer.alloc(s, size*2);
 		s.sync;
-		buf.sine3(
-			({external.choose} !16).sort,
-			({exprand(0.05, 0.9)} !16).sort,
-			{rrand(0, 2pi)} !16,
-			asWavetable: true
-		);
+		buf.sine1(external[0..15], asWavetable:true);
 		//buf.plot;
 		s.sync;
-		~buffers.put(name, buf);
-		//~buffers[name].postln;
+		~buffers.put(name.asSymbol, buf);
+		"made buffer  %".format(~buffers[name]).postln;
 
 	}.play(AppClock);
 };

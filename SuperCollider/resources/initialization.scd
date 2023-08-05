@@ -6,14 +6,14 @@
 			|k, idx|
 			var header = k.toLower.replace(" ", "_").asSymbol;
 			~headers.add(header);
-			"the key at index %  is %".format(idx, header).postln;
+			//"the key at index %  is %".format(idx, header).postln;
 			~data.add(header -> List.new); // put headers in order of this iteration
 		})
 		},
 		{// rows with values
 			line.do({
 				|v, idx|
-				"the value in data row at key %  is %".format(~headers[idx], v).postln;
+				//"the value in data row at key %  is %".format(~headers[idx], v).postln;
 				~data[~headers[idx]].add(v.asFloat); //add data element to corresponding key
 			})
 		};
