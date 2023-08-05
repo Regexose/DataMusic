@@ -1,4 +1,5 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
+~fileName = "zku_3007-0508_noTime.csv";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~baromabs= List.new;
 ~temps = List.new;

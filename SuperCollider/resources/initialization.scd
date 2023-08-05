@@ -1,4 +1,4 @@
-~csvFile = CSVFileReader.read(~dataPath ++ "/zku_noTime.csv", true, true).postcs;
+~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
 ~csvFile.do({
 	|line, i|
 	if (i==0,

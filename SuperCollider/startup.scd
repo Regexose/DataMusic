@@ -31,10 +31,7 @@ s.waitForBoot({
 ~liveBuffer.play
 ~liveBuffer.plot
 ~data.keys.do(_.postln)
-~data.humidity.asArray.normalize
-~data.findKeyForValue( ~data.humidity)
-~buffers.keys.do({|k| k.postln})
-~makeWaveTable.(4096, ~data.solar, \solar);
-~buffers[\rainrate].numFrames
+
+Synth(\br, [\buf, ~liveBuffer, \rate, 1, \ffreq, 220, \atk, 0.03, \sus, 1, \rls, 0.07, \start, 0, \end, ~liveBuffer.numFrames/2]);
 
 Synth(\oscfm, [\buf1, ~buffers[\rainrate], \buf2, ~buffers[\solar]]) 

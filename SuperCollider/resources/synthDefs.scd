@@ -113,6 +113,7 @@ SynthDef(\br, {
 		lag = lag * s.sampleRate;
 		BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
 	}).sum ;
+	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.3);
     Out.ar(\out.kr(0), sig!2);
 }).add;
