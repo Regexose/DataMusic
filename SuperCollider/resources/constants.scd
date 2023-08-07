@@ -24,7 +24,6 @@
 		\haptic_array2,
 		\haptic_array3,
 		\haptic_array4,
-
 	],
 
 	\steady: [

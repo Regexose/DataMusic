@@ -45,17 +45,4 @@ PathName(~samplesPath).entries.do({
 	)
 });
 
-~groupData = {
-	~data.values.do({
-		|v|
-		var key, min, max, mean, average, c;
-		key = ~data.findKeyForValue(v);
-		min = v.minItem({|it| it});
-		max = v.maxItem({|it| it});
-		mean = v.mean;
-		average = v.sum/v.size;
-		c = case
-		{(max)}
-	})
-}
 
