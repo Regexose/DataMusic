@@ -60,36 +60,25 @@
 		})
 	},
 
-	\53: {
-		var syn, data, name;
-		data = ~data.solar;
-		name = ~data.findKeyForValue(data);
-	/*	~makeWaveTable.(4096, data, name);
-		~makeWaveTable.(4096, ~data.rain_rate, \rainrate);*/
-		data.do({
-			|bt|
-			syn = Synth(\oscfm, [\buf1, ~buffers[\solar], \buf2, ~buffers[\rainrate], \atk, 0.2, \rls, 1, \modamp, bt/2, \modfreq, bt, \freq, bt]);
-			0.6.wait;
-		})
-	},
-
 	\55: {
 		//weekly rhythm of uvi
-		var syn, data, name, buf;
+		var syn, data, name, buf, partial;
 		data = Array2D.fromArray(6, 48, ~data.uvi);
 		name = ~data.findKeyForValue(data);
 		buf = ~liveBuffer;
-		syn = Synth(\br, [\buf, buf, \rate, 1, \ffreq, 220, \atk, 0.03, \sus, 2, \rls, 0.07, \start, 0, \end, buf.numFrames-1]);
+		partial = 4;
 		data.rowsDo({
-			|r|
+			|r, i|
 			var c;
-			syn = Synth(\br, [\buf, buf, \rate, 1, \ffreq, 220, \atk, 0.1, \sus, 2, \rls,2, \start, 0, \end, buf.numFrames-1]);
+			"new cycle %".format(i).postln;
+			syn = Synth(\br, [\buf, buf, \rate, 1, \ffreq, 220, \atk, 0.1, \sus, 2, \rls,2, \start, 0, \end, buf.numFrames/partial]);
 			r.do({
 				|uvi|
-				syn.set(\ffreq, 270 * uvi.max(0.001));
+				uvi.postln;
+				syn.set(\ffreq, 400 + (220 * uvi.max(0.1)), \lag1, uvi, \lag2, uvi /2);
 				0.05.wait;
 			});
-			1.wait;
+			(1/partial).wait;
 
 		})
 	};

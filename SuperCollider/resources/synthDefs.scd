@@ -43,8 +43,15 @@ SynthDef(\baro, {
 		var temps = NamedControl.kr(\temps, 20 !3);
 		var env, sines;
 		env = Linen.kr(gate, 0.1, 1, 1, 2) * amp;
-		sines = LFSaw.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
-		Out.ar(out, sines * env);
+		sines = Select.ar(
+		\which.kr(0),
+		[
+			LFTri.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+			LFSaw.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+			LFPulse.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+		]
+	);
+	Out.ar(out, sines * env);
 	}, [0, 0.1, 0]).add;
 
 	SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
@@ -111,7 +118,7 @@ SynthDef(\br, {
     sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
-		BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
+		BufRd.ar(1, buf, ptr2 + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.3);

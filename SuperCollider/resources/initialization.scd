@@ -1,10 +1,13 @@
 ~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
+~headers = List.new;
 ~csvFile.do({
 	|line, i|
+
 	if (i==0,
 		{ line.do({
 			|k, idx|
-			var header = k.toLower.replace(" ", "_").asSymbol;
+			var header = k.toLower.replace(" ", "_");
+			header = header.replace(".", "_").asSymbol;
 			~headers.add(header);
 			//"the key at index %  is %".format(idx, header).postln;
 			~data.add(header -> List.new); // put headers in order of this iteration
@@ -42,4 +45,17 @@ PathName(~samplesPath).entries.do({
 	)
 });
 
-~data.temperature
+~groupData = {
+	~data.values.do({
+		|v|
+		var key, min, max, mean, average, c;
+		key = ~data.findKeyForValue(v);
+		min = v.minItem({|it| it});
+		max = v.maxItem({|it| it});
+		mean = v.mean;
+		average = v.sum/v.size;
+		c = case
+		{(max)}
+	})
+}
+
