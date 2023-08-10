@@ -16,28 +16,103 @@
 	}.play(AppClock);
 };
 
-~recOnOff = {
-	var notes, on, off, rec, play, rout, demoNum;
-	on = MIDIFunc.noteOn({
-		|vel, num|
-		if ((rout != nil && rout.isPlaying), {rout.stop});
-		rec = Synth(\rec, [\buf, ~liveBuffer]);
-		"recording on % ".format(num).postln;
-	});
-	off = MIDIFunc.noteOff({
-		|vel, num|
-		"stopped recording".postln;
-		rec.free;
-		if (~rf.keys.includes(num.asSymbol),{
-			rout = Routine(~rf[num.asSymbol]).play
-		});
-
-		"playing demo %".format(~rf[num.asSymbol]).postln;
-
-		//wie kann diese Funktion sich wieder resetten, wenn eine neue Note gespielt wird
-		//MIDIdef.freeAll??
-
-	});
+~midiFuncManager = {
+	var n, m, c;
+	n = NetAddr("127.0.0.1", NetAddr.langPort); // local machine
+	OSCFunc.newMatching({
+		|msg, time, addr, recvPort|
+		msg[1].postln;
+		c = case
+		{msg[1] == "1"}{"active replacePlay".postln; ~replacePlay.()}
+		{msg[1] == "2"}{"empty replacePlay".postln; ~replacePlay = {}}
+		{true}{true}
+	},
+	'/ctrl', n);
+	"midiFuncManager loaded".postln;
+};
 
 
+//restarts play if new MIDI key is pressed
+~replacePlay = {
+	|act|
+	var rec, rout;
+	if (act == True,
+		{
+			MIDIdef.noteOn(\rplOn, {
+				|vel, num|
+				if ((rout != nil && rout.isPlaying), {rout.stop});
+				rec = Synth(\rec, [\buf, ~liveBuffer]);
+				"recording on % ".format(num).postln;
+			});
+			MIDIdef.noteOff(\rplOff, {
+				|vel, num|
+				"stopped recording".postln;
+				rec.free;
+				if (~rf.keys.includes(num.asSymbol),{
+					rout = Routine(~rf[num.asSymbol]).play
+				});
+				"playing demo %".format(~rf[num.asSymbol]).postln;
+			});
+		},{
+			"freeing MIDIdefs".postln;
+			[\rplOn, \rplOff].do{|n| MIDIdef(n).free};
+		}
+	)
+
+};
+
+//always plays the complete data array
+~oneShotPlay = {
+	|act|
+	var rec, rout ;
+	if (act == True,
+		{
+			MIDIdef.noteOn(\osOn, {
+				|vel, num|
+				rec = Synth(\rec, [\buf, ~liveBuffer]);
+				"recording on % ".format(num).postln;
+			});
+			MIDIdef.noteOff(\osOff, {
+				|vel, num|
+				"stopped recording".postln;
+				rec.free;
+				if (~rf.keys.includes(num.asSymbol),{
+					rout = Routine(~rf[num.asSymbol]).play
+				});
+				"playing demo %".format(~rf[num.asSymbol]).postln;
+			});
+		},{
+			"freeing MIDIdefs".postln;
+			[\osOn, \osOff].do{|n| MIDIdef(n).free};
+		}
+	)
+};
+
+//using tgrains_live with grainBuffer
+~liveGrain = {
+	|act|
+	var syn, rout ;
+	if (act == True,
+		{
+			MIDIdef.noteOn(\lgOn, {
+				|vel, num|
+				~syn = Synth(\tgrains_live, [\buf, ~grainBuffer, \amp, 0.8]);
+				if (~rf.keys.includes(num.asSymbol),{
+					"playing demo %".format(num.asSymbol).postln;
+					rout = Routine(~rf[num.asSymbol]).play;
+					//rout.class.postln;
+					//rout.play;
+					//rout = Routine(~rf[num.asSymbol]).play;
+				});
+			});
+			MIDIdef.noteOff(\lgOff, {
+				|vel, num|
+				rout.stop;
+				syn.free;
+			});
+		},{
+			"freeing MIDIdefs".postln;
+			[\lgOn, \lgOff].do{|n| MIDIdef(n).free};
+		}
+	)
 };

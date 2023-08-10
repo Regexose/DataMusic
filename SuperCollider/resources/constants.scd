@@ -2,7 +2,8 @@
 ~fileName = "zku_3007-0508_noTime.csv";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;
-~liveBuffer = Buffer.alloc(s, 10 * s.sampleRate, 1);
+~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
+~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~data = ();
 ~dataGroups = (
 	\freq: [

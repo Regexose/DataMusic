@@ -104,6 +104,50 @@ SynthDef(\tgrains, {
 	Out.ar(\out.kr(0), sig);
 }).add;
 
+//https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
+SynthDef(\tgrains_live, {
+	var sig, env, mic, pos, ptr, buf=\buf.kr(0);
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	mic = SoundIn.ar(0);
+	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+	BufWr.ar(mic, buf, ptr);
+
+	pos = (ptr/SampleRate.ir) -1;
+	pos = pos + LFNoise1.kr(100).bipolar(0.0);
+
+	sig = TGrains.ar(
+		numChannels: 2,
+		trigger: Dust.kr(\dens.kr(40)),
+		bufnum: \buf.kr(0),
+		rate: \rate.kr(1) * \harm.kr(0).midiratio,
+		centerPos: pos,
+		dur: \grainDur.kr(1.5),
+		pan: 0,
+		amp: \grainAmp.kr(0.3),
+		interp: \ip.kr(4)
+	);
+	sig = sig * env * \amp.kr(1);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\grainBuf, {
+	var sig, env;
+		env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+		sig = GrainBuf.ar(
+		numChannels: 2,
+		trigger: Impulse.kr(\dens.kr(40)),
+		dur: \grainDur.kr(1.5),
+		sndbuf: \buf.kr(0),
+		rate: \rate.kr(1) * \harm.kr(0).midiratio,
+		pos: Line.kr(\pos1.kr(0), \pos2.kr(1), BufDur.kr(\buf.kr(0)) * \pos3.kr(1)),
+		interp: 2,
+		pan: 0,
+		envbufnum: -1
+	);
+	sig = sig * env * \amp.kr(1);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
 SynthDef(\br, {
     arg buf, rate=1, start, end;
     var sig, ptr, ptr2, env;
