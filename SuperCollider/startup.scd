@@ -22,7 +22,8 @@ s.waitForBoot({
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
-    ~createData.();
+	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
+	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
 	"done".postln;
 })
@@ -34,6 +35,7 @@ s.waitForBoot({
 ~oneShotPlay.(True)
 ~oneShotPlay.(False)
 ~liveGrain.(True)
+~liveGrain.(False)
 
 ~rf[\59]
 
