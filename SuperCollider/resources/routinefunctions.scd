@@ -82,9 +82,9 @@
 		})
 	},
 
-/*	\59: {
-		var data, dataDays, name, syn;
-		syn =  Synth(\tgrains_live, [\buf, ~grainBuffer]);
+	\59: {
+		//play weekly data in 6 chunks
+		var data, dataDays, name;
 		data = ~data.uvi;
 		name = ~data.findKeyForValue(data);
 		dataDays = Array2D.fromArray(6, 48, data);
@@ -95,34 +95,11 @@
 			clumps.do({
 				|clmp|
 				"clump %".format(clmp).postln;
-				syn.class.postln;
-				syn.set(\harm, clmp);
+				~grainLive.set(\harm, clmp);
 				0.1.wait;
 			});
 			1.wait;
 		})
-	},*/
-	//
-	 \59: {
-	 	|id|
-	 	var data, dataDays, name, syn;
-		"calling funktion mit %".format(id).postln;
-	 	data = ~data.uvi;
-	 	name = ~data.findKeyForValue(data);
-	 	dataDays = Array2D.fromArray(6, 48, data);
-	 	dataDays.rowsDo({
-	 		|r, i|
-	 		var clumps = r.clump(3).stutter(3);
-	 		"new cycle % ".format(i).postln;
-	 		clumps.do({
-	 			|clmp|
-	 			//"clump %".format(clmp).postln;
-				//s.sendMsg(\n_set, id, \harm, clmp);
-				~syn.set(\harm, clmp *2, \grainAmp, [1.0, 1.1, 1.3] );
-				"set %".format(clmp).postln;
-	 			0.5.wait;
-			});
-	 		1.wait;
-	 	})
-	 },
+	},
+
 )

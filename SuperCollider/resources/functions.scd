@@ -96,23 +96,21 @@
 		{
 			MIDIdef.noteOn(\lgOn, {
 				|vel, num|
-				~syn = Synth(\tgrains_live, [\buf, ~grainBuffer, \amp, 0.8]);
+				~grainLive = Synth(\tgrains_live, [\buf, ~grainBuffer, \grainAmp, 0.8, \amp, 0.5]);
 				if (~rf.keys.includes(num.asSymbol),{
 					"playing demo %".format(num.asSymbol).postln;
 					rout = Routine(~rf[num.asSymbol]).play;
-					//rout.class.postln;
-					//rout.play;
-					//rout = Routine(~rf[num.asSymbol]).play;
 				});
 			});
 			MIDIdef.noteOff(\lgOff, {
 				|vel, num|
 				rout.stop;
-				syn.free;
+				~grainLive.free;
 			});
 		},{
 			"freeing MIDIdefs".postln;
 			[\lgOn, \lgOff].do{|n| MIDIdef(n).free};
+			~grainBuffer.free;
 		}
 	)
 };
