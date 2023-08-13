@@ -43,8 +43,15 @@ SynthDef(\baro, {
 		var temps = NamedControl.kr(\temps, 20 !3);
 		var env, sines;
 		env = Linen.kr(gate, 0.1, 1, 1, 2) * amp;
-		sines = LFSaw.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
-		Out.ar(out, sines * env);
+		sines = Select.ar(
+		\which.kr(0),
+		[
+			LFTri.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+			LFSaw.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+			LFPulse.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+		]
+	);
+	Out.ar(out, sines * env);
 	}, [0, 0.1, 0]).add;
 
 	SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
@@ -63,7 +70,7 @@ SynthDef(\baro, {
 	var sig, mod, env;
 	//modulator
 	mod = Osc.ar(\buf2.ir(0), \modfreq.kr(1000), mul:\modamp.kr(100));
-	//a chorus of 5 slightly detuned voices
+	//a chorus of 2 slightly detuned voices
 	sig = 2.collect({
 		Osc.ar(\buf1.ir(0), \freq.kr(200) + mod);
 	}).sum;
@@ -97,6 +104,50 @@ SynthDef(\tgrains, {
 	Out.ar(\out.kr(0), sig);
 }).add;
 
+//https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
+SynthDef(\tgrains_live, {
+	var sig, env, mic, pos, ptr, buf=\buf.kr(0);
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	mic = SoundIn.ar(0);
+	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+	BufWr.ar(mic, buf, ptr);
+
+	pos = (ptr/SampleRate.ir) -1;
+	pos = pos + LFNoise1.kr(100).bipolar(0.0);
+
+	sig = TGrains.ar(
+		numChannels: 2,
+		trigger: Dust.kr(\dens.kr(40)),
+		bufnum: \buf.kr(0),
+		rate: \rate.kr(1) * \harm.kr(0).midiratio,
+		centerPos: pos,
+		dur: \grainDur.kr(1.5),
+		pan: 0,
+		amp: \grainAmp.kr(0.3),
+		interp: \ip.kr(4)
+	);
+	sig = sig * env * \amp.kr(1);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\grainBuf, {
+	var sig, env;
+		env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+		sig = GrainBuf.ar(
+		numChannels: 2,
+		trigger: Impulse.kr(\dens.kr(40)),
+		dur: \grainDur.kr(1.5),
+		sndbuf: \buf.kr(0),
+		rate: \rate.kr(1) * \harm.kr(0).midiratio,
+		pos: Line.kr(\pos1.kr(0), \pos2.kr(1), BufDur.kr(\buf.kr(0)) * \pos3.kr(1)),
+		interp: 2,
+		pan: 0,
+		envbufnum: -1
+	);
+	sig = sig * env * \amp.kr(1);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
 SynthDef(\br, {
     arg buf, rate=1, start, end;
     var sig, ptr, ptr2, env;
@@ -111,8 +162,9 @@ SynthDef(\br, {
     sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
-		BufRd.ar(1, buf, ptr2, \lp.kr(1.0));
+		BufRd.ar(1, buf, ptr2 + lag, \lp.kr(1.0));
 	}).sum ;
+	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.3);
     Out.ar(\out.kr(0), sig!2);
 }).add;
@@ -160,7 +212,7 @@ SynthDef(\brBF, {
 }).add;
 
 SynthDef(\samp, {
-	var buf = \buf.kr();
+	var buf = \buf.kr(0);
 	var rate = \rate.kr(1);
 	var trigForw = Trig.kr(rate > 0);
 	var trigBack = Trig.kr(rate < 0);
@@ -176,7 +228,17 @@ SynthDef(\samp, {
 
 // record stuff with mic
 SynthDef(\rec, {
+	|len=4|
+	var input, phase;
+	input = SoundIn.ar(\in.kr(0));
+	//buf = LocalBuf(len * s.sampleRate);
+	RecordBuf.ar(input, ~liveBuffer, recLevel: 0.7, run: \run.kr(1.0), loop: 0.0, doneAction:2)
+}).add;
+
+//playback
+SynthDef(\playback, {
 	var sig;
-	sig = In.ar(\in.kr(2));
-	Out.ar(0, sig!2 * \amp.kr(0.5));
+	sig = PlayBuf.ar(1, \buf.kr(0));
+	FreeSelfWhenDone.kr(sig);
+	Out.ar(\out.kr(0), sig!2);
 }).add;
