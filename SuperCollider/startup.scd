@@ -22,6 +22,8 @@ s.waitForBoot({
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
+    ~createData.();
+
 	"done".postln;
 })
 

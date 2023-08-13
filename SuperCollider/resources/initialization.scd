@@ -1,6 +1,23 @@
+
 ~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
 ~headers = List.new;
 ~csvFile.do({
+~createData = {
+    var flopped;
+    ~csvFile = CSVFileReader.read(~dataPath ++ "/zku_noTime.csv");
+    flopped = ~csvFile.flop; // Invert rows and columns
+
+    flopped.do({
+        |line|
+        var key;
+        key = line[0].toLower.replace(" ", "_").asSymbol;
+        line.removeAt(0); //remove key from data values
+        line.do({|e| e = e.asFloat}); //convert Strings to Float
+        ~data.add(key -> line); // add to ~data
+    });
+};
+
+/*~csvFile.do({
 	|line, i|
 
 	if (i==0,
@@ -23,7 +40,7 @@
 
 	);
 
-});
+});*/
 
 MIDIClient.init;
 MIDIIn.connectAll;
@@ -44,5 +61,4 @@ PathName(~samplesPath).entries.do({
 		)
 	)
 });
-
 
