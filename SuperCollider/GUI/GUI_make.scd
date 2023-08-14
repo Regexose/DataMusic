@@ -1,11 +1,5 @@
 (
-var window, top, w_width, w_height;
-
-w_width = 100;
-w_height = 120;
-window = ~buildWindow.("DataMusic", 10, 10, w_width*6+500, w_height + 380);
-top = ~buildTopLevel.(window, 10, 10, w_width*5+ 720, w_height*5+360);
-
+var window, top, w_width=200, w_height=400, dataSelector, buttonsize=20, offset=10;
 
 ~style = (
 	// FONTS
@@ -22,11 +16,11 @@ top = ~buildTopLevel.(window, 10, 10, w_width*5+ 720, w_height*5+360);
 
 );
 
+window = ~buildWindow.("DataMusic", 10, 10, w_width*6+500, w_height + 380);
+top = ~buildTopLevel.(window, 10, 10, w_width*5+ 720, w_height*5+360);
+dataSelector = ~buildDataSelector.(top, buttonsize, buttonsize *2, buttonsize, offset, ~data.keys.size );
 
-
-CmdPeriod.add({
-	window.close;
-});
+CmdPeriod.add({window.close});
 
 
 )
