@@ -16,6 +16,14 @@
 	}.play(AppClock);
 };
 
+~selectorAction = {
+	|menu|
+	var key, selected;
+	selected = menu.item.asSymbol;
+	key = menu.name;
+	[key, selected].postln
+};
+
 ~midiFuncManager = {
 	var n, m, c;
 	n = NetAddr("127.0.0.1", NetAddr.langPort); // local machine

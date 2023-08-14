@@ -1,5 +1,5 @@
 (
-var window, top, w_width=200, w_height=400, dataSelector, buttonsize=20, offset=10;
+var window, top, w_width=1000, w_height=600, dataSelector, h_selector=100, itemsize=100, offset=20, midikeys= ~rf.keys.asArray;
 
 ~style = (
 	// FONTS
@@ -16,9 +16,10 @@ var window, top, w_width=200, w_height=400, dataSelector, buttonsize=20, offset=
 
 );
 
-window = ~buildWindow.("DataMusic", 10, 10, w_width*6+500, w_height + 380);
-top = ~buildTopLevel.(window, 10, 10, w_width*5+ 720, w_height*5+360);
-dataSelector = ~buildDataSelector.(top, buttonsize, buttonsize *2, buttonsize, offset, ~data.keys.size );
+window = ~buildWindow.("DataMusic", 10, 10, w_width, w_height);
+top = ~buildTopLevel.(window, 10, 10, w_width, w_height);
+// "toplevel".postln;
+dataSelector = ~buildDataSelector.(top, (itemsize + offset ) * midikeys.size, h_selector, itemsize, offset, midikeys, ~data.keys);
 
 CmdPeriod.add({window.close});
 
