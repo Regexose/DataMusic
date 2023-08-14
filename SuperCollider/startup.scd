@@ -19,17 +19,19 @@ s.waitForBoot({
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
+    ~createData.();
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
+
 	"done".postln;
 })
 
 )
-~re = {}
+
 ~replacePlay.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
