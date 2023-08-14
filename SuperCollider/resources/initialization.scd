@@ -1,19 +1,32 @@
 
-~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
-~headers = List.new;
-~csvFile.do({
 ~createData = {
-    var flopped;
-    ~csvFile = CSVFileReader.read(~dataPath ++ "/zku_noTime.csv");
+    var flopped, headers;
+	headers = List.new;
+    ~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
     flopped = ~csvFile.flop; // Invert rows and columns
 
     flopped.do({
-        |line|
-        var key;
-        key = line[0].toLower.replace(" ", "_").asSymbol;
+        |line, i|
+        var key, values;
+		values = List.new;
+        key = line[0].toLower.replace(" ", "_");
+		key = key.replace(".", "_").asSymbol;
+		//"key % ".format(key).postln;
+		headers.add(key);
+        ~data.add(key -> values); // add to ~data
         line.removeAt(0); //remove key from data values
-        line.do({|e| e = e.asFloat}); //convert Strings to Float
-        ~data.add(key -> line); // add to ~data
+     line.do({
+			|e, idx|
+			//"element % in % at ind %".format(e, key, idx).postln;
+			if (key == \index, {
+				values.add(e)
+			},
+			{
+				values.add(e.asFloat);//convert Strings to Float
+			})
+
+		});
+		~data.put(key, values);
     });
 };
 
