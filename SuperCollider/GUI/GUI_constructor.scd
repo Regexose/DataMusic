@@ -34,8 +34,8 @@ GUI mit verschiedenen SubWindows
 	selectors = Dictionary.new;
 	midikeys.do({
 		|mid, i|
-		mid.class.postln;
-		selectors[mid.asString] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset, selectorsize, selectorsize/2))
+		selectors[mid] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
+			selectorsize, selectorsize/2))
 		.items_(items.asArray)
 		.allowsReselection_(True)
 		.action_({arg pm; ~selectorAction.(pm)})

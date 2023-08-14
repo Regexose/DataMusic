@@ -19,7 +19,7 @@ s.waitForBoot({
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
-    ~createData.();
+	~createData.(); ~initCurrentData.();
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
@@ -38,6 +38,7 @@ s.waitForBoot({
 ~oneShotPlay.(False)
 ~liveGrain.(True)
 ~liveGrain.(False)
+~currentData[\50]
 
 ~rf[\59]
 

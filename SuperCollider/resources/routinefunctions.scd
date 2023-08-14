@@ -2,14 +2,15 @@
 	\48 : {
 		// wind_gust
 		var buf, thres, syn, old, divider, duration, data, name;
-		data = ~data.wind_gust;
+		//data = ~data.wind_gust;
+		data = ~currentData[\48];
 		name = ~data.findKeyForValue(data);
 		buf = ~liveBuffer;
 		duration = buf.numFrames /s.sampleRate;
 		thres = data.mean;
 		divider = data.size/2;
 
-		~data.wind_gust.do({
+		data.do({
 			|b, i|
 		"processing %  %".format(name.asString, t).postln;
 			syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \secIdx, i%divider ]);
@@ -23,10 +24,11 @@
 			(duration/divider).wait;
 		})
 	},
+
 	\50 : {
-		var syn;
-		var data = ~data.wind_direction;
-		var name = ~data.findKeyForValue(data);
+		var syn, data, name;
+		data = ~currentData[\50];
+		name = ~data.findKeyForValue(data);
 		data.do({
 			|t, i|
 			var c, buf, segment;
@@ -42,9 +44,10 @@
 			0.1.wait;
 		})
 	},
+
 	\52: {
 	var syn, data, name;
-		data = ~data.humidity;
+		data = ~currentData[\52];
 		name = ~data.findKeyForValue(data);
 	data.do({
 		|t, i|
@@ -63,7 +66,8 @@
 	\55: {
 		//weekly rhythm of uvi
 		var syn, data, name, buf, partial;
-		data = Array2D.fromArray(6, 48, ~data.uvi);
+		data = ~currentData[\55];
+		data = Array2D.fromArray(6, 48, data);
 		name = ~data.findKeyForValue(data);
 		buf = ~liveBuffer;
 		partial = 4;

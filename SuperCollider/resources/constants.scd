@@ -5,6 +5,7 @@
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~data = ();
+~currentData = ();
 ~dataGroups = (
 	\freq: [
 		\solar,

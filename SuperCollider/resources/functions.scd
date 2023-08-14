@@ -21,7 +21,8 @@
 	var key, selected;
 	selected = menu.item.asSymbol;
 	key = menu.name;
-	[key, selected].postln
+	~currentData[key.asSymbol] = ~data[selected];
+	"set % with %".format(key, selected).postln;
 };
 
 ~midiFuncManager = {
