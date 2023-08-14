@@ -19,16 +19,16 @@ s.waitForBoot({
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
+    ~createData.();
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
-    ~createData.();
 
 	"done".postln;
 })
 
 )
-~re = {}
+
 ~replacePlay.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
