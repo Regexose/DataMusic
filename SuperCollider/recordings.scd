@@ -20,7 +20,7 @@ r({
 // 6 datenreihen, [ solar, yearly, relative, relative_low, relative_high, absolute ]
 //die Werte im wahrnehmbaren Frequenzspektrum haben, werden gleichzeitig abgespielt
 r({
-	s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/frequencies.wav", duration: 40);
+	s.record(~recordingPath +/+ "frequencies.wav", duration: 40);
 	wait(0.02);
 	~dataGroups.freq.do({
 		|frq, i|
@@ -105,7 +105,7 @@ r({
 // with voice samples
 ~test = Routine({
 	var syn;
-	s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/tgrains01.wav", duration: 60);
+	s.record(~recordingPath +/+ "tgrains01.wav", duration: 60);
 	wait(0.02);
 
 	~temps.do({
