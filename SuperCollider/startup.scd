@@ -19,44 +19,38 @@ s.waitForBoot({
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
-    ~createData.();
+	~createData.(); ~initCurrentData.();
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "routinefunctions.scd").load;
 
+	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
+	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
 	"done".postln;
 })
 
 )
-
+~liveBuffer.numFrames/~data.temperature.size
 ~replacePlay.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
 ~oneShotPlay.(False)
 ~liveGrain.(True)
-
-~rf[\59]
+~liveGrain.(False)
+~currentData[\50]
+~grainBuffer.play
+rrand(48,60)
 
 ~liveBuffer.play
+
 ~liveBuffer.plot
 MIDIFunc.trace(false);
 
 Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 0,  \pos2, 1, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
 Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 1,  \pos2, 0, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
 Synth(\tgrains_live, [\buf, ~liveBuffer, \harm, [-12, 2, 12]])
-(
-var fun;
-fun = {
-	10.do({|i|
-		i.postln;
-		i.do({
-			|x|
-			x.postln;
-			0.3.wait;
-		});
-		1.wait})
-};
-r(fun).play
 
-)
-
+r({
+	s.record(~recordingPath +/+ "key48.wav", duration: 60);
+	wait(0.02);
+}).play

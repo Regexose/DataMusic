@@ -16,32 +16,29 @@
 	}.play(AppClock);
 };
 
-~midiFuncManager = {
-	var n, m, c;
-	n = NetAddr("127.0.0.1", NetAddr.langPort); // local machine
-	OSCFunc.newMatching({
-		|msg, time, addr, recvPort|
-		msg[1].postln;
-		c = case
-		{msg[1] == "1"}{"active replacePlay".postln; ~replacePlay.()}
-		{msg[1] == "2"}{"empty replacePlay".postln; ~replacePlay = {}}
-		{true}{true}
-	},
-	'/ctrl', n);
-	"midiFuncManager loaded".postln;
+~selectorAction = {
+	|menu|
+	var key, selected;
+	selected = menu.item.asSymbol;
+	key = menu.name;
+	~currentData[key.asSymbol] = ~data[selected];
+	"set % with %".format(key, selected).postln;
 };
 
 
 //restarts play if new MIDI key is pressed
 ~replacePlay = {
 	|act|
-	var rec, rout;
+	var rec, rout, syn;
 	if (act == True,
 		{
 			MIDIdef.noteOn(\rplOn, {
 				|vel, num|
-				if ((rout != nil && rout.isPlaying), {rout.stop});
-				rec = Synth(\rec, [\buf, ~liveBuffer]);
+				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+				syn = ~activeSynths.atFail(num.asSymbol,
+					{"making synth with key %".format(num).postln; Synth(\default)});
+				syn.free;
+				rec = Synth(\rec);
 				"recording on % ".format(num).postln;
 			});
 			MIDIdef.noteOff(\rplOff, {

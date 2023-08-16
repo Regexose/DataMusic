@@ -20,7 +20,7 @@ r({
 // 6 datenreihen, [ solar, yearly, relative, relative_low, relative_high, absolute ]
 //die Werte im wahrnehmbaren Frequenzspektrum haben, werden gleichzeitig abgespielt
 r({
-	s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/frequencies.wav", duration: 40);
+	s.record(~recordingPath +/+ "frequencies.wav", duration: 40);
 	wait(0.02);
 	~dataGroups.freq.do({
 		|frq, i|
@@ -70,7 +70,73 @@ r({
 })
 
 }).play
+)
 
+(
+// tgrains_live mit exprand
+r({
+	var syn, data, name, buf, segment;
+	s.record(~recordingPath +/+ "tgrains_live.wav", duration: 60);
+	wait(0.02);
+		data = Array.fill(300, {exprand(0.1, 1.0)});
+		buf = ~grainBuffer;
+		syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 5, \dens, 3]);
+		segment = (buf.numFrames/data.size)/s.sampleRate;
+	data.do({
+		|t, i|
+		"processing %  %  at   %".format("exprand data ", t, i).postln;
+		syn.set(\grainDur, t, \rate,  [-1, 1].choose, \dens, (10 * t).ceil, \pos, segment *i, \harm, [t*8, t*4, t*2],  \grainAmp, [t, t/2, t/4] );
+		0.15.wait;
+		})
+}).play
+)
+
+(
+// brBF
+r({
+	var syn, data, name, buf, segment, rec;
+	s.record(~recordingPath +/+ "for_back03.wav", duration: 30);
+	wait(0.02);
+		data = Array.fill(300, {exprand(0.1, 1.0)});
+		buf = ~liveBuffer;
+		segment = buf.numFrames/40;
+		syn = Synth(\brBF, [\buf, buf, \sec, segment, \rate, 1, \dirlag, 0.2, ]);
+	data.do({
+		|t, i|
+		"processing %  %  at   %".format("exprand data ", t, i).postln;
+		syn.set(\secIdx, i%data.size, \harm, [t*8, t*4, t*2], \rate, [-1, 1].choose);
+		0.1.wait;
+		})
+}).play
+)
+
+(
+// brBF + arrayarg
+r({
+	var syn, syn2, data, name, buf, segment, rec, freqs;
+s.record(~recordingPath +/+ "voc_syn.wav", duration: 30);
+	wait(0.02);
+		data = Array.fill(500, {exprand(0.1, 1.0)});
+		buf = ~liveBuffer;
+		segment = buf.numFrames/40;
+		syn = Synth(\brBF, [\buf, buf, \sec, segment, \rate, 1, \dirlag, 0.2, \amp, 0.9]);
+		freqs = data.clump(3).stutter(3);
+	    syn2 = Synth(\arrayarg, [\freqs, Array.fill(3, freqs[0] * 35), \amp, 0.001]);
+	data.do({
+		|t, i|
+		"processing %  %  at   %".format("exprand data ", t, i).postln;
+		syn.set(\secIdx, i%data.size, \harm, t * freqs[i], \rate, [-1, 1].choose);
+		syn2.set(\freqs, freqs[i] * 80, \temps, Array.fill(3, {[data[i-1.max(0)], t, data[i+1.min(data.size)]]}));
+		0.1.wait;
+		})
+}).play
+)
+
+{//likes values around 20
+		//plays ascending segments of the buffer
+
+	},
+)
 
 
 (
@@ -105,7 +171,7 @@ r({
 // with voice samples
 ~test = Routine({
 	var syn;
-	s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/tgrains01.wav", duration: 60);
+	s.record(~recordingPath +/+ "tgrains01.wav", duration: 60);
 	wait(0.02);
 
 	~temps.do({
