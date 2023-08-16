@@ -1,13 +1,16 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
-~fileName = "zku_3007-0508_noTime.csv";
+~dataFileName = "zku_3007-0508_noTime.csv";
+~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
+~activeSynths = ();
+
 ~data = ();
 ~currentData = ();
 ~dataGroups = (
-	\freq: [
+	\freq: [// suitable for frequency values
 		\solar,
 		\yearly,
 		\relative,
@@ -15,7 +18,7 @@
 		\relative_high,
 		\absolute,
 	],
-	\factors:
+	\factors: //suitable for multiplying values
 	[	\uvi,
 		\daily,
 		\hourly,
@@ -28,7 +31,7 @@
 		\haptic_array4,
 	],
 
-	\steady: [
+	\steady: [ //slowly changing values between 20 - 80
 		\temperature,
 		\temperature_1,
 		\temperature_low,
@@ -38,15 +41,48 @@
 		\soilmoisture,
 		\soilmoisture_1
 	],
-	\volatile: [
+
+	\volatile: [ //rapidly changing values
 		\event,
 		\weekly,
 		\monthly,
 		\wind_direction
 	],
-	\static: [
+	\static: [ // static values between 1-0 -2.0
 		\temperature_sensor_ch1,
 		\soilmoisture_sensor_ch1,
 		\soilmoisture_sensor_ch2,
+	],
+	\low: [// values 0.0 -5.0
+		\wind_speed,
+		\haptic_array3,
+		\hourly,
+		\haptic_array4,
+	],
+	\med_low: [//values 0-20
+		\uvi,
+		\wind_gust,
+		\rain_rate,
+		\event,
+	],
+	\medium:[// 0.0 - 85
+		\temperature,
+		\temperature_low,
+		\temperature_low_1,
+		\temperature_high,
+		\temperature_high_1,
+		\temperature_1,
+		\monthly,
+	],
+	\med_high: [//0-900
+		\solar,
+		\yearly,
+		\wind_direction,
+	],
+	\high: [ // around 1000
+		\relative,
+		\relative_high,
+		\relative_low,
+		\absolute
 	]
 );

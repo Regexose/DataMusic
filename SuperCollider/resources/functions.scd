@@ -44,12 +44,15 @@
 //restarts play if new MIDI key is pressed
 ~replacePlay = {
 	|act|
-	var rec, rout;
+	var rec, rout, syn;
 	if (act == True,
 		{
 			MIDIdef.noteOn(\rplOn, {
 				|vel, num|
-				if ((rout != nil && rout.isPlaying), {rout.stop});
+				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+				syn = ~activeSynths.atFail(num.asSymbol,
+					{"making synth with key %".format(num).postln; Synth(\default)});
+				syn.free;
 				rec = Synth(\rec, [\buf, ~liveBuffer]);
 				"recording on % ".format(num).postln;
 			});

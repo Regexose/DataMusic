@@ -88,7 +88,7 @@ SynthDef(\baro, {
 
 SynthDef(\tgrains, {
 	var sig, env;
-	env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	sig = TGrains.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(40)),
@@ -190,7 +190,10 @@ SynthDef(\brSec, {
 SynthDef(\brBF, {
 	// backward and forward in sections
     arg buf;
-    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut;
+    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut,mic, ptr;
+	mic = SoundIn.ar(0);
+	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+	BufWr.ar(mic, buf, ptr);
 	dirRate = \rate.kr(1);
 	trigForw = Trig.kr(dirRate > 0);
 	trigBack = Trig.kr(dirRate < 0);
@@ -205,7 +208,7 @@ SynthDef(\brBF, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2);
+    env = Env.asr(fadeIn, sus, fadeOut).kr(2);
 	sig = XFade2.ar(back, forw, dirRate.lag(\dirlag.kr(0.2)));
     sig = sig * env * \amp.kr(0.3);
     Out.ar(\out.kr(0), sig);
@@ -232,7 +235,7 @@ SynthDef(\rec, {
 	var input, phase;
 	input = SoundIn.ar(\in.kr(0));
 	//buf = LocalBuf(len * s.sampleRate);
-	RecordBuf.ar(input, ~liveBuffer, recLevel: 0.7, run: \run.kr(1.0), loop: 0.0, doneAction:2)
+	RecordBuf.ar(input, ~liveBuffer, recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
 }).add;
 
 //playback

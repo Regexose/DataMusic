@@ -1,8 +1,9 @@
 ~rf = (
 	\48 : {
-		// wind_gust
+		// Synth plays sections
+		// Buffer for Synth is exchanged if data goes belaw the mean and plays backward
+		// likes data around 1000
 		var buf, thres, syn, old, divider, duration, data, name;
-		//data = ~data.wind_gust;
 		data = ~currentData[\48];
 		name = ~data.findKeyForValue(data);
 		buf = ~liveBuffer;
@@ -12,53 +13,63 @@
 
 		data.do({
 			|b, i|
-		"processing %  %".format(name.asString, t).postln;
+		"processing %  %".format(name.asString, b).postln;
 			syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \secIdx, i%divider ]);
 			if(b >= thres, {
-				buf = ~liveBuffer;
 				"set synth".postln;
-				syn.set(\rate, 1, \harm, Array.fill(3, {[0, 12].choose}))},
-			{"new buffer".postln;  buf = [~buffers[\boris][4], ~liveBuffer].choose;
+				syn.set(\buf, ~liveBuffer, \rate, 1, \harm, Array.fill(3, {([0, 12].choose) * b.reciprocal}), \sec, b)},
+			{
+				"new buffer".postln;
+				buf = ~buffers[\boris][4];
 				duration = buf.numFrames/ s.sampleRate;
-				syn.set(\buf, buf, \rate, -1, \harm, Array.fill(3, {[0, -12].choose}))});
+				syn.set(\buf, buf, \rate, -1, \harm, Array.fill(3, {([0, -12].choose) * b.reciprocal}))
+			});
 			(duration/divider).wait;
 		})
 	},
 
 	\50 : {
-		var syn, data, name;
+		/*
+		likes data 0-5
+		plays segments in varying rates
+		*/
+		var syn, data, name, buf, segment;
 		data = ~currentData[\50];
 		name = ~data.findKeyForValue(data);
+		buf = ~liveBuffer;
+		segment = (buf.numFrames/data.size)/s.sampleRate;
+		syn = Synth(\tgrains, [\buf, buf, \rls, 2, \sus, 3,  \grainAmp, 0.8, \grainDur, segment*6,  \dens, 3]);
+		~activeSynths.put(\50, syn);
 		data.do({
 			|t, i|
-			var c, buf, segment;
-			"processing %  %".format(name.asString, t).postln;
-			buf = ~liveBuffer;
-			//segment = buf.numFrames/(data.size * s.sampleRate);
-			segment = buf.numFrames/data.size;
-			syn = Synth(\tgrains, [\buf, buf, \pos, segment * i, \sus, 0.1, \atk, 0.001, \rls, 0.6, \grainAmp, 0.34, \grainDur, 0.14,  \dens, 3]);
+			var c;
+			"processing %  % at %".format(name.asString, t, i).postln;
 			c = case
-			{i%5==0}{syn.set(\harm, Array.fill(4, {|idx| idx / t }), \rate, 1 + t.reciprocal)}
-			{i%25==0}{syn.set(\rls, 0.1, \grainDur, 0.09)}
-			{true}{true};
+			{(i < (data.size-1)) && (i%5==0)}{ syn.set(\harm, Array.fill(4, {|idx| idx / t.max(0.01) }), \rate, 1 + t.reciprocal.min(1000))}
+			{(i < (data.size-1)) && (i%26==0)}{ syn.set(\rls, 0.1, \grainDur, segment*5, \rate, 1 - t.reciprocal.min(1000))}
+			{(i < (data.size-1))}{ syn.set( \pos, segment * i)}
+			{true}{"freeing synth 50".postln; syn.set(\gate, 0); ~activeSynths.removeAt(\50)};
 			0.1.wait;
 		})
 	},
 
-	\52: {
-	var syn, data, name;
+	\52: {//likes values around 20
+		//plays ascending segments of the buffer
+	var syn, data, name, buf, segment;
 		data = ~currentData[\52];
 		name = ~data.findKeyForValue(data);
+		buf = ~liveBuffer;
+		syn = Synth(\tgrains, [\buf, ~liveBuffer, \grainAmp, 0.44, \sus, 10, \dens, 3]);
+		~activeSynths.put(\52, syn);
+		segment = (buf.numFrames/data.size)/s.sampleRate;
 	data.do({
 		|t, i|
-		var c, buf, maxInd, segment;
-		"processing %  %".format(name.asString, t).postln;
-		buf = ~liveBuffer;
-		segment = buf.numFrames/data.size;
-		syn = Synth(\tgrains, [\buf, buf, \pos, segment * i, \sus, 0.1, \atk, 0.001, \rls, 0.8, \grainAmp, 0.34, \grainDur, t/100,  \dens, 3, \rate, 0.4 + (t/100)]);
+		var c, maxInd;
+		"processing %  %  at   %".format(name.asString, t, i).postln;
 		c = case
-		{i%5==0}{syn.set(\harm, Array.fill(4, {|idx| idx / t }))}
-		{true}{true};
+		{i < (data.size-1)}{syn.set(\pos, segment * i, \grainDur, t/30, \rate, 1.0 + (t/100));}
+		{(i < (data.size-1)) && (i%5==0)}{syn.set(\harm, Array.fill(4, {|idx| idx / t.max(0.01) }))}
+		{true}{"freeing synth 52".postln; syn.set(\gate, 0); ~activeSynths.removeAt(\52)};
 		0.08.wait;
 		})
 	},

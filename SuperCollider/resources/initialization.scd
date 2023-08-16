@@ -2,7 +2,7 @@
 ~createData = {
     var flopped, headers;
 	headers = List.new;
-    ~csvFile = CSVFileReader.read(~dataPath +/+ ~fileName);
+    ~csvFile = CSVFileReader.read(~dataPath +/+ ~dataFileName);
     flopped = ~csvFile.flop; // Invert rows and columns
 
     flopped.do({

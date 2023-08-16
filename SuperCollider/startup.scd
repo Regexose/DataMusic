@@ -26,12 +26,11 @@ s.waitForBoot({
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
-
 	"done".postln;
 })
 
 )
-
+~liveBuffer.numFrames/~data.temperature.size
 ~replacePlay.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
@@ -39,10 +38,14 @@ s.waitForBoot({
 ~liveGrain.(True)
 ~liveGrain.(False)
 ~currentData[\50]
+~grainBuffer.play
+x = Synth(\rec)
+x.free
 
-~rf[\59]
+0.0.reciprocal
 
 ~liveBuffer.play
+
 ~liveBuffer.plot
 MIDIFunc.trace(false);
 
