@@ -2,29 +2,32 @@
 	\48 : {
 		// Synth plays sections
 		// Buffer for Synth is exchanged if data goes belaw the mean and plays backward
-		// likes data around 1000
+		// likes values around 500 -1000
 		var buf, thres, syn, old, divider, duration, data, name;
 		data = ~currentData[\48];
 		name = ~data.findKeyForValue(data);
 		buf = ~liveBuffer;
 		duration = buf.numFrames /s.sampleRate;
 		thres = data.mean;
-		divider = data.size/2;
-
+		divider = data.size/10;
+		syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \amp, 0.8, ]);
+		~activeSynths.put(\48, syn);
 		data.do({
 			|b, i|
 		"processing %  %".format(name.asString, b).postln;
-			syn = Synth(\brBF, [\buf, buf, \sec, buf.numFrames/divider, \secIdx, i%divider ]);
 			if(b >= thres, {
 				"set synth".postln;
-				syn.set(\buf, ~liveBuffer, \rate, 1, \harm, Array.fill(3, {([0, 12].choose) * b.reciprocal}), \sec, b)},
+				syn.set(\buf, ~liveBuffer, \rate, 1, \devF, 1 + b.max(0.01).reciprocal, \harm, Array.fill(3, {[0,12].choose}),
+					\sec, b.max(0.001) * 4, \secIdx, i, \cent, b.linlin(0.0, 1000, -1, 1))
+			},
 			{
 				"new buffer".postln;
-				buf = ~buffers[\boris][4];
-				duration = buf.numFrames/ s.sampleRate;
-				syn.set(\buf, buf, \rate, -1, \harm, Array.fill(3, {([0, -12].choose) * b.reciprocal}))
+				buf = ~buffers[\boris][3];
+				//duration = buf.numFrames/ s.sampleRate;
+				syn.set(\buf, buf, \sec, b.max(0.001) * 4,  \rate, -1, \secIdx, i, \devB, 5, \harm, Array.fill(3, {([0, -12].choose)}), \cent, b.explin(0.0, 1000, -1, 1))
 			});
 			(duration/divider).wait;
+			if (i>=(data.size-1), {"freeing synth 48".postln; syn.set(\gate, 0); ~activeSynths.removeAt(\48)})
 		})
 	},
 

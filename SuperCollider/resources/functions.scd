@@ -25,21 +25,6 @@
 	"set % with %".format(key, selected).postln;
 };
 
-~midiFuncManager = {
-	var n, m, c;
-	n = NetAddr("127.0.0.1", NetAddr.langPort); // local machine
-	OSCFunc.newMatching({
-		|msg, time, addr, recvPort|
-		msg[1].postln;
-		c = case
-		{msg[1] == "1"}{"active replacePlay".postln; ~replacePlay.()}
-		{msg[1] == "2"}{"empty replacePlay".postln; ~replacePlay = {}}
-		{true}{true}
-	},
-	'/ctrl', n);
-	"midiFuncManager loaded".postln;
-};
-
 
 //restarts play if new MIDI key is pressed
 ~replacePlay = {
@@ -53,7 +38,7 @@
 				syn = ~activeSynths.atFail(num.asSymbol,
 					{"making synth with key %".format(num).postln; Synth(\default)});
 				syn.free;
-				rec = Synth(\rec, [\buf, ~liveBuffer]);
+				rec = Synth(\rec);
 				"recording on % ".format(num).postln;
 			});
 			MIDIdef.noteOff(\rplOff, {

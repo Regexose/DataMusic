@@ -132,7 +132,7 @@ SynthDef(\tgrains_live, {
 
 SynthDef(\grainBuf, {
 	var sig, env;
-		env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+		env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2, \gate.kr(1));
 		sig = GrainBuf.ar(
 		numChannels: 2,
 		trigger: Impulse.kr(\dens.kr(40)),
@@ -158,7 +158,7 @@ SynthDef(\br, {
 		LFTri.ar(\sin.kr(0.2)),
 		]) * BufFrames.kr(buf);
 	ptr2 = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end, 0.0);
-    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2);
+    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2, \gate.kr(1));
     sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
@@ -180,7 +180,7 @@ SynthDef(\brSec, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2);
+    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2, \gate.kr(1));
 	sig = BufRd.ar(1, buf, ptr, \lp.kr(1.0));
 	sig = Pan2.ar( sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.3);
@@ -188,6 +188,38 @@ SynthDef(\brSec, {
 }).add;
 
 SynthDef(\brBF, {
+	// backward and forward in sections
+    arg buf;
+    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker,  env, fadeIn, sus, fadeOut, back, forw;
+	dirRate = \rate.kr(1);
+	trigForw = Trig.kr(dirRate > 0);
+	trigBack = Trig.kr(dirRate < 0);
+	secStart = \sec.kr(1) * \secIdx.kr(1);
+	secEnd = secStart + \sec.kr(1);
+	tracker = Phasor.ar(0, dirRate,  0, BufFrames.kr(buf));
+	forw = 4.collect({
+		var phsF, devF;
+		devF = {ExpRand(1, \devF.kr(2))};
+		phsF = Phasor.ar(trigForw, BufRateScale.kr(buf) * dirRate * \harm.kr(0).midiratio * devF, secStart, secEnd, tracker);
+	    BufRd.ar(1, buf, phsF, 1);
+	});
+	back = 4.collect({
+		var phsB, devB;
+		devB = {ExpRand(1, \devB.kr(2))};
+		phsB = Phasor.ar(trigForw, BufRateScale.kr(buf) * dirRate * \harm.kr(0).midiratio  * devB, secStart, secEnd, tracker);
+		BufRd.ar(1, buf, phsB, 1);
+	});
+	sus = \sus.kr(2);
+	fadeIn = sus/10;
+	fadeOut = sus/5;
+	sus = sus - fadeIn - fadeOut;
+    env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
+	sig = Splay.ar([forw, back], center: \cent.kr(0.0));
+    sig = sig * env * \amp.kr(0.3);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\live_brBF, {
 	// backward and forward in sections
     arg buf;
     var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut,mic, ptr;
@@ -208,7 +240,7 @@ SynthDef(\brBF, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env.asr(fadeIn, sus, fadeOut).kr(2);
+    env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
 	sig = XFade2.ar(back, forw, dirRate.lag(\dirlag.kr(0.2)));
     sig = sig * env * \amp.kr(0.3);
     Out.ar(\out.kr(0), sig);

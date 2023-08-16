@@ -39,10 +39,7 @@ s.waitForBoot({
 ~liveGrain.(False)
 ~currentData[\50]
 ~grainBuffer.play
-x = Synth(\rec)
-x.free
-
-0.0.reciprocal
+rrand(48,60)
 
 ~liveBuffer.play
 
@@ -52,3 +49,8 @@ MIDIFunc.trace(false);
 Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 0,  \pos2, 1, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
 Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 1,  \pos2, 0, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
 Synth(\tgrains_live, [\buf, ~liveBuffer, \harm, [-12, 2, 12]])
+
+r({
+	s.record(~recordingPath +/+ "key48.wav", duration: 60);
+	wait(0.02);
+}).play
