@@ -1,7 +1,7 @@
 (
 r({
-	s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-	wait(0.02);
+	/*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+	wait(0.02);*/
 	x = Synth(\arrayarg, [\which, 2]);
 	r({
 		~data.temperature.do({
@@ -20,8 +20,8 @@ r({
 // 6 datenreihen, [ solar, yearly, relative, relative_low, relative_high, absolute ]
 //die Werte im wahrnehmbaren Frequenzspektrum haben, werden gleichzeitig abgespielt
 r({
-	s.record(~recordingPath +/+ "frequencies.wav", duration: 40);
-	wait(0.02);
+	/*s.record(~recordingPath +/+ "frequencies.wav", duration: 40);
+	wait(0.02);*/
 	~dataGroups.freq.do({
 		|frq, i|
 		var synName, data, keyName;
@@ -48,8 +48,8 @@ r({
 (
 //  8 weniger volatile datenreihen ()temperature moisture) gleichzeitig
 r({
-		s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/steady.wav", duration: 40);
-	wait(0.02);
+		/*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/steady.wav", duration: 40);
+	wait(0.02);*/
 	~dataGroups.steady.do({
 	|frq, i|
 	var synName, data, keyName, freqs;
@@ -76,17 +76,19 @@ r({
 // tgrains_live mit exprand
 r({
 	var syn, data, name, buf, segment;
-	s.record(~recordingPath +/+ "tgrains_live.wav", duration: 60);
+	s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
 	wait(0.02);
-		data = Array.fill(300, {exprand(0.1, 1.0)});
+		//data = Array.fill(300, {exprand(0.1, 1.0)});
+		data = ~data.uvi;
 		buf = ~grainBuffer;
-		syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 5, \dens, 3]);
+		syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 2, \dens, 3, \amp, 0.4]);
 		segment = (buf.numFrames/data.size)/s.sampleRate;
 	data.do({
 		|t, i|
 		"processing %  %  at   %".format("exprand data ", t, i).postln;
-		syn.set(\grainDur, t, \rate,  [-1, 1].choose, \dens, (10 * t).ceil, \pos, segment *i, \harm, [t*8, t*4, t*2],  \grainAmp, [t, t/2, t/4] );
+		syn.set(\grainDur, t, \rate,  [-1, 1].choose, \dens, t, \pos, segment * i, \harm, [t*2, t, t/2]);
 		0.15.wait;
+        if (i == (data.size-1), {"releasing synth".postln; syn.release(3)});
 		})
 }).play
 )

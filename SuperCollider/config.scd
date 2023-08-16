@@ -1,3 +1,6 @@
 //ServerOptions.devices
 //~audioInterface = "MacBook Pro-Lautsprecher";
-~audioInterface = "Fireface 400 (BEF)";
+~audioOut = "MacBook Pro-Lautsprecher";
+~audioIn = "MacBook Pro-Mikrofon";
+// ~audioOut = "Fireface 400 (BEF)";
+// ~audioIn = "Fireface 400 (BEF)";
