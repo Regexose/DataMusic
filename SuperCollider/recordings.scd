@@ -1,20 +1,129 @@
+////////////////////////////////////////
+//workshop
+(
+// tgrains_live mit humidity
+r({
+    var syn, data, name, buf, segment;
+    /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
+    wait(0.02);*/
+    //data = Array.fill(300, {exprand(0.1, 1.0)});
+    data = ~data.humidity.asArray.normalize(0.0, 10.0);
+    buf = ~grainBuffer;
+    syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 0.5, \dens, 1, \amp, 0.9, \rls, 0.4]);
+    segment = (buf.numFrames/data.size)/s.sampleRate;
+    data.do({
+        |t, i|
+        "processing %  %  at   %".format("normalized data ", t, i).postln;
+        syn.set(\grainDur, t, \dens, t, \pos, segment/2 * i, \harm, [t*2, t, t/2]);
+        0.11.wait;
+        if (i == (data.size-1), {"releasing synth".postln; syn.release(3)});
+    })
+}).play
+)
+
+(
+// tgrains_live mit humidity
+r({
+    var syn, data, name, buf, segment;
+    /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
+    wait(0.02);*/
+    //data = Array.fill(300, {exprand(0.1, 1.0)});
+    data = ~data.humidity.asArray.normalize(0.0, 10.0);
+    buf = ~grainBuffer;
+    syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 0.5, \dens, 1, \amp, 0.9, \rls, 0.4]);
+    segment = (buf.numFrames/data.size)/s.sampleRate;
+    data.do({
+        |t, i|
+        "processing %  %  at   %".format("normalized data ", t, i).postln;
+        syn.set(\grainDur, t, \dens, t, \pos, segment * 200, \harm, [t*2, t, t/2]);
+        0.11.wait;
+        if (i == (data.size-1), {"releasing synth".postln; syn.release(3)});
+    })
+}).play
+)
+
+(
+// tgrains_live plus array arg
+r({
+    var syn1, syn2, data, name, buf, segment;
+    /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
+    wait(0.02);*/
+    //data = Array.fill(300, {exprand(0.1, 1.0)});
+    data = ~data.humidity.asArray.normalize(0.0, 10.0);
+    buf = ~grainBuffer;
+    syn1 = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 0.5, \dens, 1, \amp, 0.9, \rls, 0.4]);
+    syn2 = Synth(\arrayarg, [\amp, 0.01]);
+    segment = (buf.numFrames/data.size)/s.sampleRate;
+    data.do({
+        |t, i|
+        "processing %  %  at   %".format("normalized data ", t, i).postln;
+        syn1.set(\grainDur, t, \dens, t, \pos, segment * 200, \harm, [t*2, t, t/2]);
+        syn2.set(\freqs, Array.exprand(3, t, data.mean), \temps, Array.fill(3, {[data[i-1.max(0)], t, data[i+1.min(data.size)]]}), \amp, 0.03, \which, i%3);
+        0.11.wait;
+        if (i == (data.size-1), {"releasing synths".postln; [syn1, syn2].do(_.release(3))});
+    })
+}).play
+)
+
+
 (
 r({
-	/*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-	wait(0.02);*/
-	x = Synth(\arrayarg, [\which, 2]);
-	r({
-		~data.temperature.do({
-			|t, i|
-			t.postln;
-			x.set(\freqs, Array.exprand(3, ~data.temperature.mean, t), \temps, Array.fill(3, {[~data.temperature[i-1.max(0)], t, ~data.temperature[i+1.min(~data.temperatures.size)]]}), \amp, 0.03);
-			0.05.wait;
-			if (i == (~data.temperature.size-1), {x.release(3)});
-		});
-	}).play
+    var data;
+    data = ~data.wind_gust.asArray.normalize(10.0, 50.0);
+    /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+    wait(0.02);*/
+    x = Synth(\arrayarg, [\which, 2]);
+    data.do({
+        |t, i|
+        t.postln;
+        x.set(\freqs, Array.exprand(3, t, data.mean), \temps, Array.fill(3, {[data[i-1.max(0)], t, data[i+1.min(data.size)]]}), \amp, 0.03, \which, i%3);
+        0.05.wait;
+        if (i == (data.size-1), {x.release(3)});
+    })
 }).play
 
 )
+
+
+(
+// 6 datenreihen, [ solar, yearly, relative, relative_low, relative_high, absolute ]
+//plus ein tgrains_live signal, das von data2 gespeist wird
+r({
+    var syn2, data2, buf, segment;
+    /*s.record(~recordingPath +/+ "frequencies.wav", duration: 40);
+    wait(0.02);*/
+    data2 = ~data.humidity.asArray.normalize(0.0, 11.0);
+    buf = ~grainBuffer;
+    segment = (buf.numFrames/data2.size)/s.sampleRate;
+    syn2 = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 0.5, \dens, 1, \amp, 0.9, \rls, 0.4]);
+    r({data2.do({
+        |d, i|
+        "processing %  %  %  at   %".format("normalized data ", "tgrains", d, i).postln;
+        syn2.set(\grainDur, d, \dens,d, \pos, segment * 200, \harm, [d*2, d, d/2]);
+        0.2.wait;
+        if (i == (data2.size-1), {syn2.release(3)});
+    })
+    }).play;
+    ~dataGroups.freq.do({
+        |frq|
+        var synName, data, keyName;
+        data = ~data[frq];
+        keyName = ~data.findKeyForValue(data);
+        synName = "syn_" ++keyName;
+        synName = Synth(\array_1b, [\freq, data.mean, \amp, 0.05]);
+        r({data.do({
+            |t, i|
+            "processing %  %  %  at   %".format("normalized data ", keyName, t, i).postln;
+            synName.set(\freq, t /1000, \otFreqs, Array.exprand(4, data.mean, t), \otAmps, Array.fill(4, {exprand(0.8, 1.0)}), \freqLag, 0.9);
+            0.2.wait;
+            if (i == (data.size-1), {synName.release(3)});
+        })
+        }).play;
+    });
+}).play
+)
+
+ ///////////////////////////
 
 (
 // 6 datenreihen, [ solar, yearly, relative, relative_low, relative_high, absolute ]
@@ -24,7 +133,7 @@ r({
 	wait(0.02);*/
 	~dataGroups.freq.do({
 		|frq, i|
-		var synName, data, keyName;
+		var synName, data, data2, keyName;
 		data = ~data[frq];
 		keyName = ~data.findKeyForValue(data);
 		synName = "syn_" ++keyName;
@@ -33,7 +142,7 @@ r({
 		r({
 			data.do({
 				|t, i|
-				[t, i].postln;
+				 "processing %  %  %  at   %".format("normalized data ", keyName, t, i).postln;
 				synName.set(\freq, t /1000, \otFreqs, Array.exprand(4, data.mean, t), \otAmps, Array.fill(4, {exprand(0.8, 1.0)}), \freqLag, 0.9);
 				0.1.wait;
 				if (i == (data.size-1), {synName.release(3)});
