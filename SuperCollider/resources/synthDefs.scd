@@ -40,19 +40,20 @@ SynthDef(\baro, {
 
 	SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
 		var freqs = NamedControl.kr(\freqs, [300, 400, 500]);
-		var temps = NamedControl.kr(\temps, 20 !3);
+		var temps = NamedControl.kr(\temps, 0!3);
 		var env, sines;
-		env = Linen.kr(gate, 0.1, 1, 1, 2) * amp;
+		env = Linen.kr(gate,\atk.kr(0.1), \sus.kr(0.5), \rls.kr(1), 2) * amp;
 		sines = Select.ar(
 		\which.kr(0),
 		[
-			LFTri.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
-			LFSaw.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
-			LFPulse.ar(freqs  +.t temps *2).cubed.sum; // A mix of 4 oscillators
+            LFTri.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
+            LFSaw.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
+            LFPulse.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
 		]
 	);
+    sines = Splay.ar(sines);
 	Out.ar(out, sines * env);
-	}, [0, 0.1, 0]).add;
+	}).add;
 
 	SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 		atk = 0.01, rls = 0.6, amp = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
@@ -108,7 +109,7 @@ SynthDef(\tgrains, {
 SynthDef(\tgrains_live, {
 	var sig, env, mic, pos, ptr, buf=\buf.kr(0);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-	mic = SoundIn.ar(0);
+	mic = SoundIn.ar(0, \in.kr(1));
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
 	BufWr.ar(mic, buf, ptr);
 
