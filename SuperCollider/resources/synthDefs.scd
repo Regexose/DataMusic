@@ -134,7 +134,7 @@ SynthDef(\tgrains_live, {
 
 SynthDef(\grainBuf, {
 	var sig, env;
-		env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2, \gate.kr(1));
+		env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 		sig = GrainBuf.ar(
 		numChannels: 2,
 		trigger: Impulse.kr(\dens.kr(40)),
@@ -153,18 +153,12 @@ SynthDef(\grainBuf, {
 SynthDef(\br, {
     arg buf=0, rate=1, start=0, end;
     var sig, ptr, ptr2, env;
-/*	ptr = Select.ar(\which.kr(0),
-		[
-		SinOsc.ar(\sin.kr(0.2)),
-		LFNoise1.ar(\sin.kr(0.2)),
-		LFTri.ar(\sin.kr(0.2)),
-		]) * BufFrames.kr(buf);*/
-	ptr2 = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end, 0.0);
-    env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2, \gate.kr(1));
+	ptr = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end);
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
-		BufRd.ar(1, buf, ptr2 + lag, \lp.kr(1.0));
+		BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.3);

@@ -25,21 +25,19 @@
 	"set % with %".format(key, selected).postln;
 };
 
-~recordBase = {
-	|name|
+~recordUser = {
+	|username, typename|
 	var rec, filePath, file, progress=0;
 	//make Gui for record progress
-	filePath = ~samplesPath +/+ name ++ "/baseSound.wav";
-	"is this a String? %".format(filePath.class).postln;
 	rec = Synth(\recOne, [\buf, ~baseSound]);
 	o = OSCdef(\listener, { |msg|
 		{progress = msg[3]}.defer; if(msg[3] >= (~baseSound.numFrames -200), {
 			"record done".postln;
 			rec.free;
-			File.mkdir(~samplesPath +/+ name);
-			~baseSound.write(~samplesPath +/+ name ++"/baseSound.wav", "WAV", "int16");
+			File.mkdir(~samplesPath +/+ username);
+			~baseSound.write(~samplesPath +/+ username +/+ typename ++ "Sound.wav", "WAV", "int16");
+			~buffers.put(username, ~baseSound);
 	})}, '/cursor');
-
 
 };
 

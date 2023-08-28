@@ -30,7 +30,7 @@ s.waitForBoot({
 
 )
 ~liveBuffer.numFrames/~data.temperature.size
-~recordBase.("voris");
+~recordUser.("hugoloris", "base");
 
 
 
