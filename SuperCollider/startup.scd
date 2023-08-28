@@ -30,6 +30,11 @@ s.waitForBoot({
 
 )
 ~liveBuffer.numFrames/~data.temperature.size
+~recordBase.("voris");
+
+
+
+
 ~replacePlay.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
@@ -41,6 +46,13 @@ s.waitForBoot({
 rrand(48,60)
 
 ~liveBuffer.play
-
 ~liveBuffer.plot
-[200,300, 400] +.t 20!3 *2
+~baseSound.play
+~baseSound.class
+
+
+b= Buffer.read(s, ~samplesPath ++ "/voris/baseSound.wav")
+b.plot
+
+~data.keys
+~buildBufferGrid.()

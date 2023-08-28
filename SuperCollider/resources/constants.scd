@@ -1,10 +1,11 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
-~dataFileName = "zku_3007-0508_noTime.csv";
+~dataFileName = "zku_monat_7_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
+~baseSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~activeSynths = ();
 
 ~data = ();

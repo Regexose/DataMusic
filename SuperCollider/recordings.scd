@@ -1,16 +1,52 @@
 ////////////////////////////////////////
 //workshop
 (
+r({
+	var data, normalized, buf, syn;
+	data = ~data.uv;
+	normalized = data.asArray.normalize(150, 2000);
+	buf = ~baseSound;
+	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1]);
+	normalized.do({
+		|d, i|
+		"processing %  %  at   %".format("normalized data ", d, i).postln;
+		syn.set(\ffreq, d);
+		0.04.wait;
+	})
+}).play
+)
+
+// tgrains mit basesound und humidity
+r({
+    var syn, data, name, buf, segment;
+    /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
+    wait(0.02);*/
+    //data = Array.fill(300, {exprand(0.1, 1.0)});
+    data = ~data.humidity.asArray.normalize(0.001, 10.0);
+    buf = ~baseSound;
+    syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.24, \sus, 0.5, \dens, 1, \rls, 0.2]);
+    segment = (buf.numFrames/data.size)/s.sampleRate;
+	data = data[..300];
+    data.do({
+        |t, i|
+        "processing %  %  at   %".format("normalized data ", t, i).postln;
+        syn.set(\grainDur, t/10, \dens, t, \pos, segment/2 * i, \harm, [0, 12, t.linlin(0.0, 10.0, 0, 12)], );
+        0.11.wait;
+        if (i == (data.size-1), {"releasing synth".postln; syn.release(3)});
+    })
+}).play
+
 // tgrains_live mit humidity
 r({
     var syn, data, name, buf, segment;
     /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
     wait(0.02);*/
     //data = Array.fill(300, {exprand(0.1, 1.0)});
-    data = ~data.humidity.asArray.normalize(0.0, 10.0);
+    data = ~data.humidity.asArray.normalize(0.001, 10.0);
     buf = ~grainBuffer;
     syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.24, \sus, 0.5, \dens, 1, \rls, 0.2]);
     segment = (buf.numFrames/data.size)/s.sampleRate;
+	data = data[..300];
     data.do({
         |t, i|
         "processing %  %  at   %".format("normalized data ", t, i).postln;
@@ -28,7 +64,7 @@ r({
     /*s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
     wait(0.02);*/
     //data = Array.fill(300, {exprand(0.1, 1.0)});
-    data = ~data.humidity.asArray.normalize(0.0, 10.0);
+    data = ~data.humidity.asArray.normalize(0.001, 10.0);
     buf = ~grainBuffer;
     syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 0.5, \dens, 1, \amp, 0.9, \rls, 0.4]);
     segment = (buf.numFrames/data.size)/s.sampleRate;
@@ -68,15 +104,16 @@ r({
 
 (
 r({
-    var data;
-    data = ~data.wind_gust.asArray.normalize(10.0, 50.0);
+    var data, normalized;
+	data = ~data.maxdailygust;
+	normalized = data.asArray.normalize(50.0, 350.0);
     /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
     wait(0.02);*/
     x = Synth(\arrayarg, [\which, 2]);
-    data.do({
+    normalized.do({
         |t, i|
-        t.postln;
-        x.set(\freqs, Array.exprand(3, t, data.mean), \temps, Array.fill(3, {[data[i-1.max(0)], t, data[i+1.min(data.size)]]}), \amp, 0.03, \which, i%3);
+        "processing %  %  original data % at   %".format("normalized data ", t, data[i], i).postln;
+		x.set(\freqs, Array.fill(3, {[t/2, t, t*2]}), \temps, [normalized[i-1.max(0)], t, normalized[i+1]], \amp, 0.03, \which, i%3);
         0.05.wait;
         if (i == (data.size-1), {x.release(3)});
     })
@@ -90,8 +127,8 @@ r({
 //plus ein tgrains_live signal, das von data2 gespeist wird
 r({
     var syn2, data2, buf, segment;
-    s.record(~recordingPath +/+ "#06humidity.wav", duration: 40);
-    wait(0.02);
+ /*   s.record(~recordingPath +/+ "#06humidity.wav", duration: 40);
+    wait(0.02);*/
     data2 = ~data.humidity.asArray.normalize(0.0, 8.0);
     buf = ~grainBuffer;
     segment = (buf.numFrames/data2.size)/s.sampleRate;
@@ -186,10 +223,10 @@ r({
 // tgrains_live mit exprand
 r({
 	var syn, data, name, buf, segment;
-	s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
-	wait(0.02);
+/*	s.record(~recordingPath +/+ "tgrains_uvi.wav", duration: 50);
+	wait(0.02);*/
 		//data = Array.fill(300, {exprand(0.1, 1.0)});
-		data = ~data.uvi;
+		data = ~data.temp.asArray.normalize(0.001, 10.0)[500..800];
 		buf = ~grainBuffer;
 		syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.44, \sus, 2, \dens, 3, \amp, 0.4]);
 		segment = (buf.numFrames/data.size)/s.sampleRate;

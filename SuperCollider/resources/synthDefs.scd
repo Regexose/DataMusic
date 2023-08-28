@@ -46,9 +46,9 @@ SynthDef(\baro, {
 		sines = Select.ar(
 		\which.kr(0),
 		[
-            LFTri.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
-            LFSaw.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
-            LFPulse.ar(freqs.varlag(\lag.kr(0.5)), temps); // A mix of 4 oscillators
+            LFTri.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
+            LFSaw.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
+            LFPulse.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
 		]
 	);
     sines = Splay.ar(sines);
@@ -101,6 +101,7 @@ SynthDef(\tgrains, {
 		amp: \grainAmp.kr(0.3),
 		interp: \ip.kr(4)
 	);
+	sig =
 	sig = sig * env * \amp.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -150,14 +151,14 @@ SynthDef(\grainBuf, {
 }).add;
 
 SynthDef(\br, {
-    arg buf, rate=1, start, end;
+    arg buf=0, rate=1, start=0, end;
     var sig, ptr, ptr2, env;
-	ptr = Select.ar(\which.kr(0),
+/*	ptr = Select.ar(\which.kr(0),
 		[
 		SinOsc.ar(\sin.kr(0.2)),
 		LFNoise1.ar(\sin.kr(0.2)),
 		LFTri.ar(\sin.kr(0.2)),
-		]) * BufFrames.kr(buf);
+		]) * BufFrames.kr(buf);*/
 	ptr2 = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end, 0.0);
     env = Env([0,1,1,0], [\atk.ir(1),\sus.ir(4),\rls.ir(1)], [1,0,-1]).kr(2, \gate.kr(1));
     sig = 2.collect({
@@ -172,7 +173,7 @@ SynthDef(\br, {
 
 SynthDef(\brSec, {
 	// plays Section according to indices
-    arg buf, rate=1;
+    arg buf=0, rate=1;
     var sig, secStart, secEnd, ptr, fadeIn, sus, fadeOut, env;
 	secStart = \sec.kr(1) * \secIdx.kr(1);
 	secEnd = secStart + \sec.kr(1);
@@ -262,13 +263,25 @@ SynthDef(\samp, {
 	Out.ar(\bus.kr(0), XFade2.ar(back, forw, rate.lag(\lt.kr(0.2)), level: \amp.kr(0.3)))
 }).add;
 
+// record stuff with mic untif buffer is full
+SynthDef(\recOne, {
+	|len=4|
+	var input, ptr, buf= \buf.kr(0);
+	input = SoundIn.ar(\in.kr(0));
+	ptr = Line.ar(0, BufFrames.kr(buf), BufDur.kr(buf));
+	SendReply.kr(Impulse.kr(20), '/cursor', ptr);
+	BufWr.ar(input, buf, ptr);
+}).add;
+
 // record stuff with mic
 SynthDef(\rec, {
 	|len=4|
-	var input, phase;
+	var input, ptr, buf= \buf.kr(0);
 	input = SoundIn.ar(\in.kr(0));
-	//buf = LocalBuf(len * s.sampleRate);
-	RecordBuf.ar(input, ~liveBuffer, recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
+	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
+	BufWr.ar(input, buf, ptr);
+	//RecordBuf.ar(input, \buf.kr(0), recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
 }).add;
 
 //playback

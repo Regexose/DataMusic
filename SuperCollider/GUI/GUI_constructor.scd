@@ -25,6 +25,16 @@ GUI mit verschiedenen SubWindows
 	compView;
 };
 
+~buildBufferGrid = {
+	var win, button, selector;
+	Window.closeAll;
+	win = Window.new("grids", Rect(150, 30, 800, 400)).front;
+	selector = 8.collect({PopUpMenu.new()});
+	button = 8.collect({Button.new()});
+	win.layout_(GridLayout.rows(selector, button));
+};
+
+
 ~buildDataSelector = {
 	arg top_level, all_selectors_width, selector_height, selectorsize, offset, midikeys, items;
 	var selectorData, compView, selectors, selector_labels;

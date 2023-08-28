@@ -25,6 +25,24 @@
 	"set % with %".format(key, selected).postln;
 };
 
+~recordBase = {
+	|name|
+	var rec, filePath, file, progress=0;
+	//make Gui for record progress
+	filePath = ~samplesPath +/+ name ++ "/baseSound.wav";
+	"is this a String? %".format(filePath.class).postln;
+	rec = Synth(\recOne, [\buf, ~baseSound]);
+	o = OSCdef(\listener, { |msg|
+		{progress = msg[3]}.defer; if(msg[3] >= (~baseSound.numFrames -200), {
+			"record done".postln;
+			rec.free;
+			File.mkdir(~samplesPath +/+ name);
+			~baseSound.write(~samplesPath +/+ name ++"/baseSound.wav", "WAV", "int16");
+	})}, '/cursor');
+
+
+};
+
 
 //restarts play if new MIDI key is pressed
 ~replacePlay = {
@@ -38,7 +56,7 @@
 				syn = ~activeSynths.atFail(num.asSymbol,
 					{"making synth with key %".format(num).postln; Synth(\default)});
 				syn.free;
-				rec = Synth(\rec);
+				rec = Synth(\rec, [\buf, ~liveBuffer]);
 				"recording on % ".format(num).postln;
 			});
 			MIDIdef.noteOff(\rplOff, {
