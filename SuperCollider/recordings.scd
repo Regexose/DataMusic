@@ -1,12 +1,17 @@
 ////////////////////////////////////////
 //workshop
 (
+~recordUser.("test", "base");
+~recordUser.("test", "stress");
+
+)
+(//solar radiation
 r({
 	var data, normalized, buf, syn;
-	data = ~data.uv;
-	normalized = data.asArray.normalize(150, 2000);
-	buf = ~baseSound;
-	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1]);
+	data = ~data.solarradiation;
+	normalized = data.asArray.normalize(80, 3000);
+	buf = ~buffers[\test][0];
+	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
 	normalized.do({
 		|d, i|
 		"processing %  %  at   %".format("normalized data ", d, i).postln;
@@ -16,6 +21,75 @@ r({
 }).play
 )
 
+(
+r({
+	var data, normalized, buf, syn, sec;
+	data = ~data.temp;
+	normalized = data.asArray.normalize(36.0, 60.0);
+	buf = ~buffers[\test][0];
+	sec = buf.numFrames/s.sampleRate * 50;
+	syn = Synth(\tgrains, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
+	normalized.do({
+		|d, i|
+		"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
+		syn.set(\harm, d,  \pan, d.linlin(36, 60, -1, 1), \pos, sec *i);
+		0.2.wait;
+	})
+}).play
+
+)
+(
+r({
+	var data, normalized, buf, syn, sec;
+	data = ~data.solarradiation;
+	normalized = data.asArray.normalize(13, 114);
+	buf = ~buffers[\hugoloris][0];
+	sec = buf.numFrames/s.sampleRate * 50;
+	syn = Synth(\tgrains, [\buf, buf]);
+	normalized.do({
+		|d, i|
+		"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
+		syn.set(\harm, [d, d-12, d+12], \pos, sec *1);
+		0.04.wait;
+	})
+}).play
+
+)
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // tgrains mit basesound und humidity
 r({
     var syn, data, name, buf, segment;
@@ -23,7 +97,7 @@ r({
     wait(0.02);*/
     //data = Array.fill(300, {exprand(0.1, 1.0)});
     data = ~data.humidity.asArray.normalize(0.001, 10.0);
-    buf = ~baseSound;
+    buf = ~grainBuffer;
     syn = Synth(\tgrains_live, [\buf, buf, \grainAmp, 0.24, \sus, 0.5, \dens, 1, \rls, 0.2]);
     segment = (buf.numFrames/data.size)/s.sampleRate;
 	data = data[..300];
@@ -247,7 +321,7 @@ r({
 /*	s.record(~recordingPath +/+ "for_back03.wav", duration: 30);
 	wait(0.02);*/
 		data = Array.fill(300, {exprand(0.1, 1.0)});
-		buf = ~liveBuffer;
+		buf = ~buffers[\hugoloris][0];
 		segment = buf.numFrames/40;
 		syn = Synth(\brBF, [\buf, buf, \sec, segment, \rate, 1, \dirlag, 0.2]);
 	data.do({

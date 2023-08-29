@@ -92,14 +92,14 @@ SynthDef(\tgrains, {
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	sig = TGrains.ar(
 		numChannels: 2,
-		trigger: Dust.kr(\dens.kr(40)),
+		trigger: Dust.kr(\dens.kr(12)),
 		bufnum: \buf.kr(0),
 		rate: \rate.kr(1) * \harm.kr([-9, -7, -4, 0]).midiratio,
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
-		pan: 0,
+		pan: \pan.kr(0),
 		amp: \grainAmp.kr(0.3),
-		interp: \ip.kr(4)
+		interp: 4
 	);
 	sig =
 	sig = sig * env * \amp.kr(1);

@@ -18,7 +18,7 @@ GUI mit verschiedenen SubWindows
 	arg window, posx=10, posy=10, width, height;
 	var compView;
 	compView = CompositeView(window, Rect(posx, posy, width, height))
-	.background_(~style.top_level_frame_color);
+	.background_(~style.header_frame_color);
 	compView.addFlowLayout(10@10);
 	compView.decorator.gap_(0@10);
 	//"built toplevel".postln;
@@ -38,7 +38,7 @@ GUI mit verschiedenen SubWindows
 ~buildDataSelector = {
 	arg top_level, all_selectors_width, selector_height, selectorsize, offset, midikeys, items;
 	var selectorData, compView, selectors, selector_labels;
-	midikeys.postln;
+
 	compView = CompositeView(top_level, Rect(0, 0, all_selectors_width, selector_height *2))
 	.background_(~style.bank_frame_color);
 	selectors = Dictionary.new;
@@ -57,6 +57,33 @@ GUI mit verschiedenen SubWindows
 		.align_(\center)
 		.stringColor_(Color.black)
 		.string_("midikey "++ mid);
+	});
+	selectorData = [compView, selectors, selector_labels];
+};
+
+~buildBufferSelector = {
+	|top_level, posx, posy, width, height, selectorsize, offset, users|
+	var compView, selectors, selector_labels, selectorData;
+	compView = CompositeView(top_level, Rect(posx, posy, width, height))
+	.background_(~style.bank_frame_color);
+	selectors = Dictionary.new;
+	~setBuffers.keys.do({
+		|key, i|
+		var buflist, name;
+		buflist = Array.fill(users.size, {|id| var user=users[id]; user.postln; ~buffers[user][key] });
+		selectors[key] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
+			selectorsize, selectorsize/2))
+		.items_(users)
+		.allowsReselection_(True)
+		.action_({arg pm; ~bufferSelectorAction.(pm)})
+		.name_(key.asString);
+	});
+	selector_labels = ~setBuffers.keys.do({
+		|key, i|
+		StaticText(compView,  Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
+		.align_(\center)
+		.stringColor_(Color.black)
+		.string_("buffer "++ key);
 	});
 	selectorData = [compView, selectors, selector_labels];
 };

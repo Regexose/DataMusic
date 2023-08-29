@@ -20,7 +20,8 @@ s.waitForBoot({
 	(~resourcePath ++ "initialization.scd").load;
 	~createData.(); ~initCurrentData.();
 	(~resourcePath ++ "functions.scd").load;
-	(~resourcePath ++ "routinefunctions.scd").load;
+	//(~resourcePath ++ "routinefunctions.scd").load;
+	(~resourcePath ++ "rf_climart.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
@@ -30,7 +31,7 @@ s.waitForBoot({
 
 )
 ~liveBuffer.numFrames/~data.temperature.size
-~recordUser.("hugoloris", "base");
+~recordUser.("hugoloris", "free");
 
 
 
@@ -42,8 +43,10 @@ s.waitForBoot({
 ~liveGrain.(True)
 ~liveGrain.(False)
 ~currentData[\50]
+
 ~grainBuffer.play
-rrand(48,60)
+~buffers.keys[0]
+~setBuffers[\stress]
 
 ~liveBuffer.play
 ~liveBuffer.plot
@@ -51,8 +54,9 @@ rrand(48,60)
 ~baseSound.class
 
 
-b= Buffer.read(s, ~samplesPath ++ "/voris/baseSound.wav")
+b= Buffer.read(s, ~samplesPath ++ "/hugoloris/baseSound.wav")
 b.plot
 
 ~data.keys
+~data.uv.size
 ~buildBufferGrid.()

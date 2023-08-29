@@ -41,7 +41,7 @@ MIDIClient.init;
 MIDIIn.connectAll;
 ~midiOut = MIDIOut.new(0);
 ~midiIn = MIDIIn.new(0);
-
+/*
 PathName(~samplesPath).entries.do({
 	arg subfolder;
 	//subfolder.postln;
@@ -55,5 +55,16 @@ PathName(~samplesPath).entries.do({
 			}
 		)
 	)
+});*/
+
+PathName(~samplesPath).entries.do({
+	arg subfolder;
+	var sampleDict=(), sample;
+	~buffers.add(subfolder.folderName.asSymbol -> sampleDict);
+	subfolder.entries.do({
+		|entry, i|
+		var sampleName = entry.fileNameWithoutExtension.asSymbol;
+		~buffers[subfolder.folderName.asSymbol].put(sampleName, Buffer.read(s, entry.fullPath))
+		});
 });
 

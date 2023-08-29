@@ -25,18 +25,30 @@
 	"set % with %".format(key, selected).postln;
 };
 
+~bufferSelectorAction = {
+	|menu|
+	var key, selected;
+	selected = menu.item.asSymbol;
+	key = menu.name;
+	~currentData[key.asSymbol] = ~data[selected];
+	"set % with %".format(key, selected).postln;
+};
+
 ~recordUser = {
 	|username, typename|
 	var rec, filePath, file, progress=0;
 	//make Gui for record progress
-	rec = Synth(\recOne, [\buf, ~baseSound]);
+	rec = Synth(\recOne, [\buf, ~userSound]);
+
 	o = OSCdef(\listener, { |msg|
-		{progress = msg[3]}.defer; if(msg[3] >= (~baseSound.numFrames -200), {
+		{progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -200), {
 			"record done".postln;
 			rec.free;
 			File.mkdir(~samplesPath +/+ username);
-			~baseSound.write(~samplesPath +/+ username +/+ typename ++ "Sound.wav", "WAV", "int16");
-			~buffers.put(username, ~baseSound);
+			~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
+			if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
+				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});
+			~buffers[username.asSymbol].put(typename, ~userSound);
 	})}, '/cursor');
 
 };

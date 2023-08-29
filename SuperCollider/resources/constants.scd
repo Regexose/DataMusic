@@ -2,14 +2,28 @@
 ~dataFileName = "zku_monat_7_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
-~buffers = Dictionary.new;
+~buffers = ();
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
-~baseSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
+~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
+
+~setBuffers = (
+	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\stress : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\free : Buffer.alloc(s, 4 * s.sampleRate, 1),
+);
+
+~currentSample = (
+	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\stress : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\free : Buffer.alloc(s, 4 * s.sampleRate, 1),
+);
+
 ~activeSynths = ();
 
 ~data = ();
 ~currentData = ();
+
 ~dataGroups = (
 	\freq: [// suitable for frequency values
 		\solar,
