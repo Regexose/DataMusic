@@ -2,10 +2,40 @@
 //workshop
 (
 ~recordUser.("test", "base");
-~recordUser.("test", "stress");
+~recordUser.("test", "tension");
+~recordUser.("test", "release");
 
 )
-(//solar radiation
+(
+/*
+Intro: 3 Routinen mit Synths und 3 Datensätzen, die User sich anhören können
+*/
+r({
+    var data, compressed, normalized;
+	data = ~data.maxdailygust.asArray;
+	compressed = data.select({|item, i| i%10 == 0});
+	normalized = compressed.normalize(80.0, 3500.0);
+    /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+    wait(0.02);*/
+	x = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
+    normalized.do({
+        |d, i|
+	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+		x.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
+        0.05.wait;
+        if (i == (data.size-1), {x.release(3)});
+    })
+}).play
+
+)
+(
+/*
+test: 3 Routinen, um sich das Ergebnis anzuhören
+*/
+
+
+)
+//solar radiation
 r({
 	var data, normalized, buf, syn;
 	data = ~data.solarradiation;

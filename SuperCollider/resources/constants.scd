@@ -9,14 +9,14 @@
 
 ~setBuffers = (
 	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\stress : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\free : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\tension : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\release : Buffer.alloc(s, 4 * s.sampleRate, 1),
 );
 
 ~currentSample = (
 	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\stress : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\free : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\tension : Buffer.alloc(s, 4 * s.sampleRate, 1),
+	\release : Buffer.alloc(s, 4 * s.sampleRate, 1),
 );
 
 ~activeSynths = ();

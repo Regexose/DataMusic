@@ -1,73 +1,67 @@
 SynthDef(\baro, {
-		|gate=1, freqRatio=1, modInd=1|
-		var freqs = NamedControl.kr(\freqs, 800 !3);
-		var temps = NamedControl.kr(\temps, 20 !3);
-		var sig, mod, env;
-		env = EnvGen.kr(Env([0, 1, 0], [\atk.kr(1.0), \rls.kr(1)], \crv.kr(3)), gate, doneAction:2);
-		//mod = SinOsc.ar([freq, freq1, freq2] * freqRatio, mul: freq * freqRatio * modInd);
-		sig = DynKlang.ar(
-			`[
-				// {ExpRand(freq, freq*tempFactor)}!3,
-				(freqs +.t temps).poll,
-				temps/100,
-				{ExpRand(0.1, 0.5)}!3
-			], 1, 0
-		);
-		//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
-		sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
-		sig = sig * env * \amp.kr(0.2);
-		Out.ar(\out.kr(0), sig);
-	}).add;
-
-	SynthDef(\dynklank, {
-		|gate=1, freqRatio=1, modInd=1, freqScale=1, decayScale=1|
-		var freqs = NamedControl.kr(\freqs, 900 !3);
-		var rings = NamedControl.kr(\rings, 20 !3) * 0.1;
-		var sig, exc, env;
-		env = EnvGen.kr(Env([0, 1, 0], [\atk.kr(0.01), \rls.kr(1)], \crv.kr(3)), gate, doneAction:2);
-		exc = PinkNoise.ar(0.005) * Decay2.kr(Impulse.kr(0.01), 0.01, 0.5);
-		sig = DynKlank.ar(
-			`[
-				freqs * rings,
-				nil,
-				rings
-			], exc, freqscale: freqScale * 0.1,  decayscale: decayScale * 0.1);
-		//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
-		sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
-		sig = sig * env * \amp.kr(0.2);
-		Out.ar(\out.kr(0), sig);
-	}).add;
-
-	SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
-		var freqs = NamedControl.kr(\freqs, [300, 400, 500]);
-		var temps = NamedControl.kr(\temps, 0!3);
-		var env, sines;
-		env = Linen.kr(gate,\atk.kr(0.1), \sus.kr(0.5), \rls.kr(1), 2) * amp;
-		sines = Select.ar(
-		\which.kr(0),
-		[
-            LFTri.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
-            LFSaw.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
-            LFPulse.ar(freqs.varlag(\lag.kr(0.5)), temps/pi); // A mix of 4 oscillators
-		]
+	|gate=1, freqRatio=1, modInd=1|
+	var freqs = NamedControl.kr(\freqs, 800 !3);
+	var temps = NamedControl.kr(\temps, 20 !3);
+	var sig, mod, env;
+	env = EnvGen.kr(Env([0, 1, 0], [\atk.kr(1.0), \rls.kr(1)], \crv.kr(3)), gate, doneAction:2);
+	//mod = SinOsc.ar([freq, freq1, freq2] * freqRatio, mul: freq * freqRatio * modInd);
+	sig = DynKlang.ar(
+		`[
+			// {ExpRand(freq, freq*tempFactor)}!3,
+			(freqs +.t temps).poll,
+			temps/100,
+			{ExpRand(0.1, 0.5)}!3
+		], 1, 0
 	);
-    sines = Splay.ar(sines);
+	//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
+	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
+	sig = sig * env * \amp.kr(0.2);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\dynklank, {
+	|gate=1, freqRatio=1, modInd=1, freqScale=1, decayScale=1|
+	var freqs = NamedControl.kr(\freqs, 900 !3);
+	var rings = NamedControl.kr(\rings, 20 !3) * 0.1;
+	var sig, exc, env;
+	env = EnvGen.kr(Env([0, 1, 0], [\atk.kr(0.01), \rls.kr(1)], \crv.kr(3)), gate, doneAction:2);
+	exc = PinkNoise.ar(0.005) * Decay2.kr(Impulse.kr(0.01), 0.01, 0.5);
+	sig = DynKlank.ar(
+		`[
+			freqs * rings,
+			nil,
+			rings
+	], exc, freqscale: freqScale * 0.1,  decayscale: decayScale * 0.1);
+	//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
+	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
+	sig = sig * env * \amp.kr(0.2);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
+	var freqs = NamedControl.kr(\freqs, [300, 400, 500]);
+	var temps = NamedControl.kr(\temps, (pi/2)!3);
+	var env,sines;
+	env = Linen.kr(gate,\atk.kr(0.1), \sus.kr(0.5), \rls.kr(1), 2) * amp;
+	sines =  PMOsc.ar(freqs.varlag(\lag.kr(0.5)), freqs * \mod.kr(1), LFNoise2.kr(1) * \pm.kr(0.0));
+	sines = Splay.ar(sines);
+	sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
 	Out.ar(out, sines * env);
-	}).add;
+}).add;
 
-	SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
-		atk = 0.01, rls = 0.6, amp = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
-		var otAmps = NamedControl.kr(\otAmps, 1!8); // shortcut: otAmps = \otAmps.kr(1!n);
-		var otFreqs= NamedControl.kr(\otFreqs, 200!8); // shortcut: otAmps = \otAmps.kr(1!n);
-		var sig, env, freqs, amps;
-		freqs = (freq * otFreqs).lag(freqLag);
-		amps = ((otAmps / ((1..8) ** dampExp)).normalizeSum * amp).lag(otLag);
-		sig = SinOsc.ar(freqs, 0, amps);
-		env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
-		Out.ar(out, Splay.ar(sig) * env)
-	}).add;
+SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
+	atk = 0.01, rls = 0.6, amp = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
+	var otAmps = NamedControl.kr(\otAmps, 1!8); // shortcut: otAmps = \otAmps.kr(1!n);
+	var otFreqs= NamedControl.kr(\otFreqs, 200!8); // shortcut: otAmps = \otAmps.kr(1!n);
+	var sig, env, freqs, amps;
+	freqs = (freq * otFreqs).lag(freqLag);
+	amps = ((otAmps / ((1..8) ** dampExp)).normalizeSum * amp).lag(otLag);
+	sig = SinOsc.ar(freqs, 0, amps);
+	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
+	Out.ar(out, Splay.ar(sig) * env)
+}).add;
 
-	SynthDef.new(\oscfm, {
+SynthDef.new(\oscfm, {
 	var sig, mod, env;
 	//modulator
 	mod = Osc.ar(\buf2.ir(0), \modfreq.kr(1000), mul:\modamp.kr(100));
@@ -85,7 +79,7 @@ SynthDef(\baro, {
 	Out.ar(\out.ir(0), sig);
 }).add;
 
-	// Granular Synth
+// Granular Synth
 
 SynthDef(\tgrains, {
 	var sig, env;
@@ -101,7 +95,6 @@ SynthDef(\tgrains, {
 		amp: \grainAmp.kr(0.3),
 		interp: 4
 	);
-	sig =
 	sig = sig * env * \amp.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -134,8 +127,8 @@ SynthDef(\tgrains_live, {
 
 SynthDef(\grainBuf, {
 	var sig, env;
-		env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-		sig = GrainBuf.ar(
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	sig = GrainBuf.ar(
 		numChannels: 2,
 		trigger: Impulse.kr(\dens.kr(40)),
 		dur: \grainDur.kr(1.5),
@@ -151,24 +144,24 @@ SynthDef(\grainBuf, {
 }).add;
 
 SynthDef(\br, {
-    arg buf=0, rate=1, start=0, end;
-    var sig, ptr, ptr2, env;
+	arg buf=0, rate=1, start=0, end;
+	var sig, ptr, ptr2, env;
 	ptr = Phasor.ar(0, BufRateScale.kr(buf)* rate, start, end);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    sig = 2.collect({
+	sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
 		BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
-    sig = sig * env * \amp.kr(0.3);
-    Out.ar(\out.kr(0), sig!2);
+	sig = sig * env * \amp.kr(0.3);
+	Out.ar(\out.kr(0), sig!2);
 }).add;
 
 SynthDef(\brSec, {
 	// plays Section according to indices
-    arg buf=0, rate=1;
-    var sig, secStart, secEnd, ptr, fadeIn, sus, fadeOut, env;
+	arg buf=0, rate=1;
+	var sig, secStart, secEnd, ptr, fadeIn, sus, fadeOut, env;
 	secStart = \sec.kr(1) * \secIdx.kr(1);
 	secEnd = secStart + \sec.kr(1);
 	ptr = Phasor.ar(0.0, BufRateScale.kr(buf)* rate, secStart, secEnd, 0.0);
@@ -176,17 +169,17 @@ SynthDef(\brSec, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2, \gate.kr(1));
+	env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2, \gate.kr(1));
 	sig = BufRd.ar(1, buf, ptr, \lp.kr(1.0));
 	sig = Pan2.ar( sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.3);
-    Out.ar(\out.kr(0), sig);
+	Out.ar(\out.kr(0), sig);
 }).add;
 
 SynthDef(\brBF, {
 	// backward and forward in sections
-    arg buf;
-    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker,  env, fadeIn, sus, fadeOut, back, forw;
+	arg buf;
+	var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker,  env, fadeIn, sus, fadeOut, back, forw;
 	dirRate = \rate.kr(1);
 	trigForw = Trig.kr(dirRate > 0);
 	trigBack = Trig.kr(dirRate < 0);
@@ -197,7 +190,7 @@ SynthDef(\brBF, {
 		var phsF, devF;
 		devF = {ExpRand(1, \devF.kr(2))};
 		phsF = Phasor.ar(trigForw, BufRateScale.kr(buf) * dirRate * \harm.kr(0).midiratio * devF, secStart, secEnd, tracker);
-	    BufRd.ar(1, buf, phsF, 1);
+		BufRd.ar(1, buf, phsF, 1);
 	});
 	back = 4.collect({
 		var phsB, devB;
@@ -209,16 +202,16 @@ SynthDef(\brBF, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
+	env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
 	sig = Splay.ar([forw, back], center: \cent.kr(0.0));
-    sig = sig * env * \amp.kr(0.3);
-    Out.ar(\out.kr(0), sig);
+	sig = sig * env * \amp.kr(0.3);
+	Out.ar(\out.kr(0), sig);
 }).add;
 
 SynthDef(\live_brBF, {
 	// backward and forward in sections
-    arg buf;
-    var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut,mic, ptr;
+	arg buf;
+	var sig, secStart, secEnd, dirRate, trigForw, trigBack, tracker, phsF, phsB, back, forw, env, fadeIn, sus, fadeOut,mic, ptr;
 	mic = SoundIn.ar(0);
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
 	BufWr.ar(mic, buf, ptr);
@@ -236,10 +229,10 @@ SynthDef(\live_brBF, {
 	fadeIn = sus/10;
 	fadeOut = sus/5;
 	sus = sus - fadeIn - fadeOut;
-    env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
+	env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
 	sig = XFade2.ar(back, forw, dirRate.lag(\dirlag.kr(0.2)));
-    sig = sig * env * \amp.kr(0.3);
-    Out.ar(\out.kr(0), sig);
+	sig = sig * env * \amp.kr(0.3);
+	Out.ar(\out.kr(0), sig);
 }).add;
 
 SynthDef(\samp, {

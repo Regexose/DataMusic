@@ -40,9 +40,8 @@ s.waitForBoot({
 ~replacePlay.(False)
 ~oneShotPlay.(True)
 ~oneShotPlay.(False)
-~liveGrain.(True)
-~liveGrain.(False)
-~currentData[\50]
+~data.keys.do({|k| ~data[k].asArray.plot(k)})
+
 
 ~grainBuffer.play
 ~buffers.keys[0]
