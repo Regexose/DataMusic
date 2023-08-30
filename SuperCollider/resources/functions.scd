@@ -39,7 +39,6 @@
 	var rec, filePath, file, progress=0;
 	//make Gui for record progress
 	rec = Synth(\recOne, [\buf, ~userSound]);
-
 	o = OSCdef(\listener, { |msg|
 		{progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -200), {
 			"record done".postln;
@@ -48,7 +47,8 @@
 			~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
 			if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
 				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});
-			~buffers[username.asSymbol].put(typename, ~userSound);
+			filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
+			~buffers[username.asSymbol].put(typename.asSymbol, Buffer.read(s, filePath.fullPath));
 	})}, '/cursor');
 
 };

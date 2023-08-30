@@ -10,62 +10,90 @@
 /*
 Intro: 3 Routinen mit Synths und 3 Datensätzen, die User sich anhören können
 */
+(
 r({
-    var data, compressed, normalized;
+    var syn, data, compressed, normalized;
 	data = ~data.maxdailygust.asArray;
 	compressed = data.select({|item, i| i%10 == 0});
 	normalized = compressed.normalize(80.0, 3500.0);
     /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
     wait(0.02);*/
-	x = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
+	syn = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
     normalized.do({
         |d, i|
 	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-		x.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
+		syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
         0.05.wait;
-        if (i == (data.size-1), {x.release(3)});
+        if (i == (normalized.size-1), {syn.release(3)});
     })
 }).play
+);
+
+(
+r({
+    var syn, data, compressed, normalized;
+	data = ~data.maxdailygust.asArray;
+	compressed = data.select({|item, i| i%10 == 0});
+	normalized = compressed.normalize(60.0, 3500.0);
+    /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+    wait(0.02);*/
+	syn = Synth(\dynklank, [\amp, 0.2, \pLag, 0.3]);
+    normalized.clump(2).do({
+        |d, i|
+	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+		syn.set(\freqs, d, \rings, d.linlin(60, 3500, 0.0, 20.0), \decayScale, d.linlin(60, 3500, 0.1, 2.4));
+        0.1.wait;
+        if (i == (normalized.size-1), {syn.release(3)});
+    })
+}).play
+)
 
 )
 (
 /*
 test: 3 Routinen, um sich das Ergebnis anzuhören
 */
-
-
-)
-//solar radiation
+(
 r({
-	var data, normalized, buf, syn;
-	data = ~data.solarradiation;
-	normalized = data.asArray.normalize(80, 3000);
-	buf = ~buffers[\test][0];
+	var data, normalized, compressed, buf, syn;
+	data = ~data.solarradiation.asArray;
+	compressed = data.select({|item, i| i%10 == 0});
+	normalized = compressed.normalize(80, 3000);
+	buf = ~buffers[\test][\base];
 	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
 	normalized.do({
 		|d, i|
-		"processing %  %  at   %".format("normalized data ", d, i).postln;
+		 "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 		syn.set(\ffreq, d);
 		0.04.wait;
 	})
 }).play
-)
+);
 
-(
 r({
-	var data, normalized, buf, syn, sec;
-	data = ~data.temp;
-	normalized = data.asArray.normalize(36.0, 60.0);
-	buf = ~buffers[\test][0];
+	var data, compressed, normalized, buf, syn, sec;
+	data = ~data.temp.asArray;
+	compressed = data.select({|item, i| i%10 == 0});
+	normalized = compressed.normalize(36.0, 60.0);
+	buf = ~buffers.test[\base];
 	sec = buf.numFrames/s.sampleRate * 50;
-	syn = Synth(\tgrains, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
+	syn = Synth(\tgrains, [\buf, buf, \dens, 10, \grainDur, 1.0]);
 	normalized.do({
 		|d, i|
-		"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-		syn.set(\harm, d,  \pan, d.linlin(36, 60, -1, 1), \pos, sec *i);
+		//"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
+		syn.set(\ffreq, d.linlin(36.0, 60.0, 150, 3000), \rq, d.linlin(36.0, 60.0, 0.99, 0.01), \pan, d.linlin(36, 60, -0.6, 0.6), \pos, sec *i);
 		0.2.wait;
 	})
 }).play
+);
+
+)
+//solar radiation
+
+)
+
+(
+
 
 )
 (
@@ -467,13 +495,10 @@ s.recHeaderFormat = "wav"
 (
 //sc_230727_164424_stereo
 ~test = Routine({
-	~barotemps.clump(3).do({
-		|bt|
 		var syn = Synth(\dynklank, [\amp, 0.2, \pan, rrand(-0.1, 0.1), \pLag, 0.3]);
-		if (bt.isArray, {
-			bt.postln;
-			syn.set(\freqs, bt[0], \rings, bt[1], \freqScale, bt[1][1], \decayScale, bt[1][0]);
-		} );
+	~data.temp.clump(3).do({
+		|bt|
+		syn.set(\freqs, bt, \rings, bt);
 		1.wait;
 	})
 }).play;

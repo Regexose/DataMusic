@@ -13,6 +13,7 @@ s.newBusAllocators;
 s.waitForBoot({
 	s.freeAll;
 	Buffer.freeAll;
+	OSCdef.freeAll;
 	s.sync;
 	/// load SynthDefs, Constants, Functions
 	(~resourcePath ++ "constants.scd").load;
@@ -31,10 +32,10 @@ s.waitForBoot({
 
 )
 ~liveBuffer.numFrames/~data.temperature.size
-~recordUser.("hugoloris", "free");
+~recordUser.("test", "base");
 
 
-
+Quarks.gui
 
 ~replacePlay.(True)
 ~replacePlay.(False)
@@ -42,20 +43,31 @@ s.waitForBoot({
 ~oneShotPlay.(False)
 ~data.keys.do({|k| ~data[k].asArray.plot(k)})
 
+(
+{
+    var b = ~buffers.test.base, trate, dur, clk;
+    trate = MouseY.kr(2,200,1);
+    dur = 4 / trate;
+    clk = Dust.kr(trate);
+    TGrains2.ar(2, clk, 10, 1.0, LFNoise2.kr(0.5).range(0, BufDur.kr(b)), dur, 0, TRand.kr(0.1, 0.2, clk), MouseX.kr(0.003, 0.01), 0.007, 4);
+}.play;
+)
+
 
 ~grainBuffer.play
-~buffers.keys[0]
+~buffers.test.keys
 ~setBuffers[\stress]
 
 ~liveBuffer.play
 ~liveBuffer.plot
 ~baseSound.play
 ~baseSound.class
-
+Platform.userExtensionDir
+Platform.systemExtensionDir
 
 b= Buffer.read(s, ~samplesPath ++ "/hugoloris/baseSound.wav")
 b.plot
 
-~data.keys
-~data.uv.size
-~buildBufferGrid.()
+
+a = Synth(\tgrains, [\buf, ~buffers.test.base])
+a.set(\amp, 0.3, \decayScale, 2, \freqScale, 1)

@@ -20,19 +20,18 @@ SynthDef(\baro, {
 }).add;
 
 SynthDef(\dynklank, {
-	|gate=1, freqRatio=1, modInd=1, freqScale=1, decayScale=1|
+	|freqRatio=1, modInd=1, freqScale=1, decayScale=1|
 	var freqs = NamedControl.kr(\freqs, 900 !3);
 	var rings = NamedControl.kr(\rings, 20 !3) * 0.1;
 	var sig, exc, env;
-	env = EnvGen.kr(Env([0, 1, 0], [\atk.kr(0.01), \rls.kr(1)], \crv.kr(3)), gate, doneAction:2);
-	exc = PinkNoise.ar(0.005) * Decay2.kr(Impulse.kr(0.01), 0.01, 0.5);
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	exc = PinkNoise.ar(0.1) * Decay2.kr(Impulse.kr(\imp.kr(0.5)), 0.01, \dec.kr(0.9));
 	sig = DynKlank.ar(
 		`[
 			freqs * rings,
 			nil,
 			rings
 	], exc, freqscale: freqScale * 0.1,  decayscale: decayScale * 0.1);
-	//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
 	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
 	sig = sig * env * \amp.kr(0.2);
 	Out.ar(\out.kr(0), sig);
@@ -57,8 +56,9 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 	freqs = (freq * otFreqs).lag(freqLag);
 	amps = ((otAmps / ((1..8) ** dampExp)).normalizeSum * amp).lag(otLag);
 	sig = SinOsc.ar(freqs, 0, amps);
+	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
-	Out.ar(out, Splay.ar(sig) * env)
+	Out.ar(out, Splay.ar(sig) * env);
 }).add;
 
 SynthDef.new(\oscfm, {
@@ -88,13 +88,14 @@ SynthDef(\tgrains, {
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
 		bufnum: \buf.kr(0),
-		rate: \rate.kr(1) * \harm.kr([-9, -7, -4, 0]).midiratio,
+		rate: \rate.kr(1) * (\harm.kr([-7, -4, 0]).midiratio).poll,
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
 		pan: \pan.kr(0),
 		amp: \grainAmp.kr(0.3),
 		interp: 4
 	);
+	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
 	sig = sig * env * \amp.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;

@@ -70,7 +70,7 @@ GUI mit verschiedenen SubWindows
 	~setBuffers.keys.do({
 		|key, i|
 		var buflist, name;
-		buflist = Array.fill(users.size, {|id| var user=users[id]; user.postln; ~buffers[user][key] });
+		buflist = Array.fill(users.size, {|id| var user=users[id];  ~buffers[user][key] });
 		selectors[key] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
 			selectorsize, selectorsize/2))
 		.items_(users)
