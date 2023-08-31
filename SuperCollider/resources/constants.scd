@@ -2,21 +2,17 @@
 ~dataFileName = "zku_monat_7_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
-~buffers = ();
+~buffers = Dictionary.new;
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 
-~setBuffers = (
-	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\tension : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\release : Buffer.alloc(s, 4 * s.sampleRate, 1),
-);
-
-~currentSample = (
-	\base : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\tension : Buffer.alloc(s, 4 * s.sampleRate, 1),
-	\release : Buffer.alloc(s, 4 * s.sampleRate, 1),
+~currentSample = Dictionary.newFrom(
+	[
+		\base, Buffer.alloc(s, 4 * s.sampleRate, 1),
+		\tension,  Buffer.alloc(s, 4 * s.sampleRate, 1),
+		\relax,  Buffer.alloc(s, 4 * s.sampleRate, 1)
+	]
 );
 
 ~activeSynths = ();

@@ -1,7 +1,7 @@
 ////////////////////////////////////////
 //workshop
 (
-~recordUser.("test", "base");
+~recordUser.("voris", "base");
 ~recordUser.("test", "tension");
 ~recordUser.("test", "release");
 
@@ -52,37 +52,42 @@ r({
 (
 /*
 test: 3 Routinen, um sich das Ergebnis anzuhören
+Todo: kleine Dramaturgie. dry/wet logik einbauen
 */
 (
 r({
-	var data, normalized, compressed, buf, syn;
+	var data, normalized, compressed, buf, syn, reduce;
+	reduce = 50;
 	data = ~data.solarradiation.asArray;
-	compressed = data.select({|item, i| i%10 == 0});
+	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(80, 3000);
-	buf = ~buffers[\test][\base];
+	buf = ~buffers[\test][\tension];
 	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
 	normalized.do({
 		|d, i|
 		 "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-		syn.set(\ffreq, d);
+		syn.set(\ffreq, d, \lg2, d.linlin(20,3000, 0.1, 0.5));
 		0.04.wait;
+		 if (i == (normalized.size-1), {syn.release(3)});
 	})
 }).play
 );
 
 r({
-	var data, compressed, normalized, buf, syn, sec;
+	var data, compressed, reduce,  normalized, buf, syn, sec;
+	reduce = 50;
 	data = ~data.temp.asArray;
-	compressed = data.select({|item, i| i%10 == 0});
+	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(36.0, 60.0);
-	buf = ~buffers.test[\base];
-	sec = buf.numFrames/s.sampleRate * 50;
+	buf = ~buffers[\test][\tension];
+	sec = buf.numFrames/s.sampleRate * 10;
 	syn = Synth(\tgrains, [\buf, buf, \dens, 10, \grainDur, 1.0]);
 	normalized.do({
 		|d, i|
 		//"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-		syn.set(\ffreq, d.linlin(36.0, 60.0, 150, 3000), \rq, d.linlin(36.0, 60.0, 0.99, 0.01), \pan, d.linlin(36, 60, -0.6, 0.6), \pos, sec *i);
+		syn.set(\ffreq, d.linlin(36.0, 60.0, 150, 3000), \rq, d.linlin(36.0, 60.0, 0.99, 0.01), \pan, d.linlin(36, 60, -0.6, 0.6), \pos, sec * i);
 		0.2.wait;
+		 if (i == (normalized.size-1), {syn.release(3)});
 	})
 }).play
 );

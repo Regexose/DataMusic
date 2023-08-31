@@ -10,7 +10,7 @@
 		buf.sine1(external[0..15], asWavetable:true);
 		//buf.plot;
 		s.sync;
-		~buffers.put(name.asSymbol, buf);
+		~buffers.add(name.asSymbol -> buf);
 		"made buffer  %".format(~buffers[name]).postln;
 
 	}.play(AppClock);
@@ -27,12 +27,15 @@
 
 ~bufferSelectorAction = {
 	|menu|
-	var key, selected;
+	var key, selected, filePath, buf;
 	selected = menu.item.asSymbol;
 	key = menu.name;
-	~currentData[key.asSymbol] = ~data[selected];
+	filePath = PathName(~samplesPath +/+ selected +/+ key ++ ".wav");
+	buf = Buffer.read(s, filePath.fullPath);
+	~currentSample.add(key.asSymbol -> buf);
 	"set % with %".format(key, selected).postln;
 };
+
 
 ~recordUser = {
 	|username, typename|
@@ -48,19 +51,27 @@
 			if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
 				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});
 			filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
-			~buffers[username.asSymbol].put(typename.asSymbol, Buffer.read(s, filePath.fullPath));
+			~buffers[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
 	})}, '/cursor');
 
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////    PLAY FUNCTIONS   ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//restarts play if new MIDI key is pressed
-~replacePlay = {
+
+
+//restarts play if new MIDI key is pressed with Live Buffer
+~onOffLive = {
 	|act|
 	var rec, rout, syn;
 	if (act == True,
 		{
-			MIDIdef.noteOn(\rplOn, {
+			MIDIdef.noteOn(\onoffLiveOn, {
 				|vel, num|
 				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
 				syn = ~activeSynths.atFail(num.asSymbol,
@@ -69,7 +80,7 @@
 				rec = Synth(\rec, [\buf, ~liveBuffer]);
 				"recording on % ".format(num).postln;
 			});
-			MIDIdef.noteOff(\rplOff, {
+			MIDIdef.noteOff(\onoffLiveOff, {
 				|vel, num|
 				"stopped recording".postln;
 				rec.free;
@@ -80,24 +91,57 @@
 			});
 		},{
 			"freeing MIDIdefs".postln;
-			[\rplOn, \rplOff].do{|n| MIDIdef(n).free};
+			[\onoffLiveOn, \onoffLiveOff].do{|n| MIDIdef(n).free};
 		}
 	)
 
 };
 
-//always plays the complete data array
-~oneShotPlay = {
+//restarts play if new MIDI key is pressed with User Sounds
+~onOffUser = {
+	|act|
+	var rout, syn;
+	if (act == True,
+		{
+			MIDIdef.noteOn(\onoffUserOn, {
+				|vel, num|
+				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+				/*		syn = ~activeSynths.atFail(num.asSymbol,
+				{"making default synth with key %".format(num).postln; Synth(\default)});
+				syn.free;*/
+				if (~rf.keys.includes(num.asSymbol),{
+					rout = Routine(~rf[num.asSymbol]).play
+				});
+				"playing/restart routine %".format(num.asSymbol).postln;
+			});
+			MIDIdef.noteOff(\onoffUserOff, {
+				|vel, num|
+				if (~rf.keys.includes(num.asSymbol),{
+					rout.stop;
+				});
+				~activeSynths[num.asSymbol].release(3);
+				"stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
+			});
+		},{
+			"freeing MIDIdefs".postln;
+			[\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
+		}
+	)
+
+};
+
+//always plays the complete data array with Live Buffer
+~oneShotLive = {
 	|act|
 	var rec, rout ;
 	if (act == True,
 		{
-			MIDIdef.noteOn(\osOn, {
+			MIDIdef.noteOn(\osLiveOn, {
 				|vel, num|
 				rec = Synth(\rec, [\buf, ~liveBuffer]);
 				"recording on % ".format(num).postln;
 			});
-			MIDIdef.noteOff(\osOff, {
+			MIDIdef.noteOff(\osLiveOff, {
 				|vel, num|
 				"stopped recording".postln;
 				rec.free;
@@ -108,9 +152,34 @@
 			});
 		},{
 			"freeing MIDIdefs".postln;
-			[\osOn, \osOff].do{|n| MIDIdef(n).free};
+			[\osLiveOn, \osLiveOff].do{|n| MIDIdef(n).free};
 		}
 	)
+};
+
+//always plays the complete data array with User Sounds
+~oneShotUser = {
+	|act|
+	var rout ;
+	if (act == True,
+		{
+			MIDIdef.noteOn(\osUserOn, {
+				|vel, num|
+				if ((rout != nil && rout.isPlaying), {"stopping rout: restart: ".postln; rout.stop});
+				if (~rf.keys.includes(num.asSymbol),{
+					rout = Routine(~rf[num.asSymbol]).play
+				});
+				"playing oneShot %".format(num.asSymbol).postln;
+			});
+			MIDIdef.noteOff(\osUserOff, {
+				|vel, num|
+				"noteOff % without Action".format(num);
+			});
+		},{
+				"freeing MIDIdefs".postln;
+				[\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
+			}
+			)
 };
 
 //using tgrains_live with grainBuffer

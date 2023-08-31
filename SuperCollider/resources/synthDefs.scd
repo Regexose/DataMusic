@@ -88,7 +88,7 @@ SynthDef(\tgrains, {
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
 		bufnum: \buf.kr(0),
-		rate: \rate.kr(1) * (\harm.kr([-7, -4, 0]).midiratio).poll,
+		rate: \rate.kr(1) * (\harm.kr([-7, -4, 0]).midiratio),
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
 		pan: \pan.kr(0),

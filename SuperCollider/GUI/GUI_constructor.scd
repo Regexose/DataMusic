@@ -62,12 +62,14 @@ GUI mit verschiedenen SubWindows
 };
 
 ~buildBufferSelector = {
-	|top_level, posx, posy, width, height, selectorsize, offset, users|
+	|window, posx, posy, width, height, selectorsize, offset, users|
 	var compView, selectors, selector_labels, selectorData;
-	compView = CompositeView(top_level, Rect(posx, posy, width, height))
+	compView = CompositeView(window, Rect(posx, posy, width, height))
 	.background_(~style.bank_frame_color);
+	compView.addFlowLayout(5@0);
+	compView.decorator.gap_(0@5);
 	selectors = Dictionary.new;
-	~setBuffers.keys.do({
+	~currentSample.keys.do({
 		|key, i|
 		var buflist, name;
 		buflist = Array.fill(users.size, {|id| var user=users[id];  ~buffers[user][key] });
@@ -76,11 +78,12 @@ GUI mit verschiedenen SubWindows
 		.items_(users)
 		.allowsReselection_(True)
 		.action_({arg pm; ~bufferSelectorAction.(pm)})
-		.name_(key.asString);
+		.name_(key);
+
 	});
-	selector_labels = ~setBuffers.keys.do({
+	selector_labels = ~currentSample.keys.do({
 		|key, i|
-		StaticText(compView,  Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
+		StaticText(compView, Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
 		.align_(\center)
 		.stringColor_(Color.black)
 		.string_("buffer "++ key);
