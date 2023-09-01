@@ -3,55 +3,87 @@
 (
 ~recordUser.("voris", "base");
 ~recordUser.("test", "tension");
-~recordUser.("test", "release");
+~recordUser.("test", "relax");
 
 )
-(
+
 /*
 Intro: 3 Routinen mit Synths und 3 Datensätzen, die User sich anhören können
 */
 (
-r({
-    var syn, data, compressed, normalized, reduce;
-	reduce=10;
-	data = ~data.maxdailygust.asArray;
-	compressed = data.select({|item, i| i%reduce == 0});
-	normalized = compressed.normalize(80.0, 3500.0);
-    /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-    wait(0.02);*/
-	syn = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
-    normalized.do({
-        |d, i|
-	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-		syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
-        0.05.wait;
-        if (i == (normalized.size-1), {syn.release(3)});
-    })
-}).play
-);
-
-(
-r({
-    var syn, data, compressed, reduce, normalized;
-	reduce = 20;
-	data = ~data.maxdailygust.asArray;
-	compressed = data.select({|item, i| i%reduce == 0});
-	normalized = compressed.normalize(60.0, 3500.0);
-    /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-    wait(0.02);*/
-	syn = Synth(\dynklank, [\amp, 0.4, \pLag, 0.3]);
-    normalized.clump(2).do({
-        |d, i|
-	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-		syn.set(\freqs, d, \rings, d.linlin(60, 3500, 0.0, 20.0), \decayScale, d.linlin(60, 3500, 0.1, 2.4));
-        0.1.wait;
-        if (i == (normalized.size-1), {syn.release(3)});
-    })
-}).play
+~recRoutines = (
+    \array_arg: {
+        var syn, data, compressed, normalized, reduce;
+        reduce=10;
+        data = ~currentData[\48].asArray;
+        compressed = data.select({|item, i| i%reduce == 0});
+        normalized = compressed.normalize(80.0, 3500.0);
+        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+        wait(0.02);*/
+        syn = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
+        normalized.do({
+            |d, i|
+            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
+            0.05.wait;
+            if (i == (normalized.size-1), {syn.release(3)});
+        })
+    },
+    \rhythmic:  {
+        var syn, data, compressed, reduce, normalized;
+        reduce = 20;
+        data = ~data.uv.asArray;
+        compressed = data.select({|item, i| i%reduce == 0});
+        normalized = compressed.normalize(60.0, 3500.0);
+        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+        wait(0.02);*/
+        syn = Synth(\dynklank, [\amp, 0.4, \pLag, 0.3]);
+        normalized.clump(2).do({
+            |d, i|
+            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            syn.set(\freqs, d, \rings, d.linlin(60, 3500, 0.0, 20.0), \decayScale, d.linlin(60, 3500, 0.1, 2.4));
+            0.1.wait;
+            if (i == (normalized.size-1), {syn.release(3)});
+        })
+    },
+    \vocBr : {
+        var data, normalized, compressed, buf, syn, reduce;
+        reduce = 10;
+        data = ~currentData[\48].asArray;
+        compressed = data.select({|item, i| i%reduce == 0});
+        normalized = compressed.normalize(80, 3000);
+        buf = ~currentSample[\base];
+        syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
+        normalized.do({
+            |d, i|
+            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            syn.set(\ffreq, d, \lg2, d.linlin(20,3000, 0.1, 0.5));
+            0.05.wait;
+            if (i == (normalized.size-1), {syn.release(3)});
+        })
+    },
+    \vocTgrains : {
+        var data, compressed, reduce,  normalized, buf, syn, sec;
+        reduce = 50;
+        data = ~currentData[\48].asArray;
+        compressed = data.select({|item, i| i%reduce == 0});
+        normalized = compressed.normalize(36.0, 60.0);
+        buf = ~currentSample[\base];
+        sec = buf.numFrames/s.sampleRate * 10;
+        syn = Synth(\tgrains, [\buf, buf, \dens, 10, \grainDur, 1.0]);
+        normalized.do({
+            |d, i|
+            //"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
+            syn.set(\ffreq, d.linlin(36.0, 60.0, 150, 2500), \rq, d.linlin(36.0, 60.0, 0.99, 0.01), \pos, sec * i, \harm, [d, d-12]);
+            0.2.wait;
+            if (i == (normalized.size-1), {syn.release(3)});
+        })
+    },
 )
 
+
 )
-(
+
 /*
 test: 3 Routinen, um sich das Ergebnis anzuhören
 Todo: kleine Dramaturgie. dry/wet logik einbauen
@@ -59,8 +91,8 @@ Todo: kleine Dramaturgie. dry/wet logik einbauen
 (
 r({
 	var data, normalized, compressed, buf, syn, reduce;
-	reduce = 50;
-	data = ~data.solarradiation.asArray;
+	reduce = 10;
+	data = ~currentData[\48].asArray;
 	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(80, 3000);
 	buf = ~currentSample[\base];
@@ -69,32 +101,16 @@ r({
 		|d, i|
 		 "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 		syn.set(\ffreq, d, \lg2, d.linlin(20,3000, 0.1, 0.5));
-		0.04.wait;
+		0.05.wait;
 		 if (i == (normalized.size-1), {syn.release(3)});
 	})
 }).play
-);
-
-r({
-	var data, compressed, reduce,  normalized, buf, syn, sec;
-	reduce = 50;
-	data = ~data.temp.asArray;
-	compressed = data.select({|item, i| i%reduce == 0});
-	normalized = compressed.normalize(36.0, 60.0);
-	buf = ~currentSample[\base];
-	sec = buf.numFrames/s.sampleRate * 10;
-	syn = Synth(\tgrains, [\buf, buf, \dens, 10, \grainDur, 1.0]);
-	normalized.do({
-		|d, i|
-		//"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-		syn.set(\ffreq, d.linlin(36.0, 60.0, 150, 3000), \rq, d.linlin(36.0, 60.0, 0.99, 0.01), \pan, d.linlin(36, 60, -0.6, 0.6), \pos, sec * i);
-		0.2.wait;
-		 if (i == (normalized.size-1), {syn.release(3)});
-	})
-}).play
-);
-
 )
+(
+.play
+);
+
+
 //solar radiation
 
 )
@@ -108,7 +124,7 @@ r({
 	var data, normalized, buf, syn, sec;
 	data = ~data.solarradiation;
 	normalized = data.asArray.normalize(13, 114);
-	buf = ~buffers[\hugoloris][0];
+	buf = ~currentSample[\base];
 	sec = buf.numFrames/s.sampleRate * 50;
 	syn = Synth(\tgrains, [\buf, buf]);
 	normalized.do({

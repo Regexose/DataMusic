@@ -43,7 +43,7 @@
 	//make Gui for record progress
 	rec = Synth(\recOne, [\buf, ~userSound]);
 	o = OSCdef(\listener, { |msg|
-		{progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -200), {
+		{progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
 			"record done".postln;
 			rec.free;
 			File.mkdir(~samplesPath +/+ username);
@@ -84,6 +84,7 @@
 				|vel, num|
 				"stopped recording".postln;
 				rec.free;
+                ~currentSample[\base] = ~liveBuffer;
 				if (~rf.keys.includes(num.asSymbol),{
 					rout = Routine(~rf[num.asSymbol]).play
 				});

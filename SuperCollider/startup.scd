@@ -21,7 +21,7 @@ s.waitForBoot({
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
-	~createData.(); ~initCurrentData.();
+	~createData.(); ~initCurrent.();
 	(~resourcePath ++ "functions.scd").load;
 	//(~resourcePath ++ "routinefunctions.scd").load;
 
@@ -32,34 +32,21 @@ s.waitForBoot({
 })
 
 )
-~liveBuffer.numFrames/~data.temperature.size
-~recordUser.("doris", "base");
-Quarks.gui
+
+(
+~recordUser.("voris", "base");
+~recordUser.("voris", "tension");
+~recordUser.("voris", "relax");
+
+)
 
 ~onOffUser.(True)
-~oneShotUser.(True)
-~replacePlay.(False)
-~oneShotPlay.(True)
-~oneShotPlay.(False)
-~data.keys.do({|k| ~data[k].asArray.plot(k)})
+~onOffUser.(False)
+MIDIFunc.trace(false)
 
-~currentSample[\relax].play
-~activeSynths[\48]
-
-~grainBuffer.play
-~buffers.keys
-~setBuffers[\stress]
-
-~liveBuffer.play
 ~liveBuffer.plot
-~baseSound.play
-~baseSound.class
-Platform.userExtensionDir
-Platform.systemExtensionDir
-MIDIFunc.trace(true)
-b= Buffer.read(s, ~samplesPath ++ "/hugoloris/baseSound.wav")
-b.plot
+~buffers[\voris][\relax].plot
+~currentSample[\base]
+~currentData
 
 
-a = Synth(\tgrains, [\buf, ~buffers[\test][\base]])
-a.set(\amp, 0.3, \decayScale, 2, \freqScale, 1)

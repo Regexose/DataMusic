@@ -6,19 +6,11 @@
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
-
-~currentSample = Dictionary.newFrom(
-	[
-		\base, Buffer.alloc(s, 4 * s.sampleRate, 1),
-		\tension,  Buffer.alloc(s, 4 * s.sampleRate, 1),
-		\relax,  Buffer.alloc(s, 4 * s.sampleRate, 1)
-	]
-);
+~currentSample = Dictionary.new;
 
 ~activeSynths = ();
-
 ~data = ();
-~currentData = ();
+~currentData = Dictionary.new;
 
 ~dataGroups = (
 	\freq: [// suitable for frequency values
