@@ -8,14 +8,14 @@ SynthDef(\baro, {
 	sig = DynKlang.ar(
 		`[
 			// {ExpRand(freq, freq*tempFactor)}!3,
-			(freqs +.t temps).poll,
+			(freqs +.t temps),
 			temps/100,
 			{ExpRand(0.1, 0.5)}!3
 		], 1, 0
 	);
 	//sig = PMOsc.ar(freq, freq * freqRatio, modInd);
 	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
-	sig = sig * env * \amp.kr(0.2);
+	sig = sig * env * \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -33,7 +33,7 @@ SynthDef(\dynklank, {
 			rings
 	], exc, freqscale: freqScale * 0.1,  decayscale: decayScale * 0.1);
 	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
-	sig = sig * env * \amp.kr(0.2);
+	sig = sig * env * \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -45,7 +45,7 @@ SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
 	sines =  PMOsc.ar(freqs.varlag(\lag.kr(0.5)), freqs * \mod.kr(1), LFNoise2.kr(1) * \pm.kr(0.0));
 	sines = Splay.ar(sines);
 	sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
-	Out.ar(out, sines * env);
+	Out.ar(out, sines * env * \fade.kr(1));
 }).add;
 
 SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
@@ -58,7 +58,7 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 	sig = SinOsc.ar(freqs, 0, amps);
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
-	Out.ar(out, Splay.ar(sig) * env);
+	Out.ar(out, Splay.ar(sig) * env * \fade.kr(1));
 }).add;
 
 SynthDef.new(\oscfm, {
@@ -74,8 +74,8 @@ SynthDef.new(\oscfm, {
 		[\atk.ir(0.02), \rls.ir(0.5)],
 		[\atkcrv.ir(1), \rlscrv.ir(-3)]
 	).ar(2);
-	sig = Pan2.ar(sig, \pan.ir(0), \amp.kr(0.2) * \fade.kr(0.5));
-	sig = sig * env;
+	sig = Pan2.ar(sig, \pan.ir(0), \amp.kr(0.2));
+	sig = sig * env * \fade.kr(1);
 	Out.ar(\out.ir(0), sig);
 }).add;
 
@@ -96,7 +96,7 @@ SynthDef(\tgrains, {
 		interp: 4
 	);
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
-	sig = sig * env * \amp.kr(1);
+	sig = sig * env * \amp.kr(1) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -122,7 +122,7 @@ SynthDef(\tgrains_live, {
 		amp: \grainAmp.kr(0.3),
 		interp: \ip.kr(4)
 	);
-	sig = sig * env * \amp.kr(1);
+	sig = sig * env * \amp.kr(1) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -140,7 +140,7 @@ SynthDef(\grainBuf, {
 		pan: 0,
 		envbufnum: -1
 	);
-	sig = sig * env * \amp.kr(1);
+	sig = sig * env * \amp.kr(1) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -155,7 +155,7 @@ SynthDef(\br, {
 		BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
-	sig = sig * env * \amp.kr(0.3);
+	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig!2);
 }).add;
 
@@ -173,7 +173,7 @@ SynthDef(\brSec, {
 	env = Env([0,1,1,0], [fadeIn, sus, fadeOut], [1,0,-1]).kr(2, \gate.kr(1));
 	sig = BufRd.ar(1, buf, ptr, \lp.kr(1.0));
 	sig = Pan2.ar( sig, \pan.kr(0));
-	sig = sig * env * \amp.kr(0.3);
+	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -205,7 +205,7 @@ SynthDef(\brBF, {
 	sus = sus - fadeIn - fadeOut;
 	env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
 	sig = Splay.ar([forw, back], center: \cent.kr(0.0));
-	sig = sig * env * \amp.kr(0.3);
+	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -232,7 +232,7 @@ SynthDef(\live_brBF, {
 	sus = sus - fadeIn - fadeOut;
 	env = Env.asr(fadeIn, sus, fadeOut).kr(2, \gate.kr(1));
 	sig = XFade2.ar(back, forw, dirRate.lag(\dirlag.kr(0.2)));
-	sig = sig * env * \amp.kr(0.3);
+	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 

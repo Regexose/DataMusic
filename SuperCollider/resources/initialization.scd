@@ -41,21 +41,33 @@ MIDIClient.init;
 MIDIIn.connectAll;
 ~midiOut = MIDIOut.new(0);
 ~midiIn = MIDIIn.new(0);
-/*
-PathName(~samplesPath).entries.do({
-	arg subfolder;
-	//subfolder.postln;
-	~buffers.add(
-		subfolder.folderName.asSymbol ->
-		Array.fill(
-			subfolder.entries.size,
-			{
-				arg i;
-				Buffer.read(s, subfolder.entries[i].fullPath);
-			}
-		)
-	)
-});*/
+
+
+//Aktivieren von Fadern für die Lautstärke Regelung der midikeys
+~rf.keys.asArray.sort.do({
+	|ch, i|
+	var value, defName, offset=0;
+	[ch, i].postln;
+	~activeSynths.put(ch,  Synth(\default, [\gate, 0, \fade, 0]));
+	defName = ("ch" ++ ch).asSymbol;
+	//"chan   %    and i   %  ".format(channel, i).postln;
+	value = MIDIdef.cc(defName, {
+		arg ...args;
+		args[..2].postln;
+		if (i < 8, {
+			"set % to ".format(ch.asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+			~activeSynths[ch.asSymbol].set(\fade, args[0].linlin(0, 127, 0.0, 1.0)) ;
+		}, {
+			"activate other  % ".format(ch.asString).postln;
+			~activeSynths[ch.asSymbol].set(\fade, args[0].linlin(0, 127, 0.0, 1.0));
+		})
+	},
+	i,
+	1
+	);
+
+});
+
 
 PathName(~samplesPath).entries.do({
 	arg subfolder;

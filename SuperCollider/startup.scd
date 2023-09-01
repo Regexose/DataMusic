@@ -14,15 +14,16 @@ s.waitForBoot({
 	s.freeAll;
 	Buffer.freeAll;
 	OSCdef.freeAll;
+	MIDIdef.freeAll;
 	s.sync;
 	/// load SynthDefs, Constants, Functions
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
+	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
 	~createData.(); ~initCurrentData.();
 	(~resourcePath ++ "functions.scd").load;
 	//(~resourcePath ++ "routinefunctions.scd").load;
-	(~resourcePath ++ "rf_climart.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
@@ -36,13 +37,14 @@ s.waitForBoot({
 Quarks.gui
 
 ~onOffUser.(True)
-~oneShotUser.(False)
+~oneShotUser.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
 ~oneShotPlay.(False)
 ~data.keys.do({|k| ~data[k].asArray.plot(k)})
 
 ~currentSample[\relax].play
+~activeSynths[\48]
 
 ~grainBuffer.play
 ~buffers.keys
@@ -54,7 +56,7 @@ Quarks.gui
 ~baseSound.class
 Platform.userExtensionDir
 Platform.systemExtensionDir
-MIDIFunc.trace(false)
+MIDIFunc.trace(true)
 b= Buffer.read(s, ~samplesPath ++ "/hugoloris/baseSound.wav")
 b.plot
 
