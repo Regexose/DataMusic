@@ -35,8 +35,8 @@ s.waitForBoot({
 ~recordUser.("doris", "base");
 Quarks.gui
 
-~onOffUser.(False)
-~oneShotUser.(True)
+~onOffUser.(True)
+~oneShotUser.(False)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
 ~oneShotPlay.(False)

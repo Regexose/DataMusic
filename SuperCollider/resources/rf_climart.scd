@@ -8,7 +8,7 @@
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
 		buf = ~currentSample[\base];
-		syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
+		syn = Synth(\br, [\amp, 0.3, \buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
 		~activeSynths.put(\48, syn);
 		normalized.do({
 			|d, i|
@@ -28,7 +28,7 @@
 		normalized = compressed.normalize(36.0, 60.0);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
+		syn = Synth(\tgrains, [\amp, 0.5, \grainAmp, 0.5, \buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
 		~activeSynths.put(\50, syn);
 		normalized.do({
 			|d, i|
@@ -48,7 +48,7 @@
 		normalized = compressed.normalize(36.0, 60.0);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf]);
+		syn = Synth(\tgrains, [\buf, buf, \amp, 0.5, \grainAmp, 0.5]);
 		~activeSynths.put(\52, syn);
 		normalized.do({
 			|d, i|
