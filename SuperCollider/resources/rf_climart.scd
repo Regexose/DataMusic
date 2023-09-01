@@ -3,7 +3,7 @@
 	\48 : {
 		// plays br-Synth with
 		var data, normalized, compressed,reduce, buf, syn;
-		reduce = 100;
+		reduce = 10;
 		data = ~currentData[\48].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
@@ -22,7 +22,7 @@
 
 	\50 : {
 		var data, normalized, compressed, reduce, buf, syn, sec;
-		reduce=50;
+		reduce=10;
 		data = ~currentData[\50].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
@@ -42,7 +42,7 @@
 
 	\52: {
 		var data, normalized, compressed, reduce, buf, syn, sec;
-		reduce = 50;
+		reduce = 10;
 		data = ~currentData[\52].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);

@@ -32,13 +32,14 @@ r({
 
 (
 r({
-    var syn, data, compressed, normalized;
+    var syn, data, compressed, reduce, normalized;
+	reduce = 20;
 	data = ~data.maxdailygust.asArray;
-	compressed = data.select({|item, i| i%10 == 0});
+	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(60.0, 3500.0);
     /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
     wait(0.02);*/
-	syn = Synth(\dynklank, [\amp, 0.2, \pLag, 0.3]);
+	syn = Synth(\dynklank, [\amp, 0.4, \pLag, 0.3]);
     normalized.clump(2).do({
         |d, i|
 	    "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
@@ -62,7 +63,7 @@ r({
 	data = ~data.solarradiation.asArray;
 	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(80, 3000);
-	buf = ~buffers[\test][\tension];
+	buf = ~currentSample[\base];
 	syn = Synth(\br, [\buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2]);
 	normalized.do({
 		|d, i|
@@ -80,7 +81,7 @@ r({
 	data = ~data.temp.asArray;
 	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(36.0, 60.0);
-	buf = ~buffers[\test][\tension];
+	buf = ~currentSample[\base];
 	sec = buf.numFrames/s.sampleRate * 10;
 	syn = Synth(\tgrains, [\buf, buf, \dens, 10, \grainDur, 1.0]);
 	normalized.do({
