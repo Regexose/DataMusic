@@ -48,8 +48,8 @@
 			rec.free;
 			File.mkdir(~samplesPath +/+ username);
 			~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
-			if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
-				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});
+			/*if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
+				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});*/
 			filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
 			~buffers[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
 	})}, '/cursor');

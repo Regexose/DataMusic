@@ -6,3 +6,4 @@
 //~audioIn = "Scarlett 4i4 USB";
  ~audioOut = "Fireface 400 (BEF)";
 ~audioIn = "Fireface 400 (BEF)";
+~audioInterface = "Scarlett 4i4 USB";

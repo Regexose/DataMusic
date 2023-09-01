@@ -48,7 +48,6 @@ MIDIIn.connectAll;
 	|ch, i|
 	var value, defName, offset=0;
 	[ch, i].postln;
-	~activeSynths.put(ch,  Synth(\default, [\gate, 0, \fade, 0]));
 	defName = ("ch" ++ ch).asSymbol;
 	//"chan   %    and i   %  ".format(channel, i).postln;
 	value = MIDIdef.cc(defName, {
