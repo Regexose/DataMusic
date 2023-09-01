@@ -73,7 +73,7 @@
 		{
 			MIDIdef.noteOn(\onoffLiveOn, {
 				|vel, num|
-				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+				if ((rout != nil || rout.isPlaying), {"stopping rout".postln; rout.stop});
 				syn = ~activeSynths.atFail(num.asSymbol,
 					{"making synth with key %".format(num).postln; Synth(\default)});
 				syn.free;
@@ -105,7 +105,7 @@
 		{
 			MIDIdef.noteOn(\onoffUserOn, {
 				|vel, num|
-				if ((rout != nil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+				if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
 				/*		syn = ~activeSynths.atFail(num.asSymbol,
 				{"making default synth with key %".format(num).postln; Synth(\default)});
 				syn.free;*/
@@ -118,9 +118,9 @@
 				|vel, num|
 				if (~rf.keys.includes(num.asSymbol),{
 					rout.stop;
+					~activeSynths[num.asSymbol].release(3);
+					"stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
 				});
-				~activeSynths[num.asSymbol].release(3);
-				"stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
 			});
 		},{
 			"freeing MIDIdefs".postln;
@@ -165,21 +165,26 @@
 		{
 			MIDIdef.noteOn(\osUserOn, {
 				|vel, num|
-				if ((rout != nil && rout.isPlaying), {"stopping rout: restart: ".postln; rout.stop});
+				if ((rout.notNil || rout.isPlaying), {
+					rout.stop;
+					"stopping rout: %".format(num).postln;
+					~activeSynths[num.asSymbol].free;
+				});
+
+			});
+			MIDIdef.noteOff(\osUserOff, {
+				|vel, num|
 				if (~rf.keys.includes(num.asSymbol),{
 					rout = Routine(~rf[num.asSymbol]).play
 				});
 				"playing oneShot %".format(num.asSymbol).postln;
-			});
-			MIDIdef.noteOff(\osUserOff, {
-				|vel, num|
-				"noteOff % without Action".format(num);
+
 			});
 		},{
-				"freeing MIDIdefs".postln;
-				[\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
-			}
-			)
+			"freeing MIDIdefs".postln;
+			[\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
+		}
+	)
 };
 
 //using tgrains_live with grainBuffer

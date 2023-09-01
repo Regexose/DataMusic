@@ -12,9 +12,10 @@ Intro: 3 Routinen mit Synths und 3 Datensätzen, die User sich anhören können
 */
 (
 r({
-    var syn, data, compressed, normalized;
+    var syn, data, compressed, normalized, reduce;
+	reduce=10;
 	data = ~data.maxdailygust.asArray;
-	compressed = data.select({|item, i| i%10 == 0});
+	compressed = data.select({|item, i| i%reduce == 0});
 	normalized = compressed.normalize(80.0, 3500.0);
     /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
     wait(0.02);*/

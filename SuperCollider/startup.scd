@@ -32,12 +32,10 @@ s.waitForBoot({
 
 )
 ~liveBuffer.numFrames/~data.temperature.size
-~recordUser.("voris", "base");
-
-
+~recordUser.("doris", "base");
 Quarks.gui
 
-~onOffUser.(True)
+~onOffUser.(False)
 ~oneShotUser.(True)
 ~replacePlay.(False)
 ~oneShotPlay.(True)
@@ -56,7 +54,7 @@ Quarks.gui
 ~baseSound.class
 Platform.userExtensionDir
 Platform.systemExtensionDir
-
+MIDIFunc.trace(false)
 b= Buffer.read(s, ~samplesPath ++ "/hugoloris/baseSound.wav")
 b.plot
 
