@@ -34,9 +34,9 @@ s.waitForBoot({
 )
 
 (
-~recordUser.("voris", "base");
-~recordUser.("voris", "tension");
-~recordUser.("voris", "relax");
+~recordUser.("gunter", "base");
+~recordUser.("gunter", "tension");
+~recordUser.("gunter", "relax");
 
 )
 

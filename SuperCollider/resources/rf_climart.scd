@@ -28,12 +28,12 @@
 		normalized = compressed.normalize(36.0, 60.0);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\amp, 0.5, \grainAmp, 0.5, \buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
+		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 12, \grainDur, 1.4,]);
 		~activeSynths.put(\50, syn);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\harm,  \pos, sec *i);
+            syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, [d, d-12, d+12], \pos, sec *i);
 			0.03.wait;
 			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
 
@@ -50,16 +50,16 @@
         range = mean / 10;
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \amp, 0.9, \grainAmp, 0.7]);
+		syn = Synth(\tgrains, [\buf, buf, \amp, 0.9, \grainAmp, 0.5]);
 		~activeSynths.put(\52, syn);
 		normalized.do({
 			|d, i|
             var c;
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             c = case
-            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{syn.set(\harm, d, \dens, 20, \pos, sec *1, \buf, ~currentSample[\base]);}
-            {d < (normalized.mean -range)}{syn.set(\harm, d+12, \pos, sec *1, \dens, 5, \buf, ~currentSample[\tension]);}
-            {(d > (normalized.mean + range))}{syn.set(\harm, d-12, \pos, sec *1, \dens, 23, \buf, ~currentSample[\relax]);}
+            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d, \dens, 20, \pos, sec *1, \buf, ~currentSample[\base]);}
+            {d < (normalized.mean -range)}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d+12, \pos, sec *1, \dens, 5, \buf, ~currentSample[\tension]);}
+            {(d > (normalized.mean + range))}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d-12, \pos, sec *1, \dens, 23, \buf, ~currentSample[\relax]);}
             {true}{"no case".postln};
 			0.04.wait;
 			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
@@ -70,13 +70,13 @@
 	// One Shot Play
 	\60 : {
         var syn, data, compressed, normalized, reduce;
-        reduce=10;
+        reduce=30;
         data = ~currentData[\60].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(80.0, 3500.0);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
-        syn = Synth(\arrayarg, [\amp, 0.1, \freqs, [48, 60, 72].midicps]);
+        syn = Synth(\arrayarg, [\amp, 0.2, \freqs, [ 48, 72, 84].midicps]);
         ~activeSynths.put(\60, syn);
         normalized.do({
             |d, i|

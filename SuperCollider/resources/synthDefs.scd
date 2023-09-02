@@ -17,14 +17,17 @@ SynthDef(\dynklank, {
 }).add;
 
 SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
-	var freqs = NamedControl.kr(\freqs, [300, 400, 500]);
+	var freqs = NamedControl.kr(\freqs, [300, 600, 1200]);
 	var temps = NamedControl.kr(\temps, (pi/2)!3);
-	var env,sines;
+	var env,sines, sines2, sig;
 	env = Linen.kr(gate,\atk.kr(0.1), \sus.kr(0.5), \rls.kr(1), 2) * amp;
 	sines =  PMOsc.ar(freqs.varlag(\lag.kr(0.5)), freqs * \mod.kr(1), LFNoise2.kr(1) * \pm.kr(0.0));
-	sines = Splay.ar(sines);
+	sines2 =  PMOsc.ar(freqs.varlag(0.5), freqs * 1);
+	sines = Splay.ar(sines)  * \fade.kr(0.6);
+	sines2 = Splay.ar(sines2) * \fade2.kr(0.1);
 	sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
-	Out.ar(out, sines * env * \fade.kr(1));
+    sig = Mix.ar([sines, sines2]) * env;
+	Out.ar(out, sig );
 }).add;
 
 SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
