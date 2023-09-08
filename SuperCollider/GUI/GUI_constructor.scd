@@ -26,12 +26,38 @@ GUI mit verschiedenen SubWindows
 };
 
 ~buildBufferGrid = {
-	var win, button, selector;
+	| midikeys, buffers, datakeys|
+	var win, keySelector, keyLabels, bufSelector, bufLabels;
 	Window.closeAll;
-	win = Window.new("grids", Rect(150, 30, 800, 400)).front;
-	selector = 8.collect({PopUpMenu.new()});
-	button = 8.collect({Button.new()});
-	win.layout_(GridLayout.rows(selector, button));
+	win = Window.new("selector", Rect(150, 30, 800, 400)).front;
+	keyLabels = midikeys.collect({
+		|k,i|
+		StaticText.new()
+		.string_("midikey " ++ k)
+		.align_(\center)
+	});
+	keySelector = midikeys.collect({
+		|k,i|
+		PopUpMenu.new()
+		.items_(datakeys.asArray)
+		.allowsReselection_(True)
+		.name_(k)
+	});
+	bufLabels = [\base, \tension, \relax].collect({
+		|l,i|
+		StaticText.new()
+		.string_("buffer " ++ l)
+		.align_(\center)
+	});
+
+	bufSelector = [\base, \tension, \relax].collect({
+		|k, i|
+		PopUpMenu.new()
+		.items_(buffers)
+		.allowsReselection_(True)
+		.name_(k)
+	});
+	win.layout_(GridLayout.rows(keyLabels, keySelector, bufSelector,  bufLabels).margins_([0, 150, 0, 30]).spacing_(5));
 };
 
 
