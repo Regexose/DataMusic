@@ -3,7 +3,9 @@
 	\48 : {
 		// plays br-Synth with
 		var data, normalized, compressed,reduce, buf, syn;
-		reduce = 30;
+	/*	s.record(~recordingPath ++ "/karlwhct_temp02.wav", duration: 60);
+        wait(0.02);*/
+		reduce =10;
 		data = ~currentData[\48].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
@@ -13,7 +15,7 @@
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 13,48));
+			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
 			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
 
@@ -22,7 +24,9 @@
 
 	\50 : {
 		var data, normalized, compressed, reduce, buf, syn, sec;
-		reduce=30;
+	   s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
+        wait(0.02);
+		reduce=20;
 		data = ~currentData[\50].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
@@ -33,7 +37,7 @@
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, [d, d-12, d+12], \pos, sec *i);
+            syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, [d, d-24, d-12], \pos, sec *i);
 			0.03.wait;
 			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
 
@@ -42,7 +46,9 @@
 
 	\52: {
 		var data, normalized, compressed, reduce, buf, syn, sec, mean, range;
-		reduce = 30;
+	 /*   s.record(~recordingPath ++ "/karlwhct_52_temp01.wav", duration: 60);
+        wait(0.02);*/
+		reduce = 10;
 		data = ~currentData[\52].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
