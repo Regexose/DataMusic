@@ -67,6 +67,7 @@ MIDIIn.connectAll;
     1
     );
 
+
 });
 
 PathName(~samplesPath).entries.do({
@@ -85,7 +86,7 @@ PathName(~samplesPath).entries.do({
     ~rf.keys.asArray.sort.do({
         |k, i|
         k.postln;
-        ~currentData.add(k.asSymbol -> ~data.uv);
+		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.uv));
     });
 
     [\base, \tension, \relax].do({

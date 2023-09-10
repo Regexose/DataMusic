@@ -2,11 +2,11 @@
 	// on Off Play
 	\48 : {
 		// plays br-Synth with
-		var data, normalized, compressed,reduce, buf, syn;
+		var data, normalized, compressed, reduce, buf, syn;
 	/*	s.record(~recordingPath ++ "/karlwhct_temp02.wav", duration: 60);
         wait(0.02);*/
-		reduce =10;
-		data = ~currentData[\48].asArray;
+		reduce = ~currentData[\48][\reduce];
+		data = ~currentData[\48][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
 		buf = ~currentSample[\base];
@@ -26,8 +26,8 @@
 		var data, normalized, compressed, reduce, buf, syn, sec;
 	   s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
         wait(0.02);
-		reduce=20;
-		data = ~currentData[\50].asArray;
+		reduce= ~currentData[\50][\reduce];
+		data = ~currentData[\50][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
 		buf = ~currentSample[\base];
@@ -48,8 +48,8 @@
 		var data, normalized, compressed, reduce, buf, syn, sec, mean, range;
 	 /*   s.record(~recordingPath ++ "/karlwhct_52_temp01.wav", duration: 60);
         wait(0.02);*/
-		reduce = 10;
-		data = ~currentData[\52].asArray;
+		reduce = ~currentData[\52][\reduce];
+		data = ~currentData[\52][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
         mean = normalized.mean;
@@ -76,8 +76,8 @@
 	// One Shot Play
 	\60 : {
         var syn, data, compressed, normalized, reduce;
-        reduce=30;
-        data = ~currentData[\60].asArray;
+        reduce= ~currentData[\60][\reduce];
+        data = ~currentData[\60][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(80.0, 3500.0);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
@@ -94,8 +94,9 @@
     },
 
 	\62 : {
-		var data, normalized, buf, syn, sec;
-		data = ~currentData[\62];
+		var data, normalized, buf, syn, sec, reduce;
+		reduce = ~currentData[\62][\reduce];
+		data = ~currentData[\62][\data];
 		normalized = data.asArray.normalize(36.0, 60.0);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
@@ -111,8 +112,9 @@
 	},
 
 	\64: {
-		var data, normalized, buf, syn, sec;
-		data = ~currentData[\64];
+		var data, normalized, buf, syn, sec, reduce;
+		reduce = ~currentData[\64][\reduce];
+		data = ~currentData[\64][\data];
 		normalized = data.asArray.normalize(13, 114);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;

@@ -1,4 +1,4 @@
-,uv,temp,drain_piezo,humidity,maxdailygust,soilmoisture2,solarradiation
+index,uv,temp,drain_piezo,humidity,maxdailygust,soilmoisture2,solarradiation
 0,2.0,23.000000000000004,0.0,43.0,16.560149759999998,31.0,271.11
 1,2.0,22.88888888888889,0.0,43.0,16.560149759999998,31.0,280.27
 2,2.0,22.77777777777778,0.0,43.0,16.560149759999998,31.0,307.1

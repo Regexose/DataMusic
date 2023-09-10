@@ -1,5 +1,5 @@
 (
-var window, top, w_width=1000, w_height=800, dataSelector, bufferSelector, h_selector=100, itemsize=100, offset=20, midikeys= ~rf.keys.asArray.sort;
+var midikeys= ~rf.keys.asArray.sort;
 
 ~style = (
 	// FONTS
@@ -16,13 +16,9 @@ var window, top, w_width=1000, w_height=800, dataSelector, bufferSelector, h_sel
 
 );
 Window.closeAll;
-window = ~buildWindow.("DataMusic", 10, 10, w_width, w_height);
-top = ~buildTopLevel.(window, 10, 10, w_width, w_height);
-// "toplevel".postln;
-//dataSelector = ~buildDataSelector.(top, (itemsize + offset ) * midikeys.size, h_selector, itemsize, offset, midikeys, ~data.keys);
-//bufferSelector = ~buildBufferSelector.(window, 10, 250, 400, 200, itemsize, offset, ~buffers.keys.asArray);
-~buildBufferGrid.(midikeys,  ~buffers.keys.asArray, ~data.keys );
-CmdPeriod.add({window.close});
+~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys );
+~userControl = ~buildUserControl.(midikeys);
+CmdPeriod.add({[~selectors, ~userControl].close});
 
 
 )

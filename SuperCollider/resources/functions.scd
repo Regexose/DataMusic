@@ -21,7 +21,7 @@
 	var key, selected;
 	selected = menu.item.asSymbol;
 	key = menu.name;
-	~currentData[key.asSymbol] = ~data[selected];
+	~currentData[key.asSymbol][\data] = ~data[selected];
 	"set % with %".format(key, selected).postln;
 };
 
@@ -34,6 +34,15 @@
 	buf = Buffer.read(s, filePath.fullPath);
 	~currentSample.add(key.asSymbol -> buf);
 	"set % with %".format(key, selected).postln;
+};
+
+~reduceAction = {
+	|knob|
+	var keyKnob, knobVal;
+	keyKnob = knob.name.asSymbol;
+	knobVal = knob.value.linlin(0.0, 1.0, 1, 50).asInteger;
+	~currentData[keyKnob][\reduce] = knobVal;
+	"set keyKnob % to  %".format(keyKnob, knobVal).postln;
 };
 
 

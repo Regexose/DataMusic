@@ -1,53 +1,33 @@
 /*
 GUI mit verschiedenen SubWindows
--  drop down data Selektor
+- Selector
+
 - playhead über Daten
 
 */
 (
-~buildWindow = {
-	// Builds the main window that contains everything
-	arg window_title, x=10, y=10, width, height;
-	Window(window_title, Rect(x, y, width, height))
-	.background_(~style.window_color)
-	.front;
-};
 
-~buildTopLevel = {
-	// Buildts a top level composite view that manages child views' spacing.
-	arg window, posx=10, posy=10, width, height;
-	var compView;
-	compView = CompositeView(window, Rect(posx, posy, width, height))
-	.background_(~style.header_frame_color);
-	compView.addFlowLayout(10@10);
-	compView.decorator.gap_(0@10);
-	//"built toplevel".postln;
-	compView;
-};
-
-~buildBufferGrid = {
+~buildSelectors = {
 	| midikeys, buffers, datakeys|
 	var win, keySelector, keyLabels, bufSelector, bufLabels;
-	Window.closeAll;
 	win = Window.new("selector", Rect(150, 30, 800, 400)).front;
 	keyLabels = midikeys.collect({
 		|k,i|
 		StaticText.new()
 		.string_("midikey " ++ k)
-		.align_(\center)
 	});
 	keySelector = midikeys.collect({
 		|k,i|
 		PopUpMenu.new()
 		.items_(datakeys.asArray)
 		.allowsReselection_(True)
+		.action_({arg pm; ~selectorAction.(pm)})
 		.name_(k)
 	});
 	bufLabels = [\base, \tension, \relax].collect({
 		|l,i|
 		StaticText.new()
 		.string_("buffer " ++ l)
-		.align_(\center)
 	});
 
 	bufSelector = [\base, \tension, \relax].collect({
@@ -55,65 +35,38 @@ GUI mit verschiedenen SubWindows
 		PopUpMenu.new()
 		.items_(buffers)
 		.allowsReselection_(True)
+		.action_({arg pm; ~bufferSelectorAction.(pm)})
 		.name_(k)
 	});
-	win.layout_(GridLayout.rows(keyLabels, keySelector, bufSelector,  bufLabels).margins_([0, 150, 0, 30]).spacing_(5));
+
+	win.layout_(VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*bufSelector), HLayout(*bufLabels)));
+
 };
 
-
-~buildDataSelector = {
-	arg top_level, all_selectors_width, selector_height, selectorsize, offset, midikeys, items;
-	var selectorData, compView, selectors, selector_labels;
-
-	compView = CompositeView(top_level, Rect(0, 0, all_selectors_width, selector_height *2))
-	.background_(~style.bank_frame_color);
-	selectors = Dictionary.new;
-	midikeys.do({
-		|mid, i|
-		selectors[mid] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
-			selectorsize, selectorsize/2))
-		.items_(items.asArray)
-		.allowsReselection_(True)
-		.action_({arg pm; ~selectorAction.(pm)})
-		.name_(mid.asString);
+~buildUserControl = {
+	/*
+	- Recording Vorzähler und Fortschritt
+	- Knobs mit Auflösung: manipulation des reduce Faktors
+	*/
+	| midikeys|
+	var win, knobs, knobLabels, recCountdown, recProgress;
+	win = Window.new("UserControl", Rect(450, 30, 800, 400))
+	.background_(~style[\top_level_frame_color])
+	.front;
+	knobLabels = midikeys.collect({
+		|k,i|
+		StaticText.new()
+		.string_("midikey " ++ k)
 	});
-	selector_labels = midikeys.do({
-		|mid, i|
-		StaticText(compView,  Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
-		.align_(\center)
-		.stringColor_(Color.black)
-		.string_("midikey "++ mid);
+	knobs = midikeys.collect({
+		|k,i|
+		Knob.new()
+		.action_({arg kn; ~reduceAction.(kn)})
+		.name_(k)
 	});
-	selectorData = [compView, selectors, selector_labels];
+
+	win.layout_(VLayout(HLayout(*knobLabels), HLayout(*knobs)));
+
 };
 
-~buildBufferSelector = {
-	|window, posx, posy, width, height, selectorsize, offset, users|
-	var compView, selectors, selector_labels, selectorData;
-	compView = CompositeView(window, Rect(posx, posy, width, height))
-	.background_(~style.bank_frame_color);
-	compView.addFlowLayout(5@0);
-	compView.decorator.gap_(0@5);
-	selectors = Dictionary.new;
-	~currentSample.keys.do({
-		|key, i|
-		var buflist, name;
-		buflist = Array.fill(users.size, {|id| var user=users[id];  ~buffers[user][key] });
-		selectors[key] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
-			selectorsize, selectorsize/2))
-		.items_(users)
-		.allowsReselection_(True)
-		.action_({arg pm; ~bufferSelectorAction.(pm)})
-		.name_(key);
-
-	});
-	selector_labels = ~currentSample.keys.do({
-		|key, i|
-		StaticText(compView, Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
-		.align_(\center)
-		.stringColor_(Color.black)
-		.string_("buffer "++ key);
-	});
-	selectorData = [compView, selectors, selector_labels];
-};
 )
