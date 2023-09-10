@@ -45,8 +45,7 @@ s.waitForBoot({
 MIDIFunc.trace(false)
 
 ~liveBuffer.plot
-~buffers[\voris][\relax].plot
+~buffers[\claudia][\base].play
 ~currentSample[\base]
-~currentData
-
+Plot.new(~currentData[\48][\data].asPlot)
 

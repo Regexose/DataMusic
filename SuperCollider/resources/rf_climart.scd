@@ -9,7 +9,8 @@
 		data = ~currentData[\48][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
-		buf = ~currentSample[\base];
+		buf = ~currentSample[\base].normalize;
+		s.sync;
 		syn = Synth(\br, [\amp, 0.8, \buf, buf, \end, buf.numFrames-1,  \lg1, 0.2, \lg2, 0.2, \atk, 0.1, \sus, 0.2, \rls, 1]);
 		~activeSynths.put(\48, syn);
 		normalized.do({
@@ -17,31 +18,30 @@
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
-			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
-
 		});
+		syn.release(2);
 	},
 
 	\50 : {
 		var data, normalized, compressed, reduce, buf, syn, sec;
-	   s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
-        wait(0.02);
+	 /*  s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
+        wait(0.02);*/
 		reduce= ~currentData[\50][\reduce];
 		data = ~currentData[\50][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
-		normalized = compressed.normalize(36.0, 60.0);
-		buf = ~currentSample[\base];
-		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 12, \grainDur, 1.4,]);
+		normalized = compressed.normalize(24.0, 48.0);
+		buf = ~currentSample[\base].normalize;
+		s.sync;
+		sec = buf.numFrames/s.sampleRate * 10;
+		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 12, \grainDur, 0.3]);
 		~activeSynths.put(\50, syn);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, [d, d-24, d-12], \pos, sec *i);
+            syn.set(\ffreq, d.linlin(24, 48, 500, 2000), \harm, [d, d/2], \pos, sec * i);
 			0.03.wait;
-			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
-
-		})
+		});
+		syn.release(2);
 	},
 
 	\52: {
@@ -55,6 +55,7 @@
         mean = normalized.mean;
         range = mean / 10;
 		buf = ~currentSample[\base];
+		s.sync;
 		sec = buf.numFrames/s.sampleRate * 50;
 		syn = Synth(\tgrains, [\buf, buf, \amp, 0.9, \grainAmp, 0.5]);
 		~activeSynths.put(\52, syn);
@@ -68,8 +69,8 @@
             {(d > (normalized.mean + range))}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d-12, \pos, sec *1, \dens, 23, \buf, ~currentSample[\relax]);}
             {true}{"no case".postln};
 			0.04.wait;
-			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
-		})
+		});
+		syn.release(2);
 	},
 
 
@@ -89,8 +90,8 @@
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
             0.05.wait;
-            if (i == (normalized.size-1), {syn.release(3)});
-        })
+        });
+		syn.release(2);
     },
 
 	\62 : {
@@ -107,8 +108,8 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\harm, d,  \pan, d.linlin(36, 60, -1, 1), \pos, sec *i);
 			0.03.wait;
-			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
-		})
+		});
+		syn.release(2);
 	},
 
 	\64: {
@@ -125,8 +126,8 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\harm, [d, d-12, d+12], \pos, sec *1);
 			0.04.wait;
-			if(i >=( normalized.size-1), {"end of data, releasing synth %".format(syn); syn.release(2)});
-		})
+		});
+		syn.release(2);
 	},
 
 

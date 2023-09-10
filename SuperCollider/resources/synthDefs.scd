@@ -56,14 +56,14 @@ SynthDef(\tgrains, {
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
 		bufnum: buf,
-		rate: \rate.kr(1) * (\harm.kr([-7, -4, 0]).midiratio),
+		rate: \rate.kr(1) * (\harm.kr([0, 0]).midiratio),
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
 		pan: \pan.kr(0),
 		amp: \grainAmp.kr(0.3),
 		interp: 4
 	);
-    sig2 = sig2 * env * \fade2.kr(0.1);
+    sig2 = sig2 * env * \fade2.kr(0.0);
     sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
 	sig = sig * env * \amp.kr(1) * \fade.kr(1);
     Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
@@ -108,7 +108,7 @@ SynthDef(\br, {
 		BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
-    sig2 = sig2 * env * \fade2.kr(0.1);
+    sig2 = sig2 * env * \fade2.kr(0.0);
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
     sig = Mix.ar([sig, sig2]);
 	Out.ar(\out.kr(0), sig);
