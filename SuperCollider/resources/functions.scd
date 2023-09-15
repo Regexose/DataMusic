@@ -78,7 +78,7 @@
 ~onOffLive = {
 	|act|
 	var rec, rout, syn;
-	if (act == True,
+	if (act == 1,
 		{
 			MIDIdef.noteOn(\onoffLiveOn, {
 				|vel, num|
@@ -111,7 +111,7 @@
 ~onOffUser = {
 	|act|
 	var rout, syn;
-	if (act == True,
+	if (act == 1,
 		{
 			MIDIdef.noteOn(\onoffUserOn, {
 				|vel, num|
@@ -144,7 +144,7 @@
 ~oneShotLive = {
 	|act|
 	var rec, rout ;
-	if (act == True,
+	if (act == 1,
 		{
 			MIDIdef.noteOn(\osLiveOn, {
 				|vel, num|
@@ -171,7 +171,7 @@
 ~oneShotUser = {
 	|act|
 	var rout ;
-	if (act == True,
+	if (act == 1,
 		{
 			MIDIdef.noteOn(\osUserOn, {
 				|vel, num|
@@ -201,7 +201,7 @@
 ~liveGrain = {
 	|act|
 	var syn, rout ;
-	if (act == True,
+	if (act == 1,
 		{
 			MIDIdef.noteOn(\lgOn, {
 				|vel, num|

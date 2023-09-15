@@ -41,6 +41,7 @@ s.waitForBoot({
 )
 
 ~onOffUser.(True)
+~onOffUser
 ~onOffUser.(False)
 MIDIFunc.trace(false)
 

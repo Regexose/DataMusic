@@ -1,5 +1,5 @@
 (
-var midikeys= ~rf.keys.asArray.sort;
+var midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser, \onOffLive: ~onOffLive, \oneShotLive: ~oneShotLive);
 
 ~style = (
 	// FONTS
@@ -16,9 +16,9 @@ var midikeys= ~rf.keys.asArray.sort;
 
 );
 Window.closeAll;
-~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys );
-~userControl = ~buildUserControl.(midikeys);
-CmdPeriod.add({[~selectors, ~userControl].close});
+~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys, trigFuncs );
+//~userControl = ~buildUserControl.(midikeys);
+CmdPeriod.add({ [~selectors, ~userControl].close});
 
 
 )

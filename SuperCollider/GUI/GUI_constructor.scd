@@ -8,8 +8,9 @@ GUI mit verschiedenen SubWindows
 (
 
 ~buildSelectors = {
-	| midikeys, buffers, datakeys|
-	var win, keySelector, keyLabels, bufSelector, bufLabels, knobs;
+	| midikeys, buffers, datakeys, funcs|
+	var win, keySelector, keyLabels, bufSelector, bufLabels, knobs, toggles, toggleLabels;
+
 	win = Window.new("selector", Rect(150, 30, 800, 400)).front
 	.alwaysOnTop_(true);
 	keyLabels = midikeys.collect({
@@ -47,7 +48,21 @@ GUI mit verschiedenen SubWindows
 		.name_(k)
 	});
 
-	win.layout_(VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs), HLayout(*bufSelector), HLayout(*bufLabels)));
+	toggles = funcs.values.asArray.collect({
+		|func, i|
+		var names = funcs.keys.asArray;
+		Button.new(bounds: Rect(40, 20))
+		.states_([
+			[(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black],
+		])
+		.mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
+		.focusColor_(Color.blue)
+		.valueAction_(1)
+		//.action_({|btn| ; func.(btn.value) })
+
+	});
+
+	win.layout_(VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs), HLayout(*bufSelector), HLayout(*bufLabels), HLayout(*toggles)));
 
 };
 

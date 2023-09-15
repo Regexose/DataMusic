@@ -54,19 +54,25 @@
 		normalized = compressed.normalize(36.0, 60.0);
         mean = normalized.mean;
         range = mean / 10;
-		buf = ~currentSample[\base];
+		buf = ~currentSample[\base].normalize;
 		s.sync;
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \amp, 0.9, \grainAmp, 0.5]);
+		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.67, \dens, 10]);
 		~activeSynths.put(\52, syn);
 		normalized.do({
 			|d, i|
             var c;
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             c = case
-            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d, \dens, 20, \pos, sec *1, \buf, ~currentSample[\base]);}
-            {d < (normalized.mean -range)}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d+12, \pos, sec *1, \dens, 5, \buf, ~currentSample[\tension]);}
-            {(d > (normalized.mean + range))}{syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d-12, \pos, sec *1, \dens, 23, \buf, ~currentSample[\relax]);}
+            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
+				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d, \pos, sec *1, \buf, ~currentSample[\base]);
+			}
+            {d < (normalized.mean -range)}{
+				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d+12, \pos, sec *1,  \buf, ~currentSample[\tension]);
+			}
+            {(d > (normalized.mean + range))}{
+				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d-12, \pos, sec *1, \buf, ~currentSample[\relax])
+		     }
             {true}{"no case".postln};
 			0.04.wait;
 		});

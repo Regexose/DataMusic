@@ -85,7 +85,6 @@ PathName(~samplesPath).entries.do({
 ~initCurrent = {
     ~rf.keys.asArray.sort.do({
         |k, i|
-        k.postln;
 		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.uv));
     });
 
