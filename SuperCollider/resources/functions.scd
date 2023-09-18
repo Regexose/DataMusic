@@ -18,10 +18,14 @@
 
 ~selectorAction = {
 	|menu|
-	var key, selected;
+	var key, selected, imgPath, image;
 	selected = menu.item.asSymbol;
 	key = menu.name;
+	imgPath = ~imagePath +/+ selected.asString ++ ".png";
+	image = Image.open(imgPath);
 	~currentData[key.asSymbol][\data] = ~data[selected];
+	~databg.setBackgroundImage(image);
+	~dataView.refresh;
 	"set % with %".format(key, selected).postln;
 };
 

@@ -15,18 +15,9 @@ var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser,
 	\text_color: Color.fromHexString("#6F6866"),
 
 );
-Window.closeAll;
-
-/*mkImg = Routine({
-	//~makeDataImages.();
-	2.5.wait;
-	Window.closeAll;
-	~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys, trigFuncs );
-	~dataView = ~buildDataView.();
-}).play(AppClock);*/
 
 Window.closeAll;
-~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys, trigFuncs );
+~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys.remove(\index), trigFuncs );
 ~dataView = ~buildDataView.();
 
 CmdPeriod.add({ [~selectors, ~dataView].close});

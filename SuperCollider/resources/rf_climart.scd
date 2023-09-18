@@ -18,7 +18,7 @@
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 0, ~cursor.bounds.width); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 		});
 		syn.release(2);
 	},
@@ -41,6 +41,7 @@
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d.linlin(24, 48, 500, 2000), \harm, [d, d/2], \pos, sec * i);
 			0.03.wait;
+		    defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 		});
 		syn.release(2);
 	},
@@ -76,6 +77,7 @@
 		     }
             {true}{"no case".postln};
 			0.04.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 		});
 		syn.release(2);
 	},
@@ -97,6 +99,8 @@
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
             0.05.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+
         });
 		syn.release(2);
     },
@@ -115,6 +119,8 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\harm, d,  \pan, d.linlin(36, 60, -1, 1), \pos, sec *i);
 			0.03.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+
 		});
 		syn.release(2);
 	},
@@ -133,6 +139,8 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\harm, [d, d-12, d+12], \pos, sec *1);
 			0.04.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+
 		});
 		syn.release(2);
 	},

@@ -9,7 +9,7 @@
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~currentSample = Dictionary.new;
 ~dataImages = ();
-~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
+~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
 ~data = ();

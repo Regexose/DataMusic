@@ -48,6 +48,8 @@ MIDIFunc.trace(false)
 
 ~liveBuffer.plot
 ~buffers[\claudia][\base].play
+~posX
+~cursor.bounds.
 
 (
 

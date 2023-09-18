@@ -71,25 +71,21 @@ GUI mit verschiedenen SubWindows
 	- Recording Vorzähler und Fortschritt
 	- Knobs mit Auflösung: manipulation des reduce Faktors
 	*/
-	var win, cursorView, dataView, dataPlot, image, recCountdown, recProgress;
-	//image = ~dataImages.temp;
-    ~posX = 0;
+	var win, dataView, dataPlot, image, recCountdown, recProgress;
 	image = Image.open(~imagePath +/+ "temp.png");
 	win = Window.new("UserControl", Rect(450, 450, 800, 420))
 	.background_(~style[\top_level_frame_xcolor]);
 	win.front;
 	"building dataview ...".postln;
-	dataView = View.new().backgroundImage_(image);
-	~cursor = UserView.new()
+	~databg = View.new(win, Rect(5, 0, 800, 400)).backgroundImage_(image);
+	~cursor = UserView.new(win, Rect(0, 0, 800, 400))
 	.drawFunc_({|uv|
 		Pen.strokeColor = Color.red;
-		Pen.moveTo(~posX@10);
-		Pen.lineTo(~posX@410);
+		Pen.moveTo(~posX@0);
+		Pen.lineTo(~posX@win.bounds.height);
 		Pen.fillStroke;
 	});
-	cursorView = [ dataView, ~cursor];
-
-	win.layout_(StackLayout(~cursor, dataView ).mode_(\stackAll));
+	win.layout_(StackLayout(~cursor, ~databg ).mode_(\stackAll));
 
 
 	//ToDo: einen dataBufer als backgroundImage und dann einen Playhead analog zur spielenden Funktion
