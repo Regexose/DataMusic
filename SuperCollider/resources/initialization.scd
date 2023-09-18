@@ -70,6 +70,8 @@ MIDIIn.connectAll;
 
 });
 
+
+
 PathName(~samplesPath).entries.do({
     arg subfolder;
     var sampleDict=(), sample;
@@ -81,17 +83,42 @@ PathName(~samplesPath).entries.do({
     });
 });
 
+
+// make background images for dataView GUI
+
+
+~makeDataImages = {
+	r({
+		var dataPlot, image;
+		~data.keys.remove(\index).do({
+		|k, i|
+			var path;
+		"background image for % ".format(k).postln;
+		path =  "~/Desktop/" ++ k.asString ++ ".png";
+		dataPlot = ~data[k].asArray.plot(bounds: Rect(0, 0, 800, 400));
+		0.05.wait;
+		image = Image.fromWindow(dataPlot.parent, dataPlot.interactionView.bounds); // get image from the view
+		//~dataImages.add(k -> image);
+			0.05.wait;
+		image.write(path.standardizePath);
+		0.05.wait;
+		image.free;
+	});
+	}).play(AppClock);
+};
+
 //initialize currentData and currentSample
 ~initCurrent = {
-    ~rf.keys.asArray.sort.do({
-        |k, i|
-		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.uv));
-    });
 
-    [\base, \tension, \relax].do({
-        |k|
-        ~currentSample.add(k -> ~buffers[\voris][k])
-    })
+	~rf.keys.asArray.sort.do({
+		|k, i|
+		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.temp, \image -> ~dataImages.temp));
+	});
+
+	[\base, \tension, \relax].do({
+		|k|
+		~currentSample.add(k -> ~buffers[\voris][k])
+	})
 };
 
 

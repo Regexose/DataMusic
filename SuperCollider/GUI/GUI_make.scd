@@ -1,5 +1,5 @@
 (
-var midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser, \onOffLive: ~onOffLive, \oneShotLive: ~oneShotLive);
+var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser, \onOffLive: ~onOffLive, \oneShotLive: ~oneShotLive);
 
 ~style = (
 	// FONTS
@@ -16,9 +16,20 @@ var midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneSh
 
 );
 Window.closeAll;
+
+/*mkImg = Routine({
+	//~makeDataImages.();
+	2.5.wait;
+	Window.closeAll;
+	~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys, trigFuncs );
+	~dataView = ~buildDataView.();
+}).play(AppClock);*/
+
+Window.closeAll;
 ~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys, trigFuncs );
-//~userControl = ~buildUserControl.(midikeys);
-CmdPeriod.add({ [~selectors, ~userControl].close});
+~dataView = ~buildDataView.();
+
+CmdPeriod.add({ [~selectors, ~dataView].close});
 
 
 )

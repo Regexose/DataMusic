@@ -66,22 +66,34 @@ GUI mit verschiedenen SubWindows
 
 };
 
-~buildUserControl = {
+~buildDataView = {
 	/*
 	- Recording Vorzähler und Fortschritt
 	- Knobs mit Auflösung: manipulation des reduce Faktors
 	*/
-	| midikeys|
-	var win, dataView, recCountdown, recProgress;
-	win = Window.new("UserControl", Rect(450, 30, 800, 400))
-	.background_(~style[\top_level_frame_color])
-	.front;
-/*
-	dataView = View()
-	ToDo: einen dataBufer als backgroundImage und dann einen Playhead analog zur spielenden Funktion
-	.backgroundImage_(~data.temp.plot);
+	var win, cursorView, dataView, dataPlot, image, recCountdown, recProgress;
+	//image = ~dataImages.temp;
+    ~posX = 0;
+	image = Image.open(~imagePath +/+ "temp.png");
+	win = Window.new("UserControl", Rect(450, 450, 800, 420))
+	.background_(~style[\top_level_frame_xcolor]);
+	win.front;
+	"building dataview ...".postln;
+	dataView = View.new().backgroundImage_(image);
+	~cursor = UserView.new()
+	.drawFunc_({|uv|
+		Pen.strokeColor = Color.red;
+		Pen.moveTo(~posX@10);
+		Pen.lineTo(~posX@410);
+		Pen.fillStroke;
+	});
+	cursorView = [ dataView, ~cursor];
 
-	win.layout_(VLayout(HLayout(dataView)));*/
+	win.layout_(StackLayout(~cursor, dataView ).mode_(\stackAll));
+
+
+	//ToDo: einen dataBufer als backgroundImage und dann einen Playhead analog zur spielenden Funktion
+
 
 
 };

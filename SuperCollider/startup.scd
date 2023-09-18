@@ -17,6 +17,7 @@ s.waitForBoot({
 	MIDIdef.freeAll;
 	s.sync;
 	/// load SynthDefs, Constants, Functions
+
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
 	(~resourcePath ++ "rf_climart.scd").load;
@@ -47,6 +48,27 @@ MIDIFunc.trace(false)
 
 ~liveBuffer.plot
 ~buffers[\claudia][\base].play
-~currentSample[\base]
-Plot.new(~currentData[\48][\data].asPlot)
+
+(
+
+)
+
+(
+		"background image for % ".format(\temp).postln;
+		~path = "~/Desktop/humidity.png";
+		~dataPlot = ~data[\humidity].asArray.plot(bounds: Rect(0, 0, 800, 400));
+		0.05.wait;
+		~image = Image.fromWindow(~dataPlot.parent, ~dataPlot.interactionView.bounds); // get image from the view
+~image.plot(showinfo:false);
+~image.asCompileString
+		~image.write(~path.standardizePath);
+		0.05.wait;
+		~image.bounds.h;
+
+
+)
+
+View
+~dataView.dataView
+)
 

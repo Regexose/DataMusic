@@ -1,4 +1,5 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
+~imagePath = PathName(~projectRoot).parentPath ++ "data/img";
 ~dataFileName = "zku_monat_7_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
@@ -7,6 +8,8 @@
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~currentSample = Dictionary.new;
+~dataImages = ();
+~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
 ~data = ();
