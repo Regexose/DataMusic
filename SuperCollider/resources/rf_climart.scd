@@ -18,32 +18,37 @@
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh}; // Update GUI
 		});
 		syn.release(2);
 	},
 
 	\50 : {
-		var data, normalized, compressed, reduce, buf, syn, sec;
+		var data, normalized, compressed, reduce, buf, syn, syn2, synGroup, sec;
 	 /*  s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
         wait(0.02);*/
 		reduce= ~currentData[\50][\reduce];
 		data = ~currentData[\50][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
-		normalized = compressed.normalize(24.0, 48.0);
+		normalized = compressed.normalize(300, 2000);
 		buf = ~currentSample[\base].normalize;
 		s.sync;
-		sec = buf.numFrames/s.sampleRate * 10;
-		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 12, \grainDur, 0.3]);
-		~activeSynths.put(\50, syn);
+		sec = buf.numFrames/(s.sampleRate * 100);
+		sec.postln;
+		synGroup = Group.new;
+		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 2, \grainDur, sec], synGroup, \addToHead);
+		syn2 = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.1], synGroup, \addToHead);
+		~activeSynths.put(\50, synGroup);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\ffreq, d.linlin(24, 48, 500, 2000), \harm, [d, d/2], \pos, sec * i);
+            syn.set(\ffreq, d, \pos, sec * i);
+			syn2.set(\rings, d.linlin(300, 2000, 1, 4) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.03));
 			0.03.wait;
 		    defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 		});
 		syn.release(2);
+		syn2.release(2);
 	},
 
 	\52: {
@@ -59,7 +64,7 @@
 		buf = ~currentSample[\base].normalize;
 		s.sync;
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.67, \dens, 10]);
+		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.67, \dens, 10, \pos, sec * 20]);
 		~activeSynths.put(\52, syn);
 		normalized.do({
 			|d, i|
@@ -67,7 +72,7 @@
 			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             c = case
             {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
-				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d, \pos, sec *1, \buf, ~currentSample[\base]);
+				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d, \buf, ~currentSample[\base]);
 			}
             {d < (normalized.mean -range)}{
 				syn.set(\ffreq, d.linlin(36, 60, 250, 2500), \harm, d+12, \pos, sec *1,  \buf, ~currentSample[\tension]);

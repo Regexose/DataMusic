@@ -1,17 +1,17 @@
 SynthDef(\dynklank, {
-	|freqRatio=1, modInd=1, freqScale=1, decayScale=1|
+	|freqRatio=1, modInd=1, freqScale=0.1, decayScale=0.1|
 	var freqs = NamedControl.kr(\freqs, 900 !3);
-	var rings = NamedControl.kr(\rings, 20 !3) * 0.1;
+	var rings = NamedControl.kr(\rings, 2 !3) ;
 	var sig, exc, env;
-	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-	exc = PinkNoise.ar(0.1) * Decay2.kr(Impulse.kr(\imp.kr(0.5)), 0.01, \dec.kr(0.9));
+	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(\imp.kr(0.5)), 0.01, \dec.kr(0.9));
 	sig = DynKlank.ar(
 		`[
 			freqs * rings,
 			nil,
 			rings
-	], exc, freqscale: freqScale * 0.1,  decayscale: decayScale * 0.1);
-	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0));
+	], exc, freqscale: freqScale,  decayscale: decayScale);
+	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0.01));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -45,30 +45,6 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 
 
 // Granular Synth
-
-SynthDef(\tgrains, {
-	var sig, sig2, ptr, env, buf;
-    buf = \buf.kr(0);
-	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    sig2 = BufRd.ar(1, buf, ptr);
-	sig = TGrains.ar(
-		numChannels: 2,
-		trigger: Dust.kr(\dens.kr(12)),
-		bufnum: buf,
-		rate: \rate.kr(1) * (\harm.kr([0, 0]).midiratio),
-		centerPos: \pos.kr(0.5),
-		dur: \grainDur.kr(1.5),
-		pan: \pan.kr(0),
-		amp: \grainAmp.kr(0.3),
-		interp: 4
-	);
-    sig2 = sig2 * env * \fade2.kr(0.0);
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
-	sig = sig * env * \amp.kr(1) * \fade.kr(1);
-    Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
-}).add;
-
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
 	var sig, env, mic, pos, ptr, buf=\buf.kr(0);
@@ -95,6 +71,31 @@ SynthDef(\tgrains_live, {
 	Out.ar(\out.kr(0), sig);
 }).add;
 
+SynthDef(\tgrains, {
+	var sig, sig2, ptr, env, buf;
+    buf = \buf.kr(0);
+	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
+    sig2 = BufRd.ar(1, buf, ptr);
+	sig = TGrains.ar(
+		numChannels: 2,
+		trigger: Dust.kr(\dens.kr(12)),
+		bufnum: buf,
+		rate: \rate.kr(1) * (\harm.kr([0, 0]).midiratio),
+		centerPos: \pos.kr(0.5),
+		dur: \grainDur.kr(1.5),
+		pan: \pan.kr(0),
+		amp: \grainAmp.kr(0.3),
+		interp: 4
+	);
+    sig2 = sig2 * env * \fade2.kr(0.0);
+    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
+	sig = sig * env * \amp.kr(1) * \fade.kr(1);
+    Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
+}).add;
+
+
+
 SynthDef(\br, {
 	arg buf=0, rate=1, start=0, end;
 	var sig, sig2, ptr, ptr2, env;
@@ -110,8 +111,7 @@ SynthDef(\br, {
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig2 = sig2 * env * \fade2.kr(0.0);
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
-    sig = Mix.ar([sig, sig2]);
-	Out.ar(\out.kr(0), sig);
+	Out.ar(\out.kr(0), Splay.ar([sig, sig2], 0));
 }).add;
 
 

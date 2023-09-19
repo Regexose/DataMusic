@@ -45,6 +45,11 @@ s.waitForBoot({
 ~onOffUser
 ~onOffUser.(False)
 MIDIFunc.trace(false)
+(
+
+~activeSynths[\50].free
+)
+s.defaultGroup.freeAll
 
 ~liveBuffer.plot
 ~buffers[\claudia][\base].play
