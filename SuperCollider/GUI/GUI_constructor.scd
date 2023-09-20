@@ -8,15 +8,25 @@ GUI mit verschiedenen SubWindows
 (
 
 ~buildSelectors = {
-	| midikeys, buffers, datakeys, funcs|
-	var win, keySelector, keyLabels, bufSelector, bufLabels, knobs, toggles, toggleLabels;
+	| midikeys, keynames, buffers, datakeys, funcs|
+	var win, boxes, keySelector, keyLabels, bufSelector, bufLabels, knobs, toggles, toggleLabels, layout, lay=();
 
 	win = Window.new("selector", Rect(150, 30, 800, 400)).front
 	.alwaysOnTop_(true);
+	boxes = midikeys.collect({
+		|k,i|
+		View.new()
+		.background_(Color.rand)
+		.alpha_(0.2)
+		.fixedHeight_(40)
+		.name_(k.asString)
+	});
+
 	keyLabels = midikeys.collect({
 		|k,i|
 		StaticText.new()
-		.string_("midikey " ++ k)
+		.string_(keynames[i] ++ "__" ++ k)
+		.align_(\center)
 	});
 	keySelector = midikeys.collect({
 		|k,i|
@@ -62,7 +72,15 @@ GUI mit verschiedenen SubWindows
 
 	});
 
-	win.layout_(VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs), HLayout(*bufSelector), HLayout(*bufLabels), HLayout(*toggles)));
+	lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs));
+	lay[\box] = HLayout(*boxes);
+	lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box]))).mode_(\stackAll);
+	lay[\buf] = VLayout( HLayout(*bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
+	lay[\keys].postln;
+	//layout = VLayout(lay[\stack1], lay[\stack2], HLayout(*toggles));
+	//lay.values.do({|k| k.class.postln});
+	layout = VLayout(lay[\stack1], nil, lay[\buf], nil, HLayout(*toggles));
+	win.layout_(layout);
 
 };
 

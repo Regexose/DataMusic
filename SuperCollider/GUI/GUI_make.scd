@@ -1,5 +1,5 @@
 (
-var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
+var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "grain_stutter", "3 mean options", "organ", "live", "impulses"], trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
 
 ~style = (
 	// FONTS
@@ -17,7 +17,7 @@ var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser,
 );
 
 Window.closeAll;
-~selectors = ~buildSelectors.(midikeys,  ~buffers.keys.asArray, ~data.keys.remove(\index), trigFuncs );
+~selectors = ~buildSelectors.(midikeys, keynames,  ~buffers.keys.asArray, ~data.keys.remove(\index), trigFuncs );
 ~dataView = ~buildDataView.();
 
 CmdPeriod.add({ [~selectors, ~dataView].close});

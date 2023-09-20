@@ -112,7 +112,7 @@ PathName(~samplesPath).entries.do({
 
 	~rf.keys.asArray.sort.do({
 		|k, i|
-		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.temp, \image -> ~dataImages.temp));
+		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.temp, \image ->   ~dataImages.temp));
 	});
 
 	[\base, \tension, \relax].do({

@@ -47,7 +47,7 @@ s.waitForBoot({
 MIDIFunc.trace(false)
 (
 
-~activeSynths[\50].free
+~currentData.keys
 )
 s.defaultGroup.freeAll
 

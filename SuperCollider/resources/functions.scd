@@ -84,38 +84,7 @@
 
 
 
-//restarts play if new MIDI key is pressed with Live Buffer
-~onOffLive = {
-	|act|
-	var rec, rout, syn;
-	if (act == 1,
-		{
-			MIDIdef.noteOn(\onoffLiveOn, {
-				|vel, num|
-				if ((rout != nil || rout.isPlaying), {"stopping rout".postln; rout.stop});
-				syn = ~activeSynths.atFail(num.asSymbol,
-					{"making synth with key %".format(num).postln; Synth(\default)});
-				syn.free;
-				rec = Synth(\rec, [\buf, ~liveBuffer]);
-				"recording on % ".format(num).postln;
-			});
-			MIDIdef.noteOff(\onoffLiveOff, {
-				|vel, num|
-				"stopped recording".postln;
-				rec.free;
-                ~currentSample[\base] = ~liveBuffer;
-				if (~rf.keys.includes(num.asSymbol),{
-					rout = Routine(~rf[num.asSymbol]).play
-				});
-				"playing demo %".format(~rf[num.asSymbol]).postln;
-			});
-		},{
-			"freeing MIDIdefs".postln;
-			[\onoffLiveOn, \onoffLiveOff].do{|n| MIDIdef(n).free};
-		}
-	)
 
-};
 
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUser = {
@@ -150,32 +119,6 @@
 
 };
 
-//always plays the complete data array with Live Buffer
-~oneShotLive = {
-	|act|
-	var rec, rout ;
-	if (act == 1,
-		{
-			MIDIdef.noteOn(\osLiveOn, {
-				|vel, num|
-				rec = Synth(\rec, [\buf, ~liveBuffer]);
-				"recording on % ".format(num).postln;
-			});
-			MIDIdef.noteOff(\osLiveOff, {
-				|vel, num|
-				"stopped recording".postln;
-				rec.free;
-				if (~rf.keys.includes(num.asSymbol),{
-					rout = Routine(~rf[num.asSymbol]).play
-				});
-				"playing demo %".format(~rf[num.asSymbol]).postln;
-			});
-		},{
-			"freeing MIDIdefs".postln;
-			[\osLiveOn, \osLiveOff].do{|n| MIDIdef(n).free};
-		}
-	)
-};
 
 //always plays the complete data array with User Sounds
 ~oneShotUser = {
@@ -207,29 +150,90 @@
 	)
 };
 
-//using tgrains_live with grainBuffer
-~liveGrain = {
-	|act|
-	var syn, rout ;
-	if (act == 1,
-		{
-			MIDIdef.noteOn(\lgOn, {
-				|vel, num|
-				~grainLive = Synth(\tgrains_live, [\buf, ~grainBuffer, \grainAmp, 0.8, \amp, 0.5]);
-				if (~rf.keys.includes(num.asSymbol),{
-					"playing demo %".format(num.asSymbol).postln;
-					rout = Routine(~rf[num.asSymbol]).play;
-				});
-			});
-			MIDIdef.noteOff(\lgOff, {
-				|vel, num|
-				rout.stop;
-				~grainLive.free;
-			});
-		},{
-			"freeing MIDIdefs".postln;
-			[\lgOn, \lgOff].do{|n| MIDIdef(n).free};
-			~grainBuffer.free;
-		}
-	)
-};
+//restarts play if new MIDI key is pressed with Live Buffer
+// ~onOffLive = {
+// 	|act|
+// 	var rec, rout, syn;
+// 	if (act == 1,
+// 		{
+// 			MIDIdef.noteOn(\onoffLiveOn, {
+// 				|vel, num|
+// 				if ((rout != nil || rout.isPlaying), {"stopping rout".postln; rout.stop});
+// 				syn = ~activeSynths.atFail(num.asSymbol,
+// 				{"making synth with key %".format(num).postln; Synth(\default)});
+// 				syn.free;
+// 				rec = Synth(\rec, [\buf, ~liveBuffer]);
+// 				"recording on % ".format(num).postln;
+// 			});
+// 			MIDIdef.noteOff(\onoffLiveOff, {
+// 				|vel, num|
+// 				"stopped recording".postln;
+// 				rec.free;
+// 				~currentSample[\base] = ~liveBuffer;
+// 				if (~rf.keys.includes(num.asSymbol),{
+// 					rout = Routine(~rf[num.asSymbol]).play
+// 				});
+// 				"playing demo %".format(~rf[num.asSymbol]).postln;
+// 			});
+// 		},{
+// 			"freeing MIDIdefs".postln;
+// 			[\onoffLiveOn, \onoffLiveOff].do{|n| MIDIdef(n).free};
+// 		}
+// 	)
+//
+// };
+//
+// //always plays the complete data array with Live Buffer
+// ~oneShotLive = {
+// 	|act|
+// 	var rec, rout ;
+// 	if (act == 1,
+// 		{
+// 			MIDIdef.noteOn(\osLiveOn, {
+// 				|vel, num|
+// 				rec = Synth(\rec, [\buf, ~liveBuffer]);
+// 				"recording on % ".format(num).postln;
+// 			});
+// 			MIDIdef.noteOff(\osLiveOff, {
+// 				|vel, num|
+// 				"stopped recording".postln;
+// 				rec.free;
+// 				if (~rf.keys.includes(num.asSymbol),{
+// 					rout = Routine(~rf[num.asSymbol]).play
+// 				});
+// 				"playing demo %".format(~rf[num.asSymbol]).postln;
+// 			});
+// 		},{
+// 			"freeing MIDIdefs".postln;
+// 			[\osLiveOn, \osLiveOff].do{|n| MIDIdef(n).free};
+// 		}
+// 	)
+// };
+//
+//
+// //using tgrains_live with grainBuffer
+// ~liveGrain = {
+// 	|act|
+// 	var syn, rout ;
+// 	if (act == 1,
+// 		{
+// 			MIDIdef.noteOn(\lgOn, {
+// 				|vel, num|
+// 				~grainLive = Synth(\tgrains_live, [\buf, ~grainBuffer, \grainAmp, 0.8, \amp, 0.5]);
+// 				if (~rf.keys.includes(num.asSymbol),{
+// 					"playing demo %".format(num.asSymbol).postln;
+// 					rout = Routine(~rf[num.asSymbol]).play;
+// 				});
+// 			});
+// 			MIDIdef.noteOff(\lgOff, {
+// 				|vel, num|
+// 				rout.stop;
+// 				~grainLive.free;
+// 			});
+// 		},{
+// 			"freeing MIDIdefs".postln;
+// 			[\lgOn, \lgOff].do{|n| MIDIdef(n).free};
+// 			~grainBuffer.free;
+// 		}
+// 	)
+// };

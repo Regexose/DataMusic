@@ -35,7 +35,7 @@
 		s.sync;
 		sec = buf.numFrames/(s.sampleRate * 100);
 		synGroup = Group.new;
-		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 2, \grainDur, sec], synGroup, \addToHead);
+		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.5, \buf, buf, \dens, 2, \grainDur, sec], synGroup, \addToHead);
 		syn2 = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.1], synGroup, \addToHead);
 		s.sync;
 		~activeSynths.put(\50, synGroup);
@@ -64,7 +64,7 @@
 		buf = ~currentSample[\base].normalize;
 		s.sync;
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.67, \dens, 10, \pos, sec * 20]);
+		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.5, \dens, 10, \pos, sec * 20]);
 		s.sync;
 		~activeSynths.put(\52, syn);
 		normalized.do({
@@ -117,10 +117,11 @@
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 48.0);
 		buf = ~liveBuffer;
-		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains_live, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, [0,0]]);
 		s.sync;
+		sec = buf.numFrames/s.sampleRate * 50;
+		syn = Synth(\tgrains_live, [\buf, buf, \dens, 12, \grainDur, 1.4, \grainAmp, 0.5, \harm, [0,0]]);
 		~activeSynths.put(\62, syn);
+
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
@@ -145,7 +146,7 @@
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-			syn.set(\rings, d.linlin(300, 2000, 0.2, 10) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.09));
+			syn.set(\rings, d.linlin(300, 2000, 0.2, 10) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.09), \punch, d.linlin(300, 2000, 0.25, 0.1));
 			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 
