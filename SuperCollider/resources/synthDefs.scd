@@ -47,28 +47,28 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 // Granular Synth
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
-	var sig, env, mic, pos, ptr, buf=\buf.kr(0);
+	var sig, sig2, env, mic, pos, ptr, buf=\buf.kr(0);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	mic = SoundIn.ar(0, \in.kr(1));
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
 	BufWr.ar(mic, buf, ptr);
-
 	pos = (ptr/SampleRate.ir) -1;
-	pos = pos + LFNoise1.kr(100).bipolar(0.0);
+	pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
 
 	sig = TGrains.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(40)),
 		bufnum: \buf.kr(0),
-		rate: \rate.kr(1) * \harm.kr(0).midiratio,
+		rate: \rate.kr(1) * \harm.kr([0, 0]).midiratio,
 		centerPos: pos,
 		dur: \grainDur.kr(1.5),
 		pan: 0,
 		amp: \grainAmp.kr(0.3),
 		interp: \ip.kr(4)
 	);
+	sig2 = BufRd.ar(1, buf, ptr) * env * \fade2.kr(0.0);
 	sig = sig * env * \amp.kr(1) * \fade.kr(1);
-	Out.ar(\out.kr(0), sig);
+	Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
 }).add;
 
 SynthDef(\tgrains, {

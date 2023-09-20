@@ -34,10 +34,10 @@
 		buf = ~currentSample[\base].normalize;
 		s.sync;
 		sec = buf.numFrames/(s.sampleRate * 100);
-		sec.postln;
 		synGroup = Group.new;
 		syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.6, \buf, buf, \dens, 2, \grainDur, sec], synGroup, \addToHead);
 		syn2 = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.1], synGroup, \addToHead);
+		s.sync;
 		~activeSynths.put(\50, synGroup);
 		normalized.do({
 			|d, i|
@@ -65,6 +65,7 @@
 		s.sync;
 		sec = buf.numFrames/s.sampleRate * 50;
 		syn = Synth(\tgrains, [\buf, buf, \amp, 0.4, \grainAmp, 0.67, \dens, 10, \pos, sec * 20]);
+		s.sync;
 		~activeSynths.put(\52, syn);
 		normalized.do({
 			|d, i|
@@ -114,16 +115,17 @@
 		var data, normalized, buf, syn, sec, reduce;
 		reduce = ~currentData[\62][\reduce];
 		data = ~currentData[\62][\data];
-		normalized = data.asArray.normalize(36.0, 60.0);
-		buf = ~currentSample[\base];
+		normalized = data.asArray.normalize(36.0, 48.0);
+		buf = ~liveBuffer;
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, 0]);
+		syn = Synth(\tgrains_live, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, [0,0]]);
+		s.sync;
 		~activeSynths.put(\62, syn);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-			syn.set(\harm, d,  \pan, d.linlin(36, 60, -1, 1), \pos, sec *i);
-			0.03.wait;
+			syn.set(\harm, [d-12, d-24], \pan, d.linlin(36, 48, -1, 1), \jitter,  d.linlin(36, 48, 0.0001, 1.0));
+			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 
 		});
@@ -134,15 +136,15 @@
 		var data, normalized, buf, syn, sec, reduce;
 		reduce = ~currentData[\64][\reduce];
 		data = ~currentData[\64][\data];
-		normalized = data.asArray.normalize(13, 114);
+		normalized = data.asArray.normalize(300, 2000);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\tgrains, [\buf, buf]);
+		syn = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.1]);
 		~activeSynths.put(\64, syn);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-			syn.set(\harm, [d, d-12, d+12], \pos, sec *1);
+			syn.set(\rings, d.linlin(300, 2000, 1, 4) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.03));
 			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 
