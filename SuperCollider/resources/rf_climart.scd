@@ -89,7 +89,6 @@
 	},
 
 
-	// One Shot Play
 	\60 : {
         var syn, data, compressed, normalized, reduce;
         reduce= ~currentData[\60][\reduce];
@@ -112,10 +111,11 @@
     },
 
 	\62 : {
-		var data, normalized, buf, syn, sec, reduce;
+		var data, normalized, compressed, buf, syn, sec, reduce;
 		reduce = ~currentData[\62][\reduce];
-		data = ~currentData[\62][\data];
-		normalized = data.asArray.normalize(36.0, 48.0);
+		data = ~currentData[\62][\data].asArray;
+		compressed = data.select({|item, i| i%reduce == 0});
+		normalized = compressed.normalize(36.0, 48.0);
 		buf = ~liveBuffer;
 		sec = buf.numFrames/s.sampleRate * 50;
 		syn = Synth(\tgrains_live, [\buf, buf, \dens, 12, \grainDur, 1.4, \harm, [0,0]]);
@@ -133,18 +133,19 @@
 	},
 
 	\64: {
-		var data, normalized, buf, syn, sec, reduce;
+		var data, compressed, normalized, buf, syn, sec, reduce;
 		reduce = ~currentData[\64][\reduce];
-		data = ~currentData[\64][\data];
-		normalized = data.asArray.normalize(300, 2000);
+		data = ~currentData[\64][\data].asArray;
+		compressed = data.select({|item, i| i%reduce == 0});
+		normalized = compressed.normalize(300, 2000);
 		buf = ~currentSample[\base];
 		sec = buf.numFrames/s.sampleRate * 50;
-		syn = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.1]);
+		syn = Synth(\dynklank, [\freqs, 300!3, \rings, 0.2!3, \decayScale, 0.001, \amp, 0.6, \punch, 0.2, \dec, 0.3]);
 		~activeSynths.put(\64, syn);
 		normalized.do({
 			|d, i|
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
-			syn.set(\rings, d.linlin(300, 2000, 1, 4) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.03));
+			syn.set(\rings, d.linlin(300, 2000, 0.2, 10) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.09));
 			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
 

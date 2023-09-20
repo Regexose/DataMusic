@@ -1,5 +1,5 @@
 (
-var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser, \onOffLive: ~onOffLive, \oneShotLive: ~oneShotLive);
+var mkImg, midikeys= ~rf.keys.asArray.sort, trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
 
 ~style = (
 	// FONTS
