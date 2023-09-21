@@ -1,14 +1,20 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
-~dataFileName = "zku_3007-0508_noTime.csv";
+~imagePath = PathName(~projectRoot).parentPath ++ "data/img";
+~dataFileName = "zku_monat_7_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
-~activeSynths = ();
+~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
+~currentSample = Dictionary.new;
+~dataImages = ();
+~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
+~activeSynths = ();
 ~data = ();
-~currentData = ();
+~currentData = Dictionary.new;
+
 ~dataGroups = (
 	\freq: [// suitable for frequency values
 		\solar,

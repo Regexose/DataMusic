@@ -1,53 +1,115 @@
 /*
 GUI mit verschiedenen SubWindows
--  drop down data Selektor
+- Selector
+
 - playhead über Daten
 
 */
 (
-~buildWindow = {
-	// Builds the main window that contains everything
-	arg window_title, x=10, y=10, width, height;
-	Window(window_title, Rect(x, y, width, height))
-	.background_(~style.window_color)
-	.front;
-};
 
-~buildTopLevel = {
-	// Buildts a top level composite view that manages child views' spacing.
-	arg window, posx=10, posy=10, width, height;
-	var compView;
-	compView = CompositeView(window, Rect(posx, posy, width, height))
-	.background_(~style.top_level_frame_color);
-	compView.addFlowLayout(10@10);
-	compView.decorator.gap_(0@10);
-	//"built toplevel".postln;
-	compView;
-};
+~buildSelectors = {
+	| midikeys, keynames, buffers, datakeys, funcs|
+	var win, boxes, keySelector, keyLabels, bufSelector, bufLabels, knobs, toggles, toggleLabels, layout, lay=();
 
-~buildDataSelector = {
-	arg top_level, all_selectors_width, selector_height, selectorsize, offset, midikeys, items;
-	var selectorData, compView, selectors, selector_labels;
-	midikeys.postln;
-	compView = CompositeView(top_level, Rect(0, 0, all_selectors_width, selector_height *2))
-	.background_(~style.bank_frame_color);
-	selectors = Dictionary.new;
-	midikeys.do({
-		|mid, i|
-		selectors[mid] = PopUpMenu(compView, Rect((selectorsize+offset) * i, offset,
-			selectorsize, selectorsize/2))
-		.items_(items.asArray)
+	win = Window.new("selector", Rect(150, 30, 800, 400)).front
+	.alwaysOnTop_(true);
+	boxes = midikeys.collect({
+		|k,i|
+		View.new()
+		.background_(Color.rand)
+		.alpha_(0.2)
+		.fixedHeight_(40)
+		.name_(k.asString)
+	});
+
+	keyLabels = midikeys.collect({
+		|k,i|
+		StaticText.new()
+		.string_(keynames[i] ++ "__" ++ k)
+		.align_(\center)
+	});
+	keySelector = midikeys.collect({
+		|k,i|
+		PopUpMenu.new()
+		.items_(datakeys.asArray)
 		.allowsReselection_(True)
 		.action_({arg pm; ~selectorAction.(pm)})
-		.name_(mid.asString);
+		.name_(k)
 	});
-	selector_labels = midikeys.do({
-		|mid, i|
-		StaticText(compView,  Rect((selectorsize+offset) * i, offset*3, selectorsize, selectorsize/2))
-		.align_(\center)
-		.stringColor_(Color.black)
-		.string_("midikey "++ mid);
+		knobs = midikeys.collect({
+		|k,i|
+		Knob.new(bounds: Rect(0, 0, 5, 5))
+		.action_({arg kn; ~reduceAction.(kn)})
+		.name_(k)
 	});
-	selectorData = [compView, selectors, selector_labels];
+
+	bufLabels = [\base, \tension, \relax].collect({
+		|l,i|
+		StaticText.new()
+		.string_("buffer " ++ l)
+	});
+
+	bufSelector = [\base, \tension, \relax].collect({
+		|k, i|
+		PopUpMenu.new()
+		.items_(buffers)
+		.allowsReselection_(True)
+		.action_({arg pm; ~bufferSelectorAction.(pm)})
+		.name_(k)
+	});
+
+	toggles = funcs.values.asArray.collect({
+		|func, i|
+		var names = funcs.keys.asArray;
+		Button.new(bounds: Rect(40, 20))
+		.states_([
+			[(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black],
+		])
+		.mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
+		.focusColor_(Color.blue)
+		.valueAction_(1)
+		//.action_({|btn| ; func.(btn.value) })
+
+	});
+
+	lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs));
+	lay[\box] = HLayout(*boxes);
+	lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box]))).mode_(\stackAll);
+	lay[\buf] = VLayout( HLayout(*bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
+	lay[\keys].postln;
+	//layout = VLayout(lay[\stack1], lay[\stack2], HLayout(*toggles));
+	//lay.values.do({|k| k.class.postln});
+	layout = VLayout(lay[\stack1], nil, lay[\buf], nil, HLayout(*toggles));
+	win.layout_(layout);
+
 };
+
+~buildDataView = {
+	/*
+	- Recording Vorzähler und Fortschritt
+	- Knobs mit Auflösung: manipulation des reduce Faktors
+	*/
+	var win, dataView, dataPlot, image, recCountdown, recProgress;
+	image = Image.open(~imagePath +/+ "temp.png");
+	win = Window.new("UserControl", Rect(450, 450, 800, 420))
+	.background_(~style[\top_level_frame_xcolor]);
+	win.front;
+	"building dataview ...".postln;
+	~databg = View.new(win, Rect(5, 0, 800, 400)).backgroundImage_(image);
+	~cursor = UserView.new(win, Rect(0, 0, 800, 400))
+	.drawFunc_({|uv|
+		Pen.strokeColor = Color.red;
+		Pen.moveTo(~posX@0);
+		Pen.lineTo(~posX@win.bounds.height);
+		Pen.fillStroke;
+	});
+	win.layout_(StackLayout(~cursor, ~databg ).mode_(\stackAll));
+
+
+	//ToDo: einen dataBufer als backgroundImage und dann einen Playhead analog zur spielenden Funktion
+
+
+
+};
+
 )

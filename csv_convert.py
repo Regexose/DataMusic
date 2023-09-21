@@ -3,9 +3,10 @@ import csv
 import re
 
 txt_file_path = 'data/test_data01.txt'
-csv_path = 'data/zku_3007-0508_noTime.csv'
-csv_file = 'data/zku_3007-0508.csv'
-df = pd.read_csv(csv_file, sep=';', thousands='.', decimal=',')
+csv_path = 'data/zku_monat_7_noTime.csv'
+csv_file = 'data/zku_monat_7.csv'
+#df = pd.read_csv(csv_file, sep=';', thousands='.', decimal=',')
+df = pd.read_csv(csv_file, sep=';')
 df_columns = list(df.columns.values)[1:]
 print("df columns has {} names from {} ..... {}".format(len(df_columns), df_columns[0:2], df_columns[-2:]))
 no_brackets = []

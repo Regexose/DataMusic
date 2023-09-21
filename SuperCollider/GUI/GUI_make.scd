@@ -1,5 +1,5 @@
 (
-var window, top, w_width=1000, w_height=600, dataSelector, h_selector=100, itemsize=100, offset=20, midikeys= ~rf.keys.asArray;
+var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "grain_stutter", "3 mean options", "organ", "live", "impulses"], trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
 
 ~style = (
 	// FONTS
@@ -16,12 +16,11 @@ var window, top, w_width=1000, w_height=600, dataSelector, h_selector=100, items
 
 );
 
-window = ~buildWindow.("DataMusic", 10, 10, w_width, w_height);
-top = ~buildTopLevel.(window, 10, 10, w_width, w_height);
-// "toplevel".postln;
-dataSelector = ~buildDataSelector.(top, (itemsize + offset ) * midikeys.size, h_selector, itemsize, offset, midikeys, ~data.keys);
+Window.closeAll;
+~selectors = ~buildSelectors.(midikeys, keynames,  ~buffers.keys.asArray, ~data.keys.remove(\index), trigFuncs );
+~dataView = ~buildDataView.();
 
-CmdPeriod.add({window.close});
+CmdPeriod.add({ [~selectors, ~dataView].close});
 
 
 )

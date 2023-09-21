@@ -5,51 +5,40 @@ ServerTree.removeAll; // löscht alle funktionen
 ~configFile.load;
 ~resourcePath = ~projectRoot ++ "resources/";
 
-Server.default.options.outDevice_(~audioOut);
-Server.default.options.inDevice_(~audioIn);
+Server.default.options.outDevice_(~audioInterface);
+Server.default.options.inDevice_(~audioInterface);
 Server.default.options.numInputBusChannels_(1);
-s.newBusAllocators;
+//s.newBusAllocators;
 
 s.waitForBoot({
 	s.freeAll;
 	Buffer.freeAll;
+	OSCdef.freeAll;
+	MIDIdef.freeAll;
 	s.sync;
 	/// load SynthDefs, Constants, Functions
+
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
+	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
-	~createData.(); ~initCurrentData.();
+	~createData.(); ~initCurrent.();
 	(~resourcePath ++ "functions.scd").load;
-	(~resourcePath ++ "routinefunctions.scd").load;
+	//(~resourcePath ++ "routinefunctions.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
 	"done".postln;
 })
-
 )
-~liveBuffer.numFrames/~data.temperature.size
-~replacePlay.(True)
-~replacePlay.(False)
-~oneShotPlay.(True)
-~oneShotPlay.(False)
-~liveGrain.(True)
-~liveGrain.(False)
-~currentData[\50]
-~grainBuffer.play
-rrand(48,60)
 
-~liveBuffer.play
+(
+~recordUser.("gunter", "base");
+~recordUser.("gunter", "tension");
+~recordUser.("gunter", "relax");
+)
+// stop all Synths
+s.defaultGroup.freeAll
 
-~liveBuffer.plot
-MIDIFunc.trace(false);
 
-Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 0,  \pos2, 1, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
-Synth(\grainBuf, [\buf, ~liveBuffer, \dens, 20, \pos1, 1,  \pos2, 0, \pos3, 1.3, \harm, 1, \grainDur, 0.1]);
-Synth(\tgrains_live, [\buf, ~liveBuffer, \harm, [-12, 2, 12]])
-
-r({
-	s.record(~recordingPath +/+ "key48.wav", duration: 60);
-	wait(0.02);
-}).play
