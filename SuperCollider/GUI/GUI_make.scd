@@ -17,7 +17,7 @@ var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "grain_stutt
 );
 
 Window.closeAll;
-~selectors = ~buildSelectors.(midikeys, keynames,  ~buffers.keys.asArray, ~data.keys.remove(\index), trigFuncs );
+~selectors = ~buildSelectors.(midikeys, keynames,  ~buffers.keys.asArray, ~data.keys.remove(''), trigFuncs );
 ~dataView = ~buildDataView.();
 
 CmdPeriod.add({ [~selectors, ~dataView].close});

@@ -95,7 +95,7 @@ PathName(~samplesPath).entries.do({
 			var path;
 		"background image for % ".format(k).postln;
 		path =  "~/Desktop/" ++ k.asString ++ ".png";
-		dataPlot = ~data[k].asArray.plot(bounds: Rect(0, 0, 800, 400));
+		dataPlot = ~data[k].asArray.plot(bounds: Rect(0, 0, 900, 450));
 		0.05.wait;
 		image = Image.fromWindow(dataPlot.parent, dataPlot.interactionView.bounds); // get image from the view
 		//~dataImages.add(k -> image);

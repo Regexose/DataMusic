@@ -1,6 +1,6 @@
 ~dataPath = PathName(~projectRoot).parentPath ++ "data";
 ~imagePath = PathName(~projectRoot).parentPath ++ "data/img";
-~dataFileName = "zku_monat_7_noTime.csv";
+~dataFileName = "zku_OpenHausData_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;

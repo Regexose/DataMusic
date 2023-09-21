@@ -22,7 +22,7 @@
 	selected = menu.item.asSymbol;
 	key = menu.name;
 	imgPath = ~imagePath +/+ selected.asString ++ ".png";
-	image = Image.open(imgPath);
+	image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );
 	~currentData[key.asSymbol][\data] = ~data[selected];
 	~databg.setBackgroundImage(image);
 	~dataView.refresh;

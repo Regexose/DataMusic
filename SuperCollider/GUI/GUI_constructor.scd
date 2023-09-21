@@ -90,13 +90,15 @@ GUI mit verschiedenen SubWindows
 	- Knobs mit Auflösung: manipulation des reduce Faktors
 	*/
 	var win, dataView, dataPlot, image, recCountdown, recProgress;
+	//image = Image.open(~imagePath +/+ "temp.png").setSize(900, 450, \keepAspectRatio );
 	image = Image.open(~imagePath +/+ "temp.png");
-	win = Window.new("UserControl", Rect(450, 450, 800, 420))
+    image.setSize(900, 450, \keepAspectRatio );
+	win = Window.new("UserControl", Rect(450, 450, 1000, 460))
 	.background_(~style[\top_level_frame_xcolor]);
 	win.front;
 	"building dataview ...".postln;
-	~databg = View.new(win, Rect(5, 0, 800, 400)).backgroundImage_(image);
-	~cursor = UserView.new(win, Rect(0, 0, 800, 400))
+	~databg = View.new(win, Rect(5, 0, 900, 450)).backgroundImage_(image);
+	~cursor = UserView.new(win, Rect(0, 0, 900, 450))
 	.drawFunc_({|uv|
 		Pen.strokeColor = Color.red;
 		Pen.moveTo(~posX@0);

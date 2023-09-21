@@ -3,8 +3,8 @@ import csv
 import re
 
 txt_file_path = 'data/test_data01.txt'
-csv_path = 'data/zku_monat_7_noTime.csv'
-csv_file = 'data/zku_monat_7.csv'
+csv_path = 'data/zku_OpenHausData_noTime.csv'
+csv_file = 'data/zku_OpenHausData.csv'
 #df = pd.read_csv(csv_file, sep=';', thousands='.', decimal=',')
 df = pd.read_csv(csv_file, sep=';')
 df_columns = list(df.columns.values)[1:]

@@ -32,7 +32,7 @@ s.waitForBoot({
 	"done".postln;
 })
 )
-
+~data.keys
 (
 ~recordUser.("gunter", "base");
 ~recordUser.("gunter", "tension");
@@ -40,5 +40,4 @@ s.waitForBoot({
 )
 // stop all Synths
 s.defaultGroup.freeAll
-
-
+~makeDataImages.()

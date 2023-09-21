@@ -18,7 +18,7 @@
 			//"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh}; // Update GUI
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
 		});
 		syn.release(2);
 	},
@@ -45,7 +45,7 @@
             syn.set(\ffreq, d, \pos, sec * i);
 			syn2.set(\rings, d.linlin(300, 2000, 1, 4) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.03));
 			0.03.wait;
-		    defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+		    defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 		});
 		syn.release(2);
 		syn2.release(2);
@@ -83,7 +83,7 @@
 		     }
             {true}{"no case".postln};
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 		});
 		syn.release(2);
 	},
@@ -104,7 +104,7 @@
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
             0.05.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 
         });
 		syn.release(2);
@@ -127,7 +127,7 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\harm, [d-12, d-24], \pan, d.linlin(36, 48, -1, 1), \jitter,  d.linlin(36, 48, 0.0001, 1.0));
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 
 		});
 		syn.release(2);
@@ -148,7 +148,7 @@
 			"original data  %   normalized data   %  at   %".format(data[i].trunc(0.0001), d, i).postln;
 			syn.set(\rings, d.linlin(300, 2000, 0.2, 10) !3, \imp, d.linlin(300, 2000, 1, 20), \freqScale, d.linlin(300, 2000, -2.0, 2.0), \decayScale, d.linlin(300, 2000, 0.0001, 0.09), \punch, d.linlin(300, 2000, 0.25, 0.1));
 			0.04.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh;};
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 
 		});
 		syn.release(2);
