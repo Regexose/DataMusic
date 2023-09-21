@@ -31,51 +31,14 @@ s.waitForBoot({
 
 	"done".postln;
 })
-
 )
 
 (
 ~recordUser.("gunter", "base");
 ~recordUser.("gunter", "tension");
 ~recordUser.("gunter", "relax");
-
 )
-
-~onOffUser.(True)
-~onOffUser
-~onOffUser.(False)
-MIDIFunc.trace(false)
-(
-
-~currentData.keys
-)
+// stop all Synths
 s.defaultGroup.freeAll
 
-~liveBuffer.plot
-~buffers[\claudia][\base].play
-~posX
-~cursor.bounds.
-
-(
-
-)
-
-(
-		"background image for % ".format(\temp).postln;
-		~path = "~/Desktop/humidity.png";
-		~dataPlot = ~data[\humidity].asArray.plot(bounds: Rect(0, 0, 800, 400));
-		0.05.wait;
-		~image = Image.fromWindow(~dataPlot.parent, ~dataPlot.interactionView.bounds); // get image from the view
-~image.plot(showinfo:false);
-~image.asCompileString
-		~image.write(~path.standardizePath);
-		0.05.wait;
-		~image.bounds.h;
-
-
-)
-
-View
-~dataView.dataView
-)
 

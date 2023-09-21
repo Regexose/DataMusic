@@ -89,7 +89,7 @@
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUser = {
 	|act|
-	var rout, syn;
+	var rout;
 	if (act == 1,
 		{
 			MIDIdef.noteOn(\onoffUserOn, {
@@ -114,6 +114,7 @@
 		},{
 			"freeing MIDIdefs".postln;
 			[\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
+
 		}
 	)
 
@@ -123,7 +124,7 @@
 //always plays the complete data array with User Sounds
 ~oneShotUser = {
 	|act|
-	var rout ;
+	var rout;
 	if (act == 1,
 		{
 			MIDIdef.noteOn(\osUserOn, {
@@ -144,7 +145,8 @@
 
 			});
 		},{
-			"freeing MIDIdefs".postln;
+
+            "freeing MIDIdefs".postln;
 			[\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
 		}
 	)

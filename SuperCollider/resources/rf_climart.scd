@@ -15,7 +15,7 @@
 		~activeSynths.put(\48, syn);
 		normalized.do({
 			|d, i|
-			"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+			//"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \lg2, d.linexp(80, 3000, 0.03, 0.5), \harm, d.linlin(80,3000, 12,30));
 			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 775); ~cursor.refresh}; // Update GUI
