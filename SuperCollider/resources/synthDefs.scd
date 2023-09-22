@@ -66,9 +66,10 @@ SynthDef(\tgrains_live, {
 		amp: \grainAmp.kr(0.3),
 		interp: \ip.kr(4)
 	);
-	sig2 = BufRd.ar(1, buf, ptr) * env * \fade2.kr(0.0);
+	sig2 = BufRd.ar(1, buf, ptr) * env;
 	sig = sig * env * \amp.kr(1) * \fade.kr(1);
-	Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
+	Out.ar(\out.kr(0), sig);
+	Out.ar(\outdry.kr(0), sig2);
 }).add;
 
 SynthDef(\tgrains, {
@@ -76,7 +77,7 @@ SynthDef(\tgrains, {
     buf = \buf.kr(0);
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    sig2 = BufRd.ar(1, buf, ptr);
+    sig2 = BufRd.ar(1, buf, ptr) * env ;
 	sig = TGrains.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
@@ -88,10 +89,10 @@ SynthDef(\tgrains, {
 		amp: \grainAmp.kr(0.3),
 		interp: 4
 	);
-    sig2 = sig2 * env * \fade2.kr(0.0);
     sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
 	sig = sig * env * \amp.kr(1) * \fade.kr(1);
-    Out.ar(\out.kr(0), Mix.ar([sig, sig2]));
+    Out.ar(\out.kr(0), sig);
+	Out.ar(\outdry.kr(0), sig2);
 }).add;
 
 
@@ -99,19 +100,19 @@ SynthDef(\tgrains, {
 SynthDef(\br, {
 	arg buf=0, rate=1, start=0, end;
 	var sig, sig2, ptr, ptr2, env;
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate * \harm.kr(0).midiratio, start, end);
 	ptr2 = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    sig2 = BufRd.ar(1, buf, ptr2);
-	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    sig2 = BufRd.ar(1, buf, ptr2) * env;
 	sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
 		BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
-    sig2 = sig2 * env * \fade2.kr(0.0);
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
-	Out.ar(\out.kr(0), Splay.ar([sig, sig2], 0));
+	Out.ar(\out.kr(0), sig);
+	Out.ar(\outdry.kr(0), sig2);
 }).add;
 
 
@@ -124,6 +125,13 @@ SynthDef(\recOne, {
 	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
 	BufWr.ar(input, buf, ptr);
 }).add;
+
+SynthDef(\dry, {
+	var sig = In.ar(\in.kr(0), 2);
+	sig = sig * \fade.kr(0.0);
+	Out.ar(\out.kr(0), sig);
+}).add;
+
 
 // record stuff with mic
 SynthDef(\rec, {

@@ -36,6 +36,8 @@ MIDIIn.connectAll;
 ~midiOut = MIDIOut.new(0);
 ~midiIn = MIDIIn.new(0);
 
+~dry = Synth(\dry, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
+
 
 //Aktivieren von Fadern für die Lautstärke Regelung der midikeys
 ~rf.keys.asArray.sort.do({
@@ -59,8 +61,10 @@ MIDIIn.connectAll;
         arg ...args;
         args[..2].postln;
         if (i < 8, {
-            "set % to %".format(ch.asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
-            ~activeSynths[ch.asSymbol].set(\fade2, args[0].linlin(0, 127, 0.0, 1.0)) ;
+			"set % to %".format("dry", args[0].linlin(0, 127, 0.0, 1.0)).postln;
+            //~activeSynths[ch.asSymbol].set(\fade2, args[0].linlin(0, 127, 0.0, 1.0)) ;
+            ~dry.set(\fade, args[0].linlin(0, 127, 0.0, 1.0)) ;
+
         })
     },
     i+offset,
@@ -107,17 +111,21 @@ PathName(~samplesPath).entries.do({
 	}).play(AppClock);
 };
 
+
+
 //initialize currentData and currentSample
 ~initCurrent = {
 
 	~rf.keys.asArray.sort.do({
 		|k, i|
 		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.temp, \image ->   ~dataImages.temp));
+			//todo GUI noch aktualisieren
 	});
 
 	[\base, \tension, \relax].do({
 		|k|
 		~currentSample.add(k -> ~buffers[\voris][k])
+		//todo GUI noch aktualisieren
 	})
 };
 

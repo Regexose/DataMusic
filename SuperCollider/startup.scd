@@ -15,6 +15,9 @@ s.waitForBoot({
 	Buffer.freeAll;
 	OSCdef.freeAll;
 	MIDIdef.freeAll;
+	s.newBusAllocators;
+	~dryBus = Bus.audio(s,2);
+    ~wetBus = Bus.audio(s,2);
 	s.sync;
 	/// load SynthDefs, Constants, Functions
 
@@ -39,5 +42,7 @@ s.waitForBoot({
 ~recordUser.("ana_b", "relax");
 )
 // stop all Synths
+~currentSample[\relax].play
 s.defaultGroup.freeAll
 ~makeDataImages.()
+s.makeWindow
