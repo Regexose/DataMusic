@@ -34,9 +34,9 @@ s.waitForBoot({
 )
 ~data.keys
 (
-~recordUser.("gunter", "base");
-~recordUser.("gunter", "tension");
-~recordUser.("gunter", "relax");
+~recordUser.("ana_b", "base");
+~recordUser.("ana_b", "tension");
+~recordUser.("ana_b", "relax");
 )
 // stop all Synths
 s.defaultGroup.freeAll
