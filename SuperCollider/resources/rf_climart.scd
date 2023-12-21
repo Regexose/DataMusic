@@ -1,10 +1,13 @@
 ~rf = (
 	// on Off Play
 	\48 : {
-		// plays br-Synth with
+		/* plays br-Synth with fitler frequency manipulation \ffreq
+        \harmonic manipulation
+        \lag : playhead springt hin und her
+        */
 		var data, normalized, compressed, reduce, buf, syn;
-	 s.record(~recordingPath ++ "/jan_solar.wav", duration: 60);
-        wait(0.02);
+	/* s.record(~recordingPath ++ "/jan_solar.wav", duration: 60);
+        wait(0.02);*/
 		reduce = ~currentData[\48][\reduce];
 		data = ~currentData[\48][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
@@ -24,6 +27,9 @@
 	},
 
 	\50 : {
+        /*
+
+        */
 		var data, normalized, compressed, reduce, buf, syn, syn2, dry, synGroup, sec;
 	 /*  s.record(~recordingPath ++ "/karlwhct_50_soilmoisture.wav", duration: 60);
         wait(0.02);*/

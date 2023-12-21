@@ -6,8 +6,8 @@ ServerTree.removeAll; // löscht alle funktionen
 ~resourcePath = ~projectRoot ++ "resources/";
 
 Server.default.options.outDevice_(~audioInterface);
-Server.default.options.inDevice_(~audioInterface);
-Server.default.options.numInputBusChannels_(1);
+//Server.default.options.inDevice_(~audioInterface);
+Server.default.options.numInputBusChannels_(0);
 //s.newBusAllocators;
 
 s.waitForBoot({
@@ -30,7 +30,7 @@ s.waitForBoot({
 	//(~resourcePath ++ "routinefunctions.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
-	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
+	//thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
 	"done".postln;
 })
@@ -41,8 +41,26 @@ s.waitForBoot({
 ~recordUser.("ana_b", "tension");
 ~recordUser.("ana_b", "relax");
 )
+~scrub = Synth(\grainScrub, [\buf, ~currentSample[\base], \tr, 0.1 ]);
+~scrub.set(\buf, ~currentSample[\base], \tr, 0.5, \pos, 0.4)
+~scrub.set(\pan, )
+~scrub.set(\buf, ~currentSample[\tension])
+~scrub.set(\buf, ~currentSample[\base]
 // stop all Synths
-~currentSample[\relax].play
+~currentSample[\base]
 s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
+
+(
+
+{
+    var buf = ~currentSample[\relax] , trate, dur, clk, pos, pan;
+    trate = MouseY.kr(8,120,1);
+    dur = 12 / trate;
+    clk = Impulse.kr(trate);
+    pos = MouseX.kr(0,BufDur.kr(buf)) + TRand.kr(0, 0.01, clk);
+    pan = WhiteNoise.kr(0.6);
+    TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
+}.play;
+)

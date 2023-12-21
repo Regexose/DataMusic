@@ -95,6 +95,25 @@ SynthDef(\tgrains, {
 	Out.ar(\outdry.kr(0), sig2);
 }).add;
 
+// Scrubbing GrainSynth von Tgrains2 helpfile
+SynthDef(\grainScrub, {
+    |buf=0|
+    var sig, sig2, tr, trSpec, dur, clk, posSpec, pos, pan;
+    trSpec =  [8, 120, \lin].asSpec;
+    posSpec = [0, BufDur.kr(buf), \lin].asSpec;
+    pos = posSpec.map(\pos.kr(0));
+    tr = trSpec.map(\tr.kr(0.2));// trigger Rate: wie oft wird ein Grain abgespielt
+    dur = (12 / tr); // Grain Länge: bei langer trigger Rate längere Grains
+    clk = Impulse.kr(tr); // triggert die Grains
+    pos = pos + TRand.kr(0, 0.01, clk); // das TRand macht einen "an der POsition stehenbleiben"- Effekt, ohne den wäre die Position zu scharfkantig
+    pan = WhiteNoise.kr(\pan.kr(0.5));
+    sig = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
+    sig = sig * \amp.kr(0.3) * \fade.kr(1);
+    sig2 = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
+    Out.ar(\out.kr(0), sig);
+    Out.ar(\outdry.kr(3), sig2);
+}).add;
+
 
 
 SynthDef(\br, {
