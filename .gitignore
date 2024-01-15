@@ -1,9 +1,9 @@
 *.mp3
 *.wav
 *.aif
+*.gpk
 *.DS_Store
 .DS_Store
-.DS_Store
+
 SuperCollider/config.scd
-SuperCollider/config.scd
-SuperCollider/config.scd
+data/.DS_Store

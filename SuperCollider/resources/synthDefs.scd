@@ -54,10 +54,9 @@ SynthDef(\tgrains_live, {
 	BufWr.ar(mic, buf, ptr);
 	pos = (ptr/SampleRate.ir) -1;
 	pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
-
 	sig = TGrains.ar(
 		numChannels: 2,
-		trigger: Dust.kr(\dens.kr(40)),
+		trigger: Impulse.kr(\dens.kr(40)),
 		bufnum: \buf.kr(0),
 		rate: \rate.kr(1) * \harm.kr([0, 0]).midiratio,
 		centerPos: pos,
@@ -98,18 +97,30 @@ SynthDef(\tgrains, {
 // Scrubbing GrainSynth von Tgrains2 helpfile
 SynthDef(\grainScrub, {
     |buf=0|
-    var sig, sig2, tr, trSpec, dur, clk, posSpec, pos, pan;
-    trSpec =  [8, 120, \lin].asSpec;
+    var sig, sig2, tr, trSpec, dur, clk, posSpec, pos, pan, env;
+    trSpec =  [8, 60, \lin].asSpec;
     posSpec = [0, BufDur.kr(buf), \lin].asSpec;
     pos = posSpec.map(\pos.kr(0));
     tr = trSpec.map(\tr.kr(0.2));// trigger Rate: wie oft wird ein Grain abgespielt
     dur = (12 / tr); // Grain Länge: bei langer trigger Rate längere Grains
-    clk = Impulse.kr(tr); // triggert die Grains
+    clk = Impulse.kr(tr); // triggert die Grains, relativ zu ihrer Dauer
     pos = pos + TRand.kr(0, 0.01, clk); // das TRand macht einen "an der POsition stehenbleiben"- Effekt, ohne den wäre die Position zu scharfkantig
     pan = WhiteNoise.kr(\pan.kr(0.5));
-    sig = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
-    sig = sig * \amp.kr(0.3) * \fade.kr(1);
-    sig2 = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
+    sig = TGrains2.ar(
+        numChannels: 2,
+        trigger: clk,
+        bufnum: buf,
+        rate: \rate.kr(1) *  \harm.kr(0).midiratio,
+        centerPos: pos,
+        dur: dur,
+        pan: pan,
+        amp: 0.1,
+        att: dur * 0.3,
+        dec: dur * 0.5);
+    env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    sig = sig * \amp.kr(0.3) * \fade.kr(1) * env;
+    sig = RLPF.ar(sig, \ffreq.kr(1500), \rq.kr(0.9));
+    sig2 = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5) * env;
     Out.ar(\out.kr(0), sig);
     Out.ar(\outdry.kr(3), sig2);
 }).add;

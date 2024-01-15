@@ -6,8 +6,8 @@ ServerTree.removeAll; // löscht alle funktionen
 ~resourcePath = ~projectRoot ++ "resources/";
 
 Server.default.options.outDevice_(~audioInterface);
-//Server.default.options.inDevice_(~audioInterface);
-Server.default.options.numInputBusChannels_(0);
+Server.default.options.inDevice_(~audioInterface);
+Server.default.options.numInputBusChannels_(1);
 //s.newBusAllocators;
 
 s.waitForBoot({
@@ -30,14 +30,14 @@ s.waitForBoot({
 	//(~resourcePath ++ "routinefunctions.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
-	//thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
+	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
 
 	"done".postln;
 })
 )
 ~data.keys
 (
-~recordUser.("ana_b", "base");
+~recordUser.("boris","base");
 ~recordUser.("ana_b", "tension");
 ~recordUser.("ana_b", "relax");
 )
@@ -45,7 +45,7 @@ s.waitForBoot({
 ~scrub.set(\buf, ~currentSample[\base], \tr, 0.5, \pos, 0.4)
 ~scrub.set(\pan, )
 ~scrub.set(\buf, ~currentSample[\tension])
-~scrub.set(\buf, ~currentSample[\base]
+~scrub.set(\buf, ~currentSample[\relax])
 // stop all Synths
 ~currentSample[\base]
 s.defaultGroup.freeAll
