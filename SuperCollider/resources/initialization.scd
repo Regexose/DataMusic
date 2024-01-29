@@ -38,7 +38,7 @@ MIDIIn.connectAll;
 
 ~dry = Synth(\dry, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
 
-
+~routines = ();
 //Aktivieren von Fadern für die Lautstärke Regelung der midikeys
 ~rf.keys.asArray.sort.do({
     |ch, i|
@@ -70,7 +70,7 @@ MIDIIn.connectAll;
     i+offset,
     1
     );
-
+~routines[ch] = Routine(~rf[ch]);
 
 });
 

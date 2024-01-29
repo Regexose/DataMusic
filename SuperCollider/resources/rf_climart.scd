@@ -19,13 +19,14 @@
 			//"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
 			syn.set(\ffreq, d, \harm, d.linlin(20, 3000, -12, 12),  \pos, i.linlin(0, normalized.size, 0.0, 1.0 ));
 			0.05.wait;
-			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
+            defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
 		});
 		syn.release(2);
+
 	},
 
-	\50 : {
-		/* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
+	\50 :{
+        /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
         und harmonischer verstimmung
         */
 		var data, normalized, compressed, reduce, buf, syn;

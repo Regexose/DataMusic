@@ -1,78 +1,78 @@
 ~makeWaveTable = {
-	|size=4096, external, name|
-	var sig, wt, buf;
-	external = external.sort.reverse.asArray;
-	external = external.normalize(external.last, external[0]/2);
-	external[0..15].postln;
-	r{
-		buf = Buffer.alloc(s, size*2);
-		s.sync;
-		buf.sine1(external[0..15], asWavetable:true);
-		//buf.plot;
-		s.sync;
-		~buffers.add(name.asSymbol -> buf);
-		"made buffer  %".format(~buffers[name]).postln;
+    |size=4096, external, name|
+    var sig, wt, buf;
+    external = external.sort.reverse.asArray;
+    external = external.normalize(external.last, external[0]/2);
+    external[0..15].postln;
+    r{
+        buf = Buffer.alloc(s, size*2);
+        s.sync;
+        buf.sine1(external[0..15], asWavetable:true);
+        //buf.plot;
+        s.sync;
+        ~buffers.add(name.asSymbol -> buf);
+        "made buffer  %".format(~buffers[name]).postln;
 
-	}.play(AppClock);
+    }.play(AppClock);
 };
 
 ~selectorAction = {
-	|menu|
-	var key, selected, imgPath, image;
-	selected = menu.item.asSymbol;
-	key = menu.name;
-	imgPath = ~imagePath +/+ selected.asString ++ ".png";
-	image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );
-	~currentData[key.asSymbol][\data] = ~data[selected];
-	~databg.setBackgroundImage(image);
-	~dataView.refresh;
-	"set % with %".format(key, selected).postln;
+    |menu|
+    var key, selected, imgPath, image;
+    selected = menu.item.asSymbol;
+    key = menu.name;
+    imgPath = ~imagePath +/+ selected.asString ++ ".png";
+    image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );
+    ~currentData[key.asSymbol][\data] = ~data[selected];
+    ~databg.setBackgroundImage(image);
+    ~dataView.refresh;
+    "set % with %".format(key, selected).postln;
 };
 
 ~bufferSelectorAction = {
-	|menu|
-	var key, selected, filePath, buf;
-	selected = menu.item.asSymbol;
-	key = menu.name;
-	filePath = PathName(~samplesPath +/+ selected +/+ key ++ ".wav");
-	buf = Buffer.read(s, filePath.fullPath);
-	~currentSample.add(key.asSymbol -> buf);
-	"set % with %".format(key, selected).postln;
+    |menu|
+    var key, selected, filePath, buf;
+    selected = menu.item.asSymbol;
+    key = menu.name;
+    filePath = PathName(~samplesPath +/+ selected +/+ key ++ ".wav");
+    buf = Buffer.read(s, filePath.fullPath);
+    ~currentSample.add(key.asSymbol -> buf);
+    "set % with %".format(key, selected).postln;
 };
 
 ~reduceAction = {
-	|knob|
-	var keyKnob, knobVal;
-	keyKnob = knob.name.asSymbol;
-	knobVal = knob.value.linlin(0.0, 1.0, 1, 50).asInteger;
-	~currentData[keyKnob][\reduce] = knobVal;
-	"set keyKnob % to  %".format(keyKnob, knobVal).postln;
+    |knob|
+    var keyKnob, knobVal;
+    keyKnob = knob.name.asSymbol;
+    knobVal = knob.value.linlin(0.0, 1.0, 1, 50).asInteger;
+    ~currentData[keyKnob][\reduce] = knobVal;
+    "set keyKnob % to  %".format(keyKnob, knobVal).postln;
 };
 
 
 ~recordUser = {
-	|username, typename|
-	var rec, filePath, file, progress=0;
-	//make Gui for record progress
-	rec = Synth(\recOne, [\buf, ~userSound]);
-	o = OSCdef(\listener, { |msg|
-		{progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
-			"record done".postln;
-			rec.free;
-			File.mkdir(~samplesPath +/+ username);
-			~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
-			/*if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
-				{"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});*/
-			filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
-			~buffers[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
-	})}, '/cursor');
+    |username, typename|
+    var rec, filePath, file, progress=0;
+    //make Gui for record progress
+    rec = Synth(\recOne, [\buf, ~userSound]);
+    o = OSCdef(\listener, { |msg|
+        {progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
+            "record done".postln;
+            rec.free;
+            File.mkdir(~samplesPath +/+ username);
+            ~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
+            /*if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
+            {"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});*/
+            filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
+            ~buffers[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
+    })}, '/cursor');
 
 };
 
 ~moveCursor = {
-	|pos|
-	~posX = pos;
-	~cursor.refresh;
+    |pos|
+    ~posX = pos;
+    ~cursor.refresh;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,68 +88,83 @@
 
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUser = {
-	|act|
-	var rout;
-	if (act == 1,
-		{
-			MIDIdef.noteOn(\onoffUserOn, {
-				|vel, num|
-				if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
-				/*		syn = ~activeSynths.atFail(num.asSymbol,
-				{"making default synth with key %".format(num).postln; Synth(\default)});
-				syn.free;*/
-				if (~rf.keys.includes(num.asSymbol),{
-					rout = Routine(~rf[num.asSymbol]).play
-				});
-				"playing/restart routine %".format(num.asSymbol).postln;
-			});
-			MIDIdef.noteOff(\onoffUserOff, {
-				|vel, num|
-				if (~rf.keys.includes(num.asSymbol),{
-					rout.stop;
-					~activeSynths[num.asSymbol].release(3);
-					"stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
-				});
-			});
-		},{
-			"freeing MIDIdefs".postln;
-			[\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
+    |act|
+    var rout;
+    if (act == 1,
+        {
+            MIDIdef.noteOn(\onoffUserOn, {
+                |vel, num|
+                if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
+                if (~rf.keys.includes(num.asSymbol),{
+                    rout = Routine(~rf[num.asSymbol]).play
+                });
+                "playing/restart routine %".format(num.asSymbol).postln;
+            });
+            MIDIdef.noteOff(\onoffUserOff, {
+                |vel, num|
+                if (~rf.keys.includes(num.asSymbol),{
+                    rout.stop;
+                    ~activeSynths[num.asSymbol].release(3);
+                    "stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
+                });
+            });
+        },{
+            "freeing MIDIdefs".postln;
+            [\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
 
-		}
-	)
+        }
+    )
+
+};
+//restarts play if new MIDI key is pressed with User Sounds
+~onOffUserMouse = {
+    |pressed, rout, num|
+    [pressed, rout, num].postln;
+    if (pressed, {
+       "reset rout".postln;  rout.reset;
+        rout.play;
+        //"playing/restart routine %".format(num.asSymbol).postln;
+        "playing/restart routine".postln;
+    },{
+        rout.stop;
+         ~activeSynths[num.asSymbol].release(3);
+            //"stopped routine %  released Synth %".format(~rout.isPlaying,~activeSynths[num.asSymbol]).postln;
+        "stopped routine   released Synth ".postln;
+        });
 
 };
 
 
+
 //always plays the complete data array with User Sounds
 ~oneShotUser = {
-	|act|
-	var rout;
-	if (act == 1,
-		{
-			MIDIdef.noteOn(\osUserOn, {
-				|vel, num|
-				if ((rout.notNil || rout.isPlaying), {
-					rout.stop;
-					"stopping rout: %".format(num).postln;
-					~activeSynths[num.asSymbol].free;
-				});
+    |act|
+    var rout;
+    if (act == 1,
+        {
+            MIDIdef.noteOn(\osUserOn, {
+                |vel, num|
+                if ((rout.notNil || rout.isPlaying), {
+                    rout.stop;
+                    "stopping rout: %".format(num).postln;
+                    ~activeSynths[num.asSymbol].free;
+                });
 
-			});
-			MIDIdef.noteOff(\osUserOff, {
-				|vel, num|
-				if (~rf.keys.includes(num.asSymbol),{
-					rout = Routine(~rf[num.asSymbol]).play
-				});
-				"playing oneShot %".format(num.asSymbol).postln;
+            });
+            MIDIdef.noteOff(\osUserOff, {
+                |vel, num|
+                if (~rf.keys.includes(num.asSymbol),{
+                    rout = Routine(~rf[num.asSymbol]).play
+                });
+                "playing oneShot %".format(num.asSymbol).postln;
 
-			});
-		},{
+            });
+        },{
 
             "freeing MIDIdefs".postln;
-			[\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
-		}
-	)
+            [\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
+        }
+    )
 };
 
 //restarts play if new MIDI key is pressed with Live Buffer

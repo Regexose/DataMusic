@@ -13,13 +13,16 @@ GUI mit verschiedenen SubWindows
 
 	win = Window.new("selector", Rect(150, 30, 800, 400)).front
 	.alwaysOnTop_(true);
+
 	boxes = midikeys.collect({
 		|k,i|
-		View.new()
-		.background_(Color.rand)
-		.alpha_(0.2)
-		.fixedHeight_(40)
-		.name_(k.asString)
+        Button.new(bounds: Rect(40, 20))
+		.states_([
+            [(k.asString ++ "__ON"), Color.red], [(k.asString ++ "__OFF"), Color.black]])
+        .background_(Color.rand)
+        .mouseDownAction_({arg btn; "mouse down".postln; ~onOffUserMouse.(true, ~routines[k], k)})
+        .mouseUpAction_({arg btn; "mouse up".postln; ~onOffUserMouse.(false, ~routines[k], k)})
+
 	});
 
 	keyLabels = midikeys.collect({
