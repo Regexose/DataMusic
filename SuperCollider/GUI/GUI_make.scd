@@ -1,5 +1,5 @@
 (
-var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "live", "3 mean options", "organ"], trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
+var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "live", "3 mean samples pitch", "3 mean samples" "organ"], trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser);
 
 ~style = (
 	// FONTS

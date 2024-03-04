@@ -118,15 +118,17 @@ PathName(~samplesPath).entries.do({
 
 	~rf.keys.asArray.sort.do({
 		|k, i|
-		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.temp, \image ->   ~dataImages.temp));
-			//todo GUI noch aktualisieren
+		~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+
 	});
 
 	[\base, \tension, \relax].do({
 		|k|
-		~currentSample.add(k -> ~buffers[\voris][k])
-		//todo GUI noch aktualisieren
-	})
+		~currentSample.add(k -> ~buffers[\ana][k])
+
+	});
+    ~keySelector.do({|n| n.valueAction = 1});
+    ~bufSelector.do({|n| n.valueAction = 11});
 };
 
 

@@ -9,7 +9,7 @@ GUI mit verschiedenen SubWindows
 
 ~buildSelectors = {
 	| midikeys, keynames, buffers, datakeys, funcs|
-	var win, boxes, keySelector, keyLabels, bufSelector, bufLabels, knobs, toggles, toggleLabels, layout, lay=();
+	var win, boxes, keyLabels,  bufLabels, knobs, toggles, toggleLabels, layout, lay=();
 
 	win = Window.new("selector", Rect(150, 30, 800, 400)).front
 	.alwaysOnTop_(true);
@@ -31,7 +31,7 @@ GUI mit verschiedenen SubWindows
 		.string_(keynames[i] ++ "__" ++ k)
 		.align_(\center)
 	});
-	keySelector = midikeys.collect({
+	~keySelector = midikeys.collect({
 		|k,i|
 		PopUpMenu.new()
 		.items_(datakeys.asArray)
@@ -52,7 +52,7 @@ GUI mit verschiedenen SubWindows
 		.string_("buffer " ++ l)
 	});
 
-	bufSelector = [\base, \tension, \relax].collect({
+	~bufSelector = [\base, \tension, \relax].collect({
 		|k, i|
 		PopUpMenu.new()
 		.items_(buffers)
@@ -75,10 +75,10 @@ GUI mit verschiedenen SubWindows
 
 	});
 
-	lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*keySelector), HLayout(*knobs));
+	lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
 	lay[\box] = HLayout(*boxes);
 	lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box]))).mode_(\stackAll);
-	lay[\buf] = VLayout( HLayout(*bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
+	lay[\buf] = VLayout( HLayout(*~bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
 	lay[\keys].postln;
 	//layout = VLayout(lay[\stack1], lay[\stack2], HLayout(*toggles));
 	//lay.values.do({|k| k.class.postln});

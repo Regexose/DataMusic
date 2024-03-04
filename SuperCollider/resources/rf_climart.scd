@@ -92,6 +92,47 @@
 		syn.release(2);
 	},
 
+	\53: {
+        // 3 mean options ohne pitch
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range;
+	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
+        wait(0.02);*/
+		reduce = ~currentData[\53][\reduce];
+		data = ~currentData[\53][\data].asArray;
+		compressed = data.select({|item, i| i%reduce == 0});
+		normalized = compressed.normalize(36.0, 60.0);
+        mean = normalized.mean;
+        range = mean / 30;
+		buf1 = ~currentSample[\base].normalize;
+		buf2 = ~currentSample[\tension].normalize;
+		buf3 = ~currentSample[\relax].normalize;
+		s.sync;
+		sec = buf1.numFrames/s.sampleRate * 50;
+		syn = Synth(\grainScrub, [\amp, 0.4, \grainAmp, 0.5, \dens, 10, \pos, sec * 20, \ffreq, 3000, \tr, 0.3, \outdry, ~dryBus]);
+		s.sync;
+		~activeSynths.put(\53, syn);
+		normalized.do({
+			|d, i|
+            var c;
+			//"original data  %  normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            "position %  i  %".format(i *sec, i).postln;
+            c = case
+            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
+				syn.set(\buf, buf1, \pos, i * sec);
+			}
+            {d < (normalized.mean -range)}{
+				syn.set(\buf, buf2, \pos, i * sec);
+			}
+            {(d > (normalized.mean + range))}{
+				syn.set(\buf, buf3, \pos, i * sec)
+		     }
+            {true}{"no case".postln};
+			0.04.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
+		});
+		syn.release(2);
+	},
+
 
 	\60 : {
         var syn, data, compressed, normalized, reduce;

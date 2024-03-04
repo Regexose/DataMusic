@@ -98,7 +98,7 @@
                 if (~rf.keys.includes(num.asSymbol),{
                     rout = Routine(~rf[num.asSymbol]).play
                 });
-                "playing/restart routine %".format(num.asSymbol).postln;
+                "on off playing/restart routine %".format(num.asSymbol).postln;
             });
             MIDIdef.noteOff(\onoffUserOff, {
                 |vel, num|
