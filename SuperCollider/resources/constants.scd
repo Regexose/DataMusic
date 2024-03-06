@@ -2,6 +2,11 @@
 ~imagePath = PathName(~projectRoot).parentPath ++ "data/img";
 ~dataFileName = "zku_OpenHausData_noTime.csv";
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
+~recName = "/julia_soilmoist_tag05.wav"; // kann jetzt on the fly ersetzt werden
+~recDur = 10; // setzt die Aufnahmedauer
+~recSegment = 1440; // 1440: 1tag. 40588: komplettes set
+~recFactor = 1; // zum kalkulieren des Segmentes in den routineFunctions
+
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~buffers = Dictionary.new;
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);

@@ -43,20 +43,20 @@ s.waitForBoot({
 ~recordUser.("boris", "tension");
 ~recordUser.("boris", "relax");
 )
- ~routines
+~currentData[\50][\data][200..210]
+]
 // stop all Synths
 ~currentSample[\base]
 s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
-~data.keys
-192000 /(48000 )
-Quarks.gui
-w = Synth(\brsaw, [\buf, ~currentSample[\base]])
-w.set(\freq, 0.92, \ffreq, 3000)
-w.free
+~data[\humidity].size
 
+
+~recName = "/boris_soilmoist_tag07.wav"; // kann jetzt on the fly ersetzt werden
+~recSegment = 1440; // 1 tag
+~recFactor = 7; // zum kalkulieren des Segmentes in den routineFunctions
 
 (
 

@@ -3,11 +3,13 @@
 	\48 : {
 		/* spielt brsaw-Synth mit filter frequency manipulation \ffreq
         */
-		var data, normalized, compressed, reduce, buf, syn;
-	   s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
+		var data, normalized, compressed, reduce, buf, syn, start, end;
+	   s.record(~recordingPath ++ ~recName, duration: ~recDur );
         wait(0.02);
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
 		reduce = ~currentData[\48][\reduce];
-		data = ~currentData[\48][\data].asArray;
+        data = ~currentData[\48][\data].copyRange(start, end).asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
 		buf = ~currentSample[\base].normalize;
@@ -30,10 +32,12 @@
         und harmonischer verstimmung
         */
 		var data, normalized, compressed, reduce, buf, syn;
-	/* s.record(~recordingPath ++ "/jan_solar.wav", duration: 60);
+	/* s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
 		reduce = ~currentData[\50][\reduce];
-		data = ~currentData[\50][\data].asArray;
+		data = ~currentData[\50][\data].copyRange(start, end).asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
 		buf = ~liveBuffer;
@@ -55,10 +59,12 @@
 	\52: {
         // 3 mean options
 		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range;
-	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
+	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
 		reduce = ~currentData[\52][\reduce];
-		data = ~currentData[\52][\data].asArray;
+		data = ~currentData[\52][\data].copyRange(start, end).asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(36.0, 60.0);
         mean = normalized.mean;
@@ -96,10 +102,12 @@
         // 3 mean options ohne pitch
         // versuchen, die buffer in quasi-Realtime zu loopen (ist das nicht einfach PlayBuf?)
 		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
-	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
+	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
 		reduce = ~currentData[\53][\reduce];
-		data = ~currentData[\53][\data].asArray;
+		data = ~currentData[\53][\data].copyRange(start, end).asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(300, 3000);
         mean = normalized.mean;
@@ -141,10 +149,12 @@
 	\55: {
         // sample switch mit LFSaw als Pointer (simuliert Normalgeschwindigkeit)
 		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
-	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
+	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
 		reduce = ~currentData[\55][\reduce];
-		data = ~currentData[\55][\data].asArray;
+		data = ~currentData[\55][\data].copyRange(start, end).asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(300, 3000);
         mean = normalized.mean;
@@ -189,11 +199,13 @@
 
 	\60 : {
         var syn, data, compressed, normalized, reduce;
+        end = ~recSegment * ~recFactor;
+        start = end - ~recSegment;
         reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data].asArray;
+        data = ~currentData[\60][\data].copyRange(start, end).asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(80.0, 3500.0);
-        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+        /*s.record("~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
         syn = Synth(\arrayarg, [\amp, 0.2, \freqs, [ 48, 72, 84].midicps]);
         ~activeSynths.put(\60, syn);

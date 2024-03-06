@@ -3,7 +3,7 @@
 //~audioOut = "MacBook Pro-Lautsprecher";
 //~audioOut = "Externe Kopfhöre";
 ~audioOut = "Fireface 400 (BEF)";
-~audioIn = "Fireface 400 (BEF)"";
+~audioIn = "Fireface 400 (BEF)";
 //~audioIn = "Scarlett 4i4 USB";
 //~audioInterface = "Fireface 400 (BEF)";
 //~audioIn = "Fireface 400 (BEF)";
