@@ -145,8 +145,22 @@ SynthDef(\br, {
 	Out.ar(\outdry.kr(0), sig2);
 }).add;
 
+SynthDef(\brsaw, {
+	arg buf=0, rate=1, start=0, end;
+	var sig, sig2, ptr, ptr2, env;
+	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    // garantiert die Originalgeschwindigkeit, \freq ist speedcontrol
+    ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
+    sig2 = BufRd.ar(1, buf, ptr) * env;
+	sig = BufRd.ar(1, buf, ptr );
+	sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.5));
+	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
+	Out.ar(\out.kr(0), sig);
+	Out.ar(\outdry.kr(0), sig2);
+}).add;
 
-// record stuff with mic untif buffer is full
+
+// record stuff with mic until buffer is full
 SynthDef(\recOne, {
 	|len=4|
 	var input, ptr, buf= \buf.kr(0);

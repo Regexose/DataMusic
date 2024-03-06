@@ -1,23 +1,23 @@
 ~rf = (
 	// on Off Play
 	\48 : {
-		/* spielt grainScrub-Synth mit filter frequency manipulation \ffreq
+		/* spielt brsaw-Synth mit filter frequency manipulation \ffreq
         */
 		var data, normalized, compressed, reduce, buf, syn;
-	/* s.record(~recordingPath ++ "/jan_solar.wav", duration: 60);
-        wait(0.02);*/
+	   s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
+        wait(0.02);
 		reduce = ~currentData[\48][\reduce];
 		data = ~currentData[\48][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
 		normalized = compressed.normalize(80, 3000);
 		buf = ~currentSample[\base].normalize;
 		s.sync;
-		syn = Synth(\grainScrub, [\amp, 0.45, \buf, buf, \tr, 1.0, \rq, 0.5, \outdry, ~dryBus]);
+		syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \outdry, ~dryBus]);
 		~activeSynths.put(\48, syn);
 		normalized.do({
 			|d, i|
 			//"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-			syn.set(\ffreq, d, \harm, d.linlin(20, 3000, -12, 12),  \pos, i.linlin(0, normalized.size, 0.0, 1.0 ));
+			syn.set(\ffreq, d);
 			0.05.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
 		});
@@ -94,43 +94,96 @@
 
 	\53: {
         // 3 mean options ohne pitch
-		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range;
+        // versuchen, die buffer in quasi-Realtime zu loopen (ist das nicht einfach PlayBuf?)
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
 	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
 		reduce = ~currentData[\53][\reduce];
 		data = ~currentData[\53][\data].asArray;
 		compressed = data.select({|item, i| i%reduce == 0});
-		normalized = compressed.normalize(36.0, 60.0);
+		normalized = compressed.normalize(300, 3000);
         mean = normalized.mean;
-        range = mean / 30;
+        mean.postln;
+        range = mean / 10;
 		buf1 = ~currentSample[\base].normalize;
 		buf2 = ~currentSample[\tension].normalize;
 		buf3 = ~currentSample[\relax].normalize;
 		s.sync;
-		sec = buf1.numFrames/s.sampleRate * 50;
-		syn = Synth(\grainScrub, [\amp, 0.4, \grainAmp, 0.5, \dens, 10, \pos, sec * 20, \ffreq, 3000, \tr, 0.3, \outdry, ~dryBus]);
-		s.sync;
-		~activeSynths.put(\53, syn);
+		syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \outdry, ~dryBus]);
+∆		s.sync;
+		~activeSynths.put(\53, syn1);
 		normalized.do({
 			|d, i|
             var c;
 			//"original data  %  normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            "position %  i  %".format(i *sec, i).postln;
+            "position %  i  %".format(i.linlin(0, normalized.size, 0.0, 1.0 ), i).postln;
             c = case
             {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
-				syn.set(\buf, buf1, \pos, i * sec);
+				syn1.set(\buf, buf1, \pos, i.linlin(0, normalized.size, 0.0, 1.0 ));
+
 			}
-            {d < (normalized.mean -range)}{
-				syn.set(\buf, buf2, \pos, i * sec);
+            {d < (normalized.mean - range)}{
+				syn1.set(\buf, buf2, \pos, i.linlin(0, normalized.size, 0.0, 1.0 ));
+
 			}
             {(d > (normalized.mean + range))}{
-				syn.set(\buf, buf3, \pos, i * sec)
+				syn1.set(\buf, buf3, \pos, i.linlin(0, normalized.size, 0.0, 1.0 ));
+
 		     }
             {true}{"no case".postln};
 			0.04.wait;
 			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 		});
-		syn.release(2);
+		syn1.release(2);
+
+	},
+
+	\55: {
+        // sample switch mit LFSaw als Pointer (simuliert Normalgeschwindigkeit)
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
+	 /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
+        wait(0.02);*/
+		reduce = ~currentData[\55][\reduce];
+		data = ~currentData[\55][\data].asArray;
+		compressed = data.select({|item, i| i%reduce == 0});
+		normalized = compressed.normalize(300, 3000);
+        mean = normalized.mean;
+        range = mean / 6;
+        [  mean, range].postln;
+		buf1 = ~currentSample[\base].normalize;
+		buf2 = ~currentSample[\tension].normalize;
+		buf3 = ~currentSample[\relax].normalize;
+		s.sync;
+		syn1 = Synth(\brsaw, [\buf, buf1, \amp, 0.4, \ffreq, 3000, \outdry, ~dryBus]);
+		s.sync;
+		~activeSynths.put(\55, syn1);
+		normalized.do({
+			|d, i|
+            var c;
+			//"original data  %  normalized data   %  at  %".format(compressed[i].trunc(0.0001), d, i).postln;
+            c = case
+            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
+				syn1.set(\buf, buf1, \ffreq, d);
+                "mean".postln;
+
+			}
+            {d < (normalized.mean - range)}{
+				syn1.set(\buf, buf2, \ffreq, d.linlin(300, 3000, 800, 4000));
+                "tension".postln;
+
+			}
+            {(d > (normalized.mean + range))}{
+				syn1.set(\buf, buf3, \ffreq, d.linlin(300, 3000, 800, 4000));
+                   "relax".postln;
+
+
+		     }
+            {true}{"no case".postln};
+			0.04.wait;
+			defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
+		});
+		syn1.release(2);
+
 	},
 
 

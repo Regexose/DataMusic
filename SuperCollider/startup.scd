@@ -23,23 +23,25 @@ s.waitForBoot({
 
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
+
 	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
-	~createData.(); ~initCurrent.();
+	~createData.();
 	(~resourcePath ++ "functions.scd").load;
 	//(~resourcePath ++ "routinefunctions.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
-     ~rout = Routine(~rf[\48]);
+    // ~rout = Routine(~rf[\48]);
+     ~initCurrent.();
 	"done".postln;
 })
 )
 ~data.keys
 (
 ~recordUser.("boris","base");
-~recordUser.("ana_b", "tension");
-~recordUser.("ana_b", "relax");
+~recordUser.("boris", "tension");
+~recordUser.("boris", "relax");
 )
  ~routines
 // stop all Synths
@@ -48,6 +50,13 @@ s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
+~data.keys
+192000 /(48000 )
+Quarks.gui
+w = Synth(\brsaw, [\buf, ~currentSample[\base]])
+w.set(\freq, 0.92, \ffreq, 3000)
+w.free
+
 
 (
 
