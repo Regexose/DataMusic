@@ -23,7 +23,6 @@ s.waitForBoot({
 
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "synthDefs.scd").load;
-
 	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
 	~createData.();
@@ -52,11 +51,11 @@ s.defaultGroup.freeAll
 s.makeWindow
 MIDIFunc.trace(true)
 ~data[\humidity].size
+s.recChannels
 
-
-~recName = "/boris_soilmoist_tag07.wav"; // kann jetzt on the fly ersetzt werden
+~recName = "/kasia_soilmoist_tag04.wav"; // kann jetzt on the fly ersetzt werden
 ~recSegment = 1440; // 1 tag
-~recFactor = 7; // zum kalkulieren des Segmentes in den routineFunctions
+~recFactor = 4; // zum kalkulieren des Segmentes in den routineFunctions
 
 (
 

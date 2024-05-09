@@ -1,10 +1,11 @@
+"loading rf ...".postln;
 ~rf = (
 	// on Off Play
 	\48 : {
 		/* spielt brsaw-Synth mit filter frequency manipulation \ffreq
         */
 		var data, normalized, compressed, reduce, buf, syn, start, end;
-	   s.record(~recordingPath ++ ~recName, duration: ~recDur );
+	    s.record(~recordingPath ++ ~recName, numChannels: 1, duration: ~recDur);
         wait(0.02);
         end = ~recSegment * ~recFactor;
         start = end - ~recSegment;
@@ -31,7 +32,7 @@
         /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
         und harmonischer verstimmung
         */
-		var data, normalized, compressed, reduce, buf, syn;
+		var data, normalized, compressed, reduce, buf, syn, start, end;
 	/* s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
         end = ~recSegment * ~recFactor;
@@ -58,7 +59,7 @@
 
 	\52: {
         // 3 mean options
-		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range;
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range, start, end;
 	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
         end = ~recSegment * ~recFactor;
@@ -101,7 +102,7 @@
 	\53: {
         // 3 mean options ohne pitch
         // versuchen, die buffer in quasi-Realtime zu loopen (ist das nicht einfach PlayBuf?)
-		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed, start, end;
 	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
         end = ~recSegment * ~recFactor;
@@ -118,7 +119,7 @@
 		buf3 = ~currentSample[\relax].normalize;
 		s.sync;
 		syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \outdry, ~dryBus]);
-∆		s.sync;
+        s.sync;
 		~activeSynths.put(\53, syn1);
 		normalized.do({
 			|d, i|
@@ -148,7 +149,7 @@
 
 	\55: {
         // sample switch mit LFSaw als Pointer (simuliert Normalgeschwindigkeit)
-		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
+		var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed, start, end;
 	 /*  s.record(~recordingPath ++ ~recName, duration: ~recDur);
         wait(0.02);*/
         end = ~recSegment * ~recFactor;
@@ -198,7 +199,7 @@
 
 
 	\60 : {
-        var syn, data, compressed, normalized, reduce;
+        var syn, data, compressed, normalized, reduce, start, end;
         end = ~recSegment * ~recFactor;
         start = end - ~recSegment;
         reduce= ~currentData[\60][\reduce];
