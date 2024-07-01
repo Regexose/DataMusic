@@ -12,7 +12,7 @@ Server.default.options.numInputBusChannels_(1);
 
 s.waitForBoot({
 	s.freeAll;
-	Buffer.freeAll;
+    Buffer.freeAll;
 	OSCdef.freeAll;
 	MIDIdef.freeAll;
 	s.newBusAllocators;
@@ -22,10 +22,9 @@ s.waitForBoot({
 	/// load SynthDefs, Constants, Functions
 
 	(~resourcePath ++ "constants.scd").load;
-	(~resourcePath ++ "synthDefs.scd").load;
-
 	(~resourcePath ++ "rf_climart.scd").load;
 	(~resourcePath ++ "initialization.scd").load;
+
 	~createData.();
 	(~resourcePath ++ "functions.scd").load;
 	//(~resourcePath ++ "routinefunctions.scd").load;
@@ -37,20 +36,21 @@ s.waitForBoot({
 	"done".postln;
 })
 )
-~data.keys
+
 (
 ~recordUser.("boris","base");
 ~recordUser.("boris", "tension");
 ~recordUser.("boris", "relax");
 )
- ~routines
+ ~activeSynths[\57].free
 // stop all Synths
 ~currentSample[\base]
 s.defaultGroup.freeAll
+~vowelDict.keys
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
-~data.keys
+x = Synth(\dry)
 192000 /(48000 )
 Quarks.gui
 w = Synth(\brsaw, [\buf, ~currentSample[\base]])

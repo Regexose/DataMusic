@@ -1,3 +1,63 @@
+// Vowel Synthesis
+SynthDef(\bpfstack, {
+    |vow=0, buf=0|
+    // für flexible Vokale: https://scsynth.org/t/dictionary-keys-as-synthdef-arguments/5886/4
+    var sig, sig2, env, ptr, array,  vowel, baseIndex, freqs, widths, dBs;
+    array = [\a, \e, \i, \o, \u].collect {
+        |vowel|
+        [\bass, \counterTenor, \soprano, \alto, \tenor].collect({
+            |reg|
+            ~vowelValues.value(vowel, reg)
+        })
+    };
+    array = array.flat;
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    "vow = % baseIndex = % ".format(vow, baseIndex).postln;
+    "vowel Array  %".format(array[15 + (0..4)]).postln;
+    freqs = Select.kr(baseIndex + (0..4), array);
+    widths = Select.kr(baseIndex + (5..9), array);
+    dBs = Select.kr(baseIndex + (10..14), array);
+    env = EnvGen.kr(Env.asr(\atk.kr(0.01), 0.6, \rls.kr(0.5)), doneAction:2);
+    ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+    sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel);
+    sig = sig * env * \amp.kr(0.4) * \fade.kr(1);
+    sig2 = BufRd.ar(1, buf, ptr) * env;
+    Out.ar(\out.kr(0), sig!2);
+    Out.ar(\outdry.kr(0), sig2);
+}).add;
+
+SynthDef(\vowelklank, {
+	|vow=1, freqScale=0.1, decayScale=0.1, buf=0|
+    var sig, env, array, vowel, baseIndex, freqs, widths, dBs, exc;
+    array = [\a, \e, \i, \o, \u].collect {
+        |vowel|
+        [\bass, \counterTenor, \soprano, \alto, \tenor].collect({
+            |reg|
+            ~vowelValues.value(vowel, reg)
+        })
+    };
+    array = array.flat;
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    freqs = Select.kr(baseIndex + (0..4), array);
+    widths = Select.kr(baseIndex + (5..9), array);
+    dBs = Select.kr(baseIndex + (10..14), array);
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
+    //exc = WhiteNoise.ar(0.5);
+	sig = DynKlank.ar(
+		`[
+			freqs * \fScale.kr([1, 1, 1, 1, 1]),
+			(dBs.dbamp * \dbScale.kr([0.1, 0.1, 0.1, 0.1, 0.1 ])).normalizeSum,
+			widths * \wScale.kr([1, 1, 1, 1, 1])
+	], exc, freqscale: freqScale,  decayscale: decayScale);
+	sig = Pan2.ar(sig, \pan.kr(0));
+	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
+	Out.ar(\out.kr(0), sig);
+    Out.ar(\outdry.kr(0), exc);
+}).add;
+
 SynthDef(\dynklank, {
 	|freqRatio=1, modInd=1, freqScale=0.1, decayScale=0.1|
 	var freqs = NamedControl.kr(\freqs, 900 !3);

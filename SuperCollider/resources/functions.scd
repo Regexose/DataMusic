@@ -104,8 +104,8 @@
                 |vel, num|
                 if (~rf.keys.includes(num.asSymbol),{
                     rout.stop;
-                    ~activeSynths[num.asSymbol].release(3);
-                    "stopped routine %  released Synth %".format(~rf[num.asSymbol],~activeSynths[num.asSymbol]).postln;
+                    ~activeSynths[num.asSymbol].free;
+                    "stopped routine %  released  %".format(num, ~activeSynths[num.asSymbol]).postln;
                 });
             });
         },{
