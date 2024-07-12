@@ -1,3 +1,129 @@
+
+// Vowel Synthesis
+SynthDef(\bpfstack, {
+    |vow=0, buf=0|
+    // für flexible Vokale: https://scsynth.org/t/dictionary-keys-as-synthdef-arguments/5886/4
+    var sig, sig2, env, ptr, array,  vowel, baseIndex, freqs, widths, dBs;
+/*    array = [\a, \e, \i, \o, \u].collect {
+        |vowel|
+        [\bass, \counterTenor, \soprano, \alto, \tenor].collect({
+            |reg|
+            ~vowelValues.value(vowel, reg)
+        })
+    };
+    array = array.flat;*/
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    "vow = % baseIndex = % ".format(vow, baseIndex).postln;
+    "vowel Array  %".format(~vowelArray[15 + (0..4)]).postln;
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    widths = Select.kr(baseIndex + (5..9), ~vowelArray);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
+    env = EnvGen.kr(Env.asr(\atk.kr(0.01), 0.6, \rls.kr(0.5)), doneAction:2);
+    ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+    sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel);
+    sig = sig * env * \amp.kr(0.4) * \fade.kr(1);
+    sig2 = BufRd.ar(1, buf, ptr) * env;
+    Out.ar(\out.kr(0), sig!2);
+    Out.ar(\outdry.kr(0), sig2);
+}).add;
+
+SynthDef(\vowelklank, {
+	|vow=1, freqScale=0.1, decayScale=0.1, buf=0|
+    var sig, env, vowelarray, vowel, baseIndex, freqs, widths, dBs, exc;
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    widths = Select.kr(baseIndex + (5..9), ~vowelArray);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
+    //exc = WhiteNoise.ar(0.5);
+	sig = DynKlank.ar(
+		`[
+			freqs * \fScale.kr([1, 1, 1, 1, 1]),
+			(dBs.dbamp * \dbScale.kr([0.1, 0.1, 0.1, 0.1, 0.1 ])).normalizeSum,
+			widths * \wScale.kr([1, 1, 1, 1, 1])
+	], exc, freqscale: freqScale,  decayscale: decayScale);
+	sig = Pan2.ar(sig, \pan.kr(0));
+	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
+	Out.ar(\out.kr(0), sig);
+    Out.ar(\outdry.kr(0), exc);
+}).add;
+
+SynthDef(\vowelklank2, {
+	|vow=1, freqScale=0.1, decayScale=0.1, buf=0|
+    var sig, env, vowel, baseIndex, freqs, widths, dBs, exc,
+    range, volumes;
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    widths = Select.kr(baseIndex + (5..9), ~vowelArray);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
+    range = Array.fill(100, {exprand(100, 5000)});
+    volumes = vowel.ampAt(range, \stp.kr(1));
+    //exc = WhiteNoise.ar(0.5);
+	sig = DynKlank.ar(
+		`[
+			range,
+            volumes,
+			Array.fill(range.size, 0)
+	], exc, freqscale: freqScale,  decayscale: decayScale);
+	sig = Pan2.ar(sig, \pan.kr(0));
+	sig = sig * env * \amp.kr(0.02) * \fade.kr(1);
+	Out.ar(\out.kr(0), sig);
+    Out.ar(\outdry.kr(0), exc);
+}).add;
+
+SynthDef(\oddeven, {
+    |baseFreq = 100, vowelIndex|
+	var numFreqs = 69;
+	//var startFilterOrder = 0.1;
+	var startFilterOrders = NamedControl.kr(\startFilterOrders, [0.1, 0.1, 0.1, 0.1, 0.1]);
+	//var stopFilterOrders = [0.8, 0.65, 0.5, 0.35, 0.1];
+	var stopFilterOrders = NamedControl.kr(\stopFilterOrders, [2.0, 4.0, 0.25, 0.5, 3.25]);
+	var sig, baseIndex, vowel, selectfreqs, selectamps, selectwidths, freqs, evenFreqs, oddFreqs, amps, evenAmps, oddAmps, orders;
+    var dur = 12;
+	var evenAmpMod = SinOsc.kr(freq: 1).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
+	var oddAmpMod = SinOsc.kr(freq: 1, phase: pi).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
+	//var ampEnv = Env.linen(attackTime: 0.01, sustainTime: dur, releaseTime: 0.2).kr(doneAction: 2);
+
+
+    baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    selectwidths = Select.kr(baseIndex + (5..9), ~vowelArray);
+    selectamps = Select.kr(baseIndex + (10..14), ~vowelArray);
+    vowel = Vowel.basicNew(selectfreqs, selectamps, selectwidths);
+
+	evenFreqs = ((1, 3 .. numFreqs) * baseFreq);
+	oddFreqs = ((2, 4 .. numFreqs) * baseFreq);
+    //stopFilterOrders = stopFilterOrders * filterMod;
+
+	// there are 5 formants in each vowel, ergo 5 filter orders may be provided
+	orders = stopFilterOrders.collect{|stop, i|
+        //"XLine % stop: % , dur: % ".format(i, stop,  4.0 + (2 * i) ).postln;
+        "Env % start: % , stop: %  dur: %".format(i, startFilterOrders[i], stopFilterOrders[i],  (2 * i )).postln;
+        //{XLine.kr(startFilterOrder[i], stop, 4.0 + (2 * i))}.plot(name:i.asString);
+        //XLine.kr(startFilterOrder, stop, 4.0 + (2 * i));
+        stop * EnvGen.kr(Env([startFilterOrders[i]/stop, 1.0] , (2 * i) * \lg.kr(1), curve: \crv.kr(3) ), timeScale: \envScale.kr(1));
+
+	};
+
+	evenAmps = vowel.ampAt(evenFreqs, orders ) * evenAmpMod;
+    oddAmps = vowel.ampAt(oddFreqs, orders) * oddAmpMod;
+
+	freqs = evenFreqs ++ oddFreqs;
+	amps = evenAmps ++ oddAmps;
+
+	amps = amps.normalizeSum; // tame amplitudes
+
+    sig = DynKlang.ar(`[freqs, amps, nil] ) * \amp.kr(0.1) ;
+    Out.ar(\out.kr(0), sig!2);
+}).add;
+
+
 SynthDef(\dynklank, {
 	|freqRatio=1, modInd=1, freqScale=0.1, decayScale=0.1|
 	var freqs = NamedControl.kr(\freqs, 900 !3);

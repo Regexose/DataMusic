@@ -8,6 +8,8 @@
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~currentSample = Dictionary.new;
+~vowelDict = Dictionary.new;
+~vowelIndex = 0;
 ~dataImages = ();
 ~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
