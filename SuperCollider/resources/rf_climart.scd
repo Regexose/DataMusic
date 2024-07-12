@@ -215,23 +215,35 @@
 
     },
 
-    \58 : {// für Vowel Synthesis
-        var syn, data, compressed, normalized, reduce, dbs, buf;
+   \58 : {// für Vowel Synthesis
+        var syn, data, compressed, normalized, reduce, buf1, buf2, buf3, mean, range;
         reduce= ~currentData[\58][\reduce];
         data = ~currentData[\58][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(1, 100);
-        buf = ~currentSample[\base].normalize;
-        syn = Synth(\vowelklank, [\buf, buf, \amp, 0.1, \outdry, ~dryBus]);
+        mean = normalized.mean;
+        range = mean / 30;
+        buf1 = ~currentSample[\base].normalize;
+        buf2 = ~currentSample[\tension].normalize;
+        buf3 = ~currentSample[\relax].normalize;
+        syn = Synth(\vowelklank2, [\buf, buf1, \amp, 0.1, \outdry, ~dryBus]);
         s.sync;
         ~activeSynths.put(\58, syn);
         normalized.do({
             |d, i|
-            // welche Werte werden für Vowels benutzt?
-            var key = d.linlin(1, 100, 0, 20).asInteger;
-            //key = key + 3;
-            syn.set(\vow, key, \fScale, d , \wScale, d * [0.00045, 0.00040, 0.00033, 0.0002, 0.0009], \dbScale,  (d/10) * [0.1, 0.2, 0.11, 0.21, 0.24 ]);
-            dbs =  Vowel.formLib.at(~vowelDict[key][0], ~vowelDict[key][1], \db);
+            // Vowels werden mit key geändert
+            var c, key = d.linlin(1, 100, 0, 20).asInteger;
+            c = case
+            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
+                syn.set(\vow, 0, \stp, d.linlin(1, 100, 0.1, 2.1), \buf, buf1, \freqScale, d.linlin(1, 100, 0.1, 0.6));
+            }
+            {d < (normalized.mean -range)}{
+                syn.set(\vow, 5, \stp, d.linlin(1, 100, 0.1, 2.1), \buf, buf1,\freqScale, d.linlin(1, 100, 0.1, 0.6));
+            }
+            {(d > (normalized.mean + range))}{
+                syn.set(\vow, 10, \stp, d.linlin(1, 100, 0.1, 2.1), \buf, buf1,\freqScale, d.linlin(1, 100, 0.1, 0.6))
+            }
+            {true}{"no case".postln};
             //"i % key % dbs %  sum % ".format(i, key, dbs, dbs[0..2].sum).postln;
            0.03.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};

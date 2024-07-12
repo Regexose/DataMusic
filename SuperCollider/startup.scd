@@ -8,6 +8,7 @@ Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
+s.options.numWireBufs = 200;
 //s.newBusAllocators;
 
 s.waitForBoot({
@@ -55,8 +56,13 @@ x = Synth(\dry)
 Quarks.gui
 w = Synth(\brsaw, [\buf, ~currentSample[\base]])
 w.set(\freq, 0.92, \ffreq, 3000)
-w.free
-
+w.fre
+SynthDescLib.global.browse
+ServerOptions.defaultValues.keys.do{|k|
+    var value=ServerOptions.defaultValues[k];
+    "key: %  value: %".format(k, value).postln;
+}
+s.options.numWireBufs
 
 (
 

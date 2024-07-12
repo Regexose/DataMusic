@@ -7,17 +7,16 @@
 
 // make vowelArray
 
-~vowelArray = [\a, \e, \i, \o, \u].collect {
+~vowelArray = [\a, \e, \i, \o, \u].collect({
     |vowel, i|
     [\bass, \counterTenor, \soprano, \alto, \tenor].collect({
         |reg|
-        [~vowelIndex, vowel, reg].postln;
-        ~vowelValues.value(vowel, reg);
+        //[~vowelIndex, vowel, reg].postln;
         ~vowelDict.add(~vowelIndex -> [vowel, reg]);
         ~vowelIndex = ~vowelIndex + 1;
-
+        ~vowelValues.value(vowel, reg);
     });
-};
+});
 
 ~vowelArray = ~vowelArray.flat;
 s.sync;
