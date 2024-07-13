@@ -1,3 +1,10 @@
+/*
+in diesem Branch will ich Patterns mit LiveStimmManipulation kombinieren
+Pattern 1: Klick/Perc Impulse als 1/8 oder 1/16 Noten, die Tonal von einem Datensatz beeinflusst werden
+Pattern 2 : Arpeggii oder Akkorde als musikalisches Pattern, willkürlich festgelegt, die Synths werden ebenso variiert von Daten
+Pattern 3 : Live Stimme mit ein oder zwei Datensätzen sonifiziert
+Pattern 4 : Evtl.. Erzählstimme
+*/
 (
 ServerTree.removeAll; // löscht alle funktionen
 ~projectRoot = PathName(thisProcess.nowExecutingPath).parentPath;
@@ -51,12 +58,8 @@ s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
-x = Synth(\dry)
-192000 /(48000 )
-Quarks.gui
-w = Synth(\brsaw, [\buf, ~currentSample[\base]])
-w.set(\freq, 0.92, \ffreq, 3000)
-w.fre
+
+
 SynthDescLib.global.browse
 ServerOptions.defaultValues.keys.do{|k|
     var value=ServerOptions.defaultValues[k];

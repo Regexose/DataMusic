@@ -147,7 +147,7 @@ PathName(~samplesPath).entries.do({
 
     [\base, \tension, \relax].do({
         |k|
-        ~currentSample.add(k -> ~buffers[\ana][k])
+        ~currentSample.add(k -> ~buffers[\marta][k])
 
     });
     ~keySelector.do({|n| n.valueAction = 1});
