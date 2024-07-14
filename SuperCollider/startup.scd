@@ -35,7 +35,7 @@ s.waitForBoot({
 
 	~createData.();
 	(~resourcePath ++ "functions.scd").load;
-	//(~resourcePath ++ "routinefunctions.scd").load;
+	(~resourcePath ++ "patterns.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
@@ -58,7 +58,6 @@ s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
-
 
 SynthDescLib.global.browse
 ServerOptions.defaultValues.keys.do{|k|

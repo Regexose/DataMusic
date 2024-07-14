@@ -51,9 +51,9 @@ SynthDef(\oddeven, {
 	//var stopFilterOrders = [0.8, 0.65, 0.5, 0.35, 0.1];
 	var stopFilterOrders = NamedControl.kr(\stopFilterOrders, [2.0, 4.0, 0.25, 0.5, 3.25]);
 	var sig, baseIndex, vowel, selectfreqs, selectamps, selectwidths, freqs, evenFreqs, oddFreqs, amps, evenAmps, oddAmps, orders;
-	var evenAmpMod = SinOsc.kr(freq: 1).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
+	var evenAmpMod = SinOsc.kr(\ampFreq.kr(1)).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
 	var oddAmpMod = SinOsc.kr(freq: 1, phase: pi).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
-    var ampEnv = Env.perc(\atk.kr( 0.01),\rls.kr( 0.2)).kr(doneAction: 2);
+    var ampEnv = Env.perc(\atk.kr( 0.01),\rls.kr( 0.2), curve: \crv.kr(0)).kr(doneAction: 2);
 
 
     baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
@@ -75,7 +75,7 @@ SynthDef(\oddeven, {
 	evenAmps = vowel.ampAt(evenFreqs, orders ) * evenAmpMod;
     oddAmps = vowel.ampAt(oddFreqs, orders) * oddAmpMod;
 
-	freqs = evenFreqs ++ oddFreqs;
+	freqs = (evenFreqs ++ oddFreqs);
 	amps = evenAmps ++ oddAmps;
 
 	amps = amps.normalizeSum; // tame amplitudes

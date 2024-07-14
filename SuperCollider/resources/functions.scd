@@ -134,6 +134,27 @@
 
 };
 
+~startPattern = {
+    |pressed, name|
+        if (pressed == 1, {
+       "value % start pattern %".format(pressed, name).postln;
+        Pbindef(name.asSymbol).play(~t, quant:4);
+        //"playing/restart routine %".format(num.asSymbol).postln;
+    },{
+         Pbindef(name.asSymbol).stop;
+    })
+};
+~stopPattern = {
+          |pressed, name|
+        if (pressed ==0, {
+      "value % stop pattern %".format(pressed, name).postln;
+        //Pbindef(name.asSymbol).stop;
+        //"playing/restart routine %".format(num.asSymbol).postln;
+
+    })
+
+};
+
 
 
 //always plays the complete data array with User Sounds

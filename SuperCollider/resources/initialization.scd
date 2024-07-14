@@ -97,7 +97,10 @@ MIDIIn.connectAll;
 
 });
 
-
+~patFuncs.keys.asArray.sort.do({
+    |ch, i|
+    ~routines[ch] = Routine(~patFuncs[ch]);
+});
 
 PathName(~samplesPath).entries.do({
     arg subfolder;
@@ -140,6 +143,12 @@ PathName(~samplesPath).entries.do({
 ~initCurrent = {
 
     ~rf.keys.asArray.sort.do({
+        |k, i|
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+
+    });
+
+    ~patFuncs.keys.asArray.sort.do({
         |k, i|
         ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
 

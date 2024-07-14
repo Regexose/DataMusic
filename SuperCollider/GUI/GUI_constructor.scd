@@ -8,8 +8,8 @@ GUI mit verschiedenen SubWindows
 (
 
 ~buildSelectors = {
-    | midikeys, keynames, buffers, datakeys, funcs|
-    var win, boxes, keyLabels,  bufLabels, knobs, toggles, toggleLabels, layout, lay=();
+    | midikeys, keynames, buffers, datakeys, funcs, mode|
+    var win, boxes, keyLabels, bufLabels, knobs, modcase, toggles, toggleLabels, layout, lay=();
 
     win = Window.new("selector", Rect(150, 30, 800, 400))
     .autoRememberPosition(\select, \w)
@@ -32,7 +32,7 @@ GUI mit verschiedenen SubWindows
         |k,i|
         StaticText.new()
         .autoRememberPosition(\select, \w)
-        .string_(keynames[i] ++ "__" ++ k)
+        .string_(keynames[i].asString ++ "__" ++ k)
         .align_(\center)
 
     });
@@ -74,22 +74,40 @@ GUI mit verschiedenen SubWindows
 
     });
 
-    toggles = funcs.values.asArray.collect({
-        |func, i|
-        var names = funcs.keys.asArray;
-        Button.new(bounds: Rect(40, 20))
+    modcase = case
+    {mode=="midi"}{
+        toggles = funcs.values.asArray.collect({
+            |func, i|
+            var names = midikeys.asArray;
+            Button.new(bounds: Rect(40, 20))
+            .states_([
+                [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black],
+            ])
+            .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
+            .focusColor_(Color.blue)
+            .valueAction_(1)
+            .autoRememberPosition(\select, \w)
 
-        .states_([
-            [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black],
-        ])
-        .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
-        .focusColor_(Color.blue)
-        .valueAction_(1)
-        .autoRememberPosition(\select, \w)
+            //.action_({|btn| ; func.(btn.value) })
+        })
+    }
+    {mode=="pattern"}{
+        toggles = midikeys.collect({
+            |name, i|
+            "pattern".postln;
+            Button.new(bounds: Rect(40, 20))
+            .states_([
+                [(name ++ "__start"), Color.red], [(name ++ "__stop"), Color.black],
+            ])
+            .mouseDownAction_({|btn| "switch %  to %".format( name, btn.value).postln; ~startPattern.(btn.value, name)})
+            .focusColor_(Color.blue)
+            .valueAction_(1)
+            .autoRememberPosition(\select, \w)
 
-        //.action_({|btn| ; func.(btn.value) })
-
-    });
+            //.action_({|btn| ; func.(btn.value) })
+        })
+    }
+    {true}{"no modus".postln};
 
     lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
     lay[\box] = HLayout(*boxes);

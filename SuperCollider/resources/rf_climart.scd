@@ -271,12 +271,15 @@
 
         });
         syn.release(2);
-    },
+    }
 
-    \klic : {
+);
+
+~patFuncs = (
+      \klic : {
         var data, compressed, normalized, reduce;
-        reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data].asArray;
+        reduce= ~currentData[\klic][\reduce];
+        data = ~currentData[\klic][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(0.05, 1.0);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
@@ -286,9 +289,9 @@
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             Pbindef(\klic,
                 \vowelIndex, d.linlin(0.05, 1.0, 0, 24).asInteger,
-                \dur, 0.5,
-                \stopFilterOrders, [1.0, 3.1, 2.4, 2.1, 3.4] *d,
-                \baseFreq, [150, 500, 1200] * d,
+                \stopFilterOrders, [d, d*3, d *2.1, d *2.1, d *2.9],
+
+                \freqScale, d*2,
             );
 
            0.5.wait;
@@ -299,8 +302,8 @@
 
     \arp3 : {
         var data, compressed, normalized, reduce;
-        reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data].asArray;
+        reduce= ~currentData[\arp3][\reduce];
+        data = ~currentData[\arp3][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(0.05, 0.9);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
@@ -321,8 +324,8 @@
 
     \voc1 : {
         var data, compressed, normalized, reduce;
-        reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data].asArray;
+        reduce= ~currentData[\voc1][\reduce];
+        data = ~currentData[\voc1][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(0.05, 0.9);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
