@@ -1,4 +1,4 @@
-//ServerOptions.devices
+//ServerOptions.devices;
 //~audioInterface = "MacBook Pro-Lautsprecher";
 //~audioOut = "MacBook Pro-Lautsprecher";
 //~audioOut = "Externe Kopfhöre";

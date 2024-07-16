@@ -288,22 +288,20 @@
             |d, i|
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             Pbindef(\klic,
-                \vowelIndex, d.linlin(0.05, 1.0, 0, 24).asInteger,
-                \stopFilterOrders, [d, d*3, d *2.1, d *2.1, d *2.9],
-
-                \freqScale, d*2,
+                \freqScale, d,
+                \decayScale, d,
             );
 
-           0.5.wait;
+           (~t.beatDur *2).wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
         Pbindef(\klic).stop;
     },
 
-    \arp3 : {
+    \snarl : {
         var data, compressed, normalized, reduce;
-        reduce= ~currentData[\arp3][\reduce];
-        data = ~currentData[\arp3][\data].asArray;
+        reduce= ~currentData[\snarl][\reduce];
+        data = ~currentData[\snarl][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
         normalized = compressed.normalize(0.05, 0.9);
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
@@ -311,15 +309,15 @@
         normalized.do({
             |d, i|
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            Pbindef(\arp3,
+            Pbindef(\snarl,
+                \vowelIndex, d.linlin(0.05, 0.9, 0, 5).asInteger * 4,
                 \freqScale, d,
-                \dur, 0.5
             );
 
-           0.5.wait;
+         0.05.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
-        Pbindef(\arp3).stop;
+        Pbindef(\snarl).stop;
     },
 
     \voc1 : {
@@ -334,14 +332,13 @@
             |d, i|
             "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             Pbindef(\voc1,
-                \vow, d.linlin(0.05, 0.9, 0, 24).asInteger,
-                \freqScale, d,
-                \decayScale, d,
-                \buf, ~currentSample[\base],
-
+                \vow, d.linlin(0.05, 0.9, 0,4).asInteger *4,
+                \freqScale, d.linlin(0.05, 0.9, 0.09, 0.49),
+                \decayScale, d.linlin(0.05, 0.9, 0.09, 0.19),
+                \buf, ~currentSample[\base].normalize,
             );
 
-             4.wait;
+             0.1.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
         Pbindef(\voc1).stop;

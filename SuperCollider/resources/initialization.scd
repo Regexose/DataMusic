@@ -164,4 +164,35 @@ PathName(~samplesPath).entries.do({
 };
 
 
+~makeNodes = {
+	//~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};
+	s.bind(
+		// Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
+		~master = MixerChannel(\master, s, 2, 2);
+		~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: ~master);
+		~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
+		~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
+		~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
+		~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);
+		~utt = MixerChannel(\utt, s, 2, 2, outbus: ~master);
+		~perc = MixerChannel(\perc, s, 2, 2, outbus: ~master);
+		~bass = MixerChannel(\bass, s, 2, 2, outbus: ~master);
+		~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
+		~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
+		~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
+		~cat2Channel = (
+		\pr: ~ch2,
+		\dis: ~ch1,
+		\con: ~ch4,
+		\lec: ~ch5,
+		\ins: ~ch3,
+		\perc: ~perc,
+		\utt : ~perc,
+		\bass: ~bass
+	)
+);
+
+};
+
+
 

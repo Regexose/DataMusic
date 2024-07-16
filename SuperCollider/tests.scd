@@ -40,3 +40,9 @@ x.free
 )
 ~r.play
 ~r.stop
+
+Pbindef(\snarl).play
+Pbindef(\snarl).stop
+~perc.level_(0.74)
+~sends.perc
+~perc.name

@@ -15,6 +15,7 @@ Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
+Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
 //s.newBusAllocators;
 
@@ -23,7 +24,9 @@ s.waitForBoot({
     Buffer.freeAll;
 	OSCdef.freeAll;
 	MIDIdef.freeAll;
+    MixerChannel.freeAll;
 	s.newBusAllocators;
+
 	~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
 	s.sync;
@@ -34,12 +37,32 @@ s.waitForBoot({
 	(~resourcePath ++ "initialization.scd").load;
 
 	~createData.();
+     s.sync;
+    ServerTree.add(~makeNodes);
+    ServerTree.run;
+    ~patches = (~resourcePath ++ "fx_patches.scd").load;
 	(~resourcePath ++ "functions.scd").load;
 	(~resourcePath ++ "patterns.scd").load;
 
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
     // ~rout = Routine(~rf[\48]);
+       // Send Objekte machen
+    ~sends = ~sends ? ();
+
+    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~utt, ~perc, ~bass].do{
+        |ch, i|
+        var sendName;
+        //postf("channel %\t i %\n", ch, i);
+        [~reverb, ~ringmod, ~chorus].do {
+            |fx|
+            //postf("fx name %\n", fx.asString);
+            sendName = ch.name.asString ++ "_snd_" ++ fx.asString[13..16];
+            ~sends.put(sendName.asSymbol, ch.newPostSend(fx, 0.01) ); // nicht an patch sondern an channel senden
+        }
+    };
+
+    ~runFx.();
      ~initCurrent.();
 	"done".postln;
 })
@@ -58,6 +81,13 @@ s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
+Pbindef(\array01).play
+Pbindef(\klic).envir
+Pbindef(\array01).stop
+Pbindef(\array02).play
+Pbindef(\array02).stop
+
+
 
 SynthDescLib.global.browse
 ServerOptions.defaultValues.keys.do{|k|

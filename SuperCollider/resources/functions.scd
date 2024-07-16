@@ -75,6 +75,30 @@
     ~cursor.refresh;
 };
 
+~runFx = {
+
+    ~fx = (
+        \rev: ~reverb.playfx(FxPatch(#[ \busfx, \vrb1 ], ~patches[\reverb2])),
+        \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
+        \chor : ~chorus.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus])),
+        \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
+        \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+        \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+        \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+        \ch4_cmp :~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+        \ch5_cmp : ~ch5.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])), //dieser macht den *** ERROR: SynthDef companderd#7HVwu not found
+        \utt_cmp : ~utt.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+        \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
+        \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
+    )
+};
+
+~bypass = {
+    |key, on|
+    if (on, {~fx[key].synth.run(false)}, {~fx[key].synth.run(true);})
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,90 +212,3 @@
     )
 };
 
-//restarts play if new MIDI key is pressed with Live Buffer
-// ~onOffLive = {
-// 	|act|
-// 	var rec, rout, syn;
-// 	if (act == 1,
-// 		{
-// 			MIDIdef.noteOn(\onoffLiveOn, {
-// 				|vel, num|
-// 				if ((rout != nil || rout.isPlaying), {"stopping rout".postln; rout.stop});
-// 				syn = ~activeSynths.atFail(num.asSymbol,
-// 				{"making synth with key %".format(num).postln; Synth(\default)});
-// 				syn.free;
-// 				rec = Synth(\rec, [\buf, ~liveBuffer]);
-// 				"recording on % ".format(num).postln;
-// 			});
-// 			MIDIdef.noteOff(\onoffLiveOff, {
-// 				|vel, num|
-// 				"stopped recording".postln;
-// 				rec.free;
-// 				~currentSample[\base] = ~liveBuffer;
-// 				if (~rf.keys.includes(num.asSymbol),{
-// 					rout = Routine(~rf[num.asSymbol]).play
-// 				});
-// 				"playing demo %".format(~rf[num.asSymbol]).postln;
-// 			});
-// 		},{
-// 			"freeing MIDIdefs".postln;
-// 			[\onoffLiveOn, \onoffLiveOff].do{|n| MIDIdef(n).free};
-// 		}
-// 	)
-//
-// };
-//
-// //always plays the complete data array with Live Buffer
-// ~oneShotLive = {
-// 	|act|
-// 	var rec, rout ;
-// 	if (act == 1,
-// 		{
-// 			MIDIdef.noteOn(\osLiveOn, {
-// 				|vel, num|
-// 				rec = Synth(\rec, [\buf, ~liveBuffer]);
-// 				"recording on % ".format(num).postln;
-// 			});
-// 			MIDIdef.noteOff(\osLiveOff, {
-// 				|vel, num|
-// 				"stopped recording".postln;
-// 				rec.free;
-// 				if (~rf.keys.includes(num.asSymbol),{
-// 					rout = Routine(~rf[num.asSymbol]).play
-// 				});
-// 				"playing demo %".format(~rf[num.asSymbol]).postln;
-// 			});
-// 		},{
-// 			"freeing MIDIdefs".postln;
-// 			[\osLiveOn, \osLiveOff].do{|n| MIDIdef(n).free};
-// 		}
-// 	)
-// };
-//
-//
-// //using tgrains_live with grainBuffer
-// ~liveGrain = {
-// 	|act|
-// 	var syn, rout ;
-// 	if (act == 1,
-// 		{
-// 			MIDIdef.noteOn(\lgOn, {
-// 				|vel, num|
-// 				~grainLive = Synth(\tgrains_live, [\buf, ~grainBuffer, \grainAmp, 0.8, \amp, 0.5]);
-// 				if (~rf.keys.includes(num.asSymbol),{
-// 					"playing demo %".format(num.asSymbol).postln;
-// 					rout = Routine(~rf[num.asSymbol]).play;
-// 				});
-// 			});
-// 			MIDIdef.noteOff(\lgOff, {
-// 				|vel, num|
-// 				rout.stop;
-// 				~grainLive.free;
-// 			});
-// 		},{
-// 			"freeing MIDIdefs".postln;
-// 			[\lgOn, \lgOff].do{|n| MIDIdef(n).free};
-// 			~grainBuffer.free;
-// 		}
-// 	)
-// };
