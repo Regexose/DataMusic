@@ -51,7 +51,11 @@ Pbindef(\arp2).play(~t, quant:4)
 Pbindef(\arp2).stop
 Pbindef(\klic).isPlaying
 [\arp1, \arp3, \array01, \snarl, \seq1, \percvowel, \voc1, \klic, \arp2]
+
+(
+~mixer = MixingBoard("mixer", nil, [~ch1,~ch2,~ch3,~ch4,~ch5, ~perc, ~voc, ~master]);
 [\arp1,  \array01, \seq1, \percvowel].do{|k| Pbindef(k).play(~t, quant:4)}
+)
 ~sends.keys.do({
     |k|
     k.postln
@@ -77,7 +81,7 @@ PeakMonitor(~master)
 
 Instr.at([\busfx, \singleDelay]).listArgs
 ~mixer = nil
-~mixer = MixingBoard("mixer", nil, [~ch1,~ch2,~ch3,~ch4,~ch5, ~perc, ~voc, ~master])
+
 ~reverb.groupBusInfo
 ~reverb.inbus
 ~ringmod.inbus

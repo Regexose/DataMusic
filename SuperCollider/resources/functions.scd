@@ -108,13 +108,13 @@
 
     ~rf.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
 
     ~patFuncs.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
 
@@ -216,6 +216,23 @@
          ~activeSynths[num.asSymbol].release(3);
             //"stopped routine %  released Synth %".format(~rout.isPlaying,~activeSynths[num.asSymbol]).postln;
         "stopped routine   released Synth ".postln;
+        });
+
+};
+//toggles between play and pause of the routine, remembers last position
+~pausUserMouse = {
+    |btn, rout, num|
+    [btn, rout, num].postln;
+    if (btn==1, {
+       "resume rout at %".format(~currentData[num][\position]). postln;  rout.reset;
+        rout.play;
+        //"playing/restart routine %".format(num.asSymbol).postln;
+        "playing/restart routine".postln;
+    },{
+        rout.stop;
+         ~activeSynths[num.asSymbol].release(3);
+            //"stopped routine %  released Synth %".format(~rout.isPlaying,~activeSynths[num.asSymbol]).postln;
+        "paused routine at position % released Synth ".format(~currentData[num][\position]).postln;
         });
 
 };

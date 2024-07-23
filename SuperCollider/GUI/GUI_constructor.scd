@@ -9,7 +9,7 @@ GUI mit verschiedenen SubWindows
 
 ~buildSelectors = {
     | midikeys, keynames, buffers, datakeys, funcs, mode|
-    var win, boxes, keyLabels, bufLabels, knobs, modcase, toggles, toggleLabels, layout, lay=();
+    var win, boxes, pauses, keyLabels, bufLabels, knobs, modcase, toggles, toggleLabels, layout, lay=();
 
     win = Window.new("selector", Rect(150, 30, 800, 400))
     .autoRememberPosition(\select, \w)
@@ -21,10 +21,25 @@ GUI mit verschiedenen SubWindows
         Button.new(bounds: Rect(40, 20))
         .autoRememberPosition(\select, \w)
         .states_([
-            [(k.asString ++ "__ON"), Color.red], [(k.asString ++ "__OFF"), Color.black]])
+            [(k.asString ++ "__ON"), Color.red], [(k.asString ++ "__OFF"), Color.black]
+        ])
         .background_(Color.rand)
-        .mouseDownAction_({arg btn; "mouse down".postln; ~onOffUserMouse.(true, ~routines[k], k)})
-        .mouseUpAction_({arg btn; "mouse up".postln; ~onOffUserMouse.(false, ~routines[k], k)})
+        .mouseDownAction_({arg btn; "mouse boxes down".postln; ~onOffUserMouse.(true, ~routines[k], k)})
+        .mouseUpAction_({arg btn; "mouse boxes up".postln; ~onOffUserMouse.(false, ~routines[k], k)})
+
+    });
+
+    pauses = midikeys.collect({
+        |k,i|
+        Button.new(bounds: Rect(40, 20))
+        .autoRememberPosition(\select, \w)
+        .states_([
+            [(k.asString ++ "__PAUS"), Color.blue], [(k.asString ++ "__RESUME"), Color.green],
+        ])
+        .background_(Color.rand)
+        //.mouseDownAction_({arg btn; "mouse down".postln; ~pausUserMouse.(btn.value, ~routines[k], k)})
+        .mouseUpAction_({arg btn; "mouse pauses up".postln; ~pausUserMouse.(btn.value, ~routines[k], k)})
+        .valueAction_(1)
 
     });
 
@@ -81,7 +96,8 @@ GUI mit verschiedenen SubWindows
             var names = midikeys.asArray;
             Button.new(bounds: Rect(40, 20))
             .states_([
-                [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black],
+                [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black
+                ],
             ])
             .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
             .focusColor_(Color.blue)
@@ -97,7 +113,7 @@ GUI mit verschiedenen SubWindows
             "pattern".postln;
             Button.new(bounds: Rect(40, 20))
             .states_([
-                [(name ++ "__start"), Color.red], [(name ++ "__stop"), Color.black],
+                [(name ++ "__stop"), Color.red], [(name ++ "__start"), Color.green]
             ])
             .mouseDownAction_({|btn| "switch %  to %".format( name, btn.value).postln; ~startPattern.(btn.value, name)})
             .focusColor_(Color.blue)
@@ -111,7 +127,8 @@ GUI mit verschiedenen SubWindows
 
     lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
     lay[\box] = HLayout(*boxes);
-    lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box]))).mode_(\stackAll);
+    lay[\paus] = HLayout(*pauses);
+    lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
     lay[\buf] = VLayout( HLayout(*~bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
     lay[\keys].postln;
     //layout = VLayout(lay[\stack1], lay[\stack2], HLayout(*toggles));
