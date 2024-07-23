@@ -10,8 +10,8 @@
         buf.sine1(external[0..15], asWavetable:true);
         //buf.plot;
         s.sync;
-        ~buffers.add(name.asSymbol -> buf);
-        "made buffer  %".format(~buffers[name]).postln;
+        ~buffersByName.add(name.asSymbol -> buf);
+        "made buffer  %".format(~buffersByName[name]).postln;
 
     }.play(AppClock);
 };
@@ -61,10 +61,10 @@
             rec.free;
             File.mkdir(~samplesPath +/+ username);
             ~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");
-            /*if (~buffers[username.asSymbol].includesKey(typename.asSymbol),
-            {"remove key".postln; ~buffers[username.asSymbol].removeAt(typename.asSymbol)});*/
+            /*if (~buffersByName[username.asSymbol].includesKey(typename.asSymbol),
+            {"remove key".postln; ~buffersByName[username.asSymbol].removeAt(typename.asSymbol)});*/
             filePath = PathName(~samplesPath +/+ username +/+ typename ++ ".wav");
-            ~buffers[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
+            ~buffersByName[username.asSymbol].add(typename.asSymbol -> Buffer.read(s, filePath.fullPath));
     })}, '/cursor');
 
 };
@@ -75,28 +75,84 @@
     ~cursor.refresh;
 };
 
-~runFx = {
+~fxOnOff = {
+    |on|
+    if (on==true, {
+            ~fx = (
+    \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
+    //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
+    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
+    \chor : ~chorus.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus])),
+    \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
+    \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \ch4_cmp : ~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \ch5_cmp : ~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \voc_cmp : ~voc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
+    \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
+)
+    }, {
+        ~fx.keys.do({
+            |k|
+            ~toggleFx.(k, true)
+        })
+    })
 
-    ~fx = (
-        \rev: ~reverb.playfx(FxPatch(#[ \busfx, \vrb1 ], ~patches[\reverb2])),
-        \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
-        \chor : ~chorus.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus])),
-        \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
-        \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-        \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-        \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-        \ch4_cmp :~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-        \ch5_cmp : ~ch5.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])), //dieser macht den *** ERROR: SynthDef companderd#7HVwu not found
-        \utt_cmp : ~utt.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-        \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
-        \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
-    )
+
 };
 
-~bypass = {
+//initialize currentData and currentSample
+~initCurrent = {
+
+    ~rf.keys.asArray.sort.do({
+        |k, i|
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+
+    });
+
+    ~patFuncs.keys.asArray.sort.do({
+        |k, i|
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
+
+    });
+
+    [\base, \tension, \relax].do({
+        |k|
+        ~currentSample.add(k -> ~buffersByName[\marta][k])
+
+    });
+    ~keySelector.do({|n| n.valueAction = 1});
+    ~bufSelector.do({|n| n.valueAction = 11});
+
+};
+
+~makeNodes = {
+    //~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};
+    s.bind(
+        // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
+        ~master = MixerChannel(\master, s, 2, 2);
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: ~master);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
+        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
+        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
+        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);
+        ~voc = MixerChannel(\utt, s, 2, 2, outbus: ~master);
+        ~perc = MixerChannel(\perc, s, 2, 2, outbus: ~master);
+        ~bass = MixerChannel(\bass, s, 2, 2, outbus: ~master);
+        ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
+        ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
+        ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
+    );
+
+};
+
+~toggleFx = {
     |key, on|
     if (on, {~fx[key].synth.run(false)}, {~fx[key].synth.run(true);})
 };
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +163,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+~play = {
+    //~runFx.();
+    ~patFuncs.keys.do({
+        |k|
+        Pbindef(k).play(~t, quant:4)
+    })
+};
 
 
 //restarts play if new MIDI key is pressed with User Sounds

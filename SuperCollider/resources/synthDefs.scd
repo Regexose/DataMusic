@@ -15,6 +15,7 @@ SynthDef(\bpfstack, {
     vowel = Vowel.basicNew(freqs, dBs, widths);
     sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel, \freqMods.kr(0.5), \ampMods.kr(0.5),  \widthMods.kr(1));
     sig = sig * env * \amp.kr(0.4) * \fade.kr(1);
+    sig = RLPF.ar(sig, \ffreq.kr(4000));
     sig2 = BufRd.ar(1, buf, ptr) * env;
     Out.ar(\out.kr(0), sig!2);
     Out.ar(\outdry.kr(0), sig2);
@@ -22,14 +23,14 @@ SynthDef(\bpfstack, {
 
 SynthDef(\vowelklank, {
 	|vow=1, freqScale=0.1, decayScale=0.1, buf=0|
-    var sig, env, vowelarray, vowel, baseIndex, freqs, widths, dBs, phases, exc;
+    var sig, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
     vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(pi)!5;
-	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, \gate.kr(1));
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
     //exc = WhiteNoise.ar(0.5);
 	sig = DynKlank.ar(
@@ -42,7 +43,7 @@ SynthDef(\vowelklank, {
     sig = RHPF.ar(sig, \ffreq.kr(500));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
-    Out.ar(\outdry.kr(0), exc);
+    Out.ar(\outdry.kr(2), exc);
 }).add;
 
 SynthDef(\oddeven, {
@@ -88,13 +89,13 @@ SynthDef(\oddeven, {
 
 
 SynthDef(\dynklank, {
-	|freqRatio=1, modInd=1, freqScale=0.1, decayScale=0.1|
+	| freqScale=0.1, decayScale=0.1|
 	var freqs = NamedControl.kr(\freqs, 900 !3) + SinOsc.kr([0.2,0.1,0.05]).bipolar(-10, 10);
     var amps = NamedControl.kr(\amps, [0.2, 0.1, 0.4]);
 	var rings = NamedControl.kr(\rings, 2 !3) ;
 	var sig, exc, env;
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-	exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(\imp.kr(0.5)), 0.01, \dec.kr(0.9));
+    exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(0.5), 0.01, \dec.kr(0.9));
 	sig = DynKlank.ar(
 		`[
 			freqs ,
@@ -123,12 +124,17 @@ SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
 
 SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 	atk = 0.01, rls = 0.6, amp = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
-	var otAmps = NamedControl.kr(\otAmps, 1!8); // shortcut: otAmps = \otAmps.kr(1!n);
+	var otAmps = NamedControl.kr(\otAmps, 0.2!8); // shortcut: otAmps = \otAmps.kr(1!n);
 	var otFreqs= NamedControl.kr(\otFreqs, Array.fill(8, {rrand(1, 5)})); // shortcut: otAmps = \otAmps.kr(1!n);
 	var sig, env, freqs, amps;
 	freqs = (freq * otFreqs).lag(freqLag);
 	amps = ((otAmps / ((1..8) ** dampExp)).normalizeSum * amp).lag(otLag);
-	sig = SinOsc.ar(freqs, 0, amps);
+    sig = 3.collect({
+        var fmod, ampmod;
+        fmod = {ExpRand(0.98, 1.02)};
+        ampmod = Dust.kr(50).bipolar(0.03);
+        SinOscFB.ar(freqs * fmod, \feedb.kr(pi/4), amps + ampmod);
+    }).sum;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
 	Out.ar(out, Splay.ar(sig) * env * \fade.kr(1));
@@ -350,7 +356,7 @@ Instr(#[\busfx, \vrb1], { arg bus, numChan, room, damp, mult;
 	var sig, new;
 	sig = In.ar(bus, numChan);
 	sig = FreeVerb.ar(sig, 1, room, damp, mult);
-}, [\audiobus, ObjectSpec(2), #[0.1, 1.0, \linear, 0, 0.85], #[0.1, 1.0, \exponential, 0, 0.5],  #[1, 10, \exponential, 0, 7.5]]
+}, [\audiobus, ObjectSpec(2), #[0.1, 1.0, \linear, 0, 0.85], #[0.1, 1.0, \exponential, 0, 0.5],  #[1, 10, \exponential, 0, 4.5]]
 );
 
 Instr(#[\busfx, \limiter], { arg bus, numChannels, level, lookAhead, gain;

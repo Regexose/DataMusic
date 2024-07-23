@@ -40,9 +40,47 @@ x.free
 )
 ~r.play
 ~r.stop
+~fxOnOff.(true)
+~fxOnOff.(false)
+~play.()
+Pbindef.all.do(_.stop)
+Pbindef.all.do({|k| k.key.postln})
 
-Pbindef(\snarl).play
-Pbindef(\snarl).stop
-~perc.level_(0.74)
-~sends.perc
-~perc.name
+
+Pbindef(\arp2).play(~t, quant:4)
+Pbindef(\arp2).stop
+Pbindef(\klic).isPlaying
+[\arp1, \arp3, \array01, \snarl, \seq1, \percvowel, \voc1, \klic, \arp2]
+[\arp1,  \array01, \seq1, \percvowel].do{|k| Pbindef(k).play(~t, quant:4)}
+~sends.keys.do({
+    |k|
+    k.postln
+
+})
+~perc.inbus.index
+~sends.perc_snd_vrb1.level= 0.0001
+~sends.perc_snd_ring.level=0.1
+~sends.perc_snd_chrs.level=0.0
+
+~fx.rev.synth.run(true)˝˝
+~fx.perc_cmp.synth.run(true)
+~fx.utt_cmp.synth.run(false)
+
+~fx.keys.do({
+    |k|
+    k.synth.postln;
+})
+PeakMonitor(~perc);
+PeakMonitor(~chorus);
+PeakMonitor(~master)
+
+
+Instr.at([\busfx, \singleDelay]).listArgs
+~mixer = nil
+~mixer = MixingBoard("mixer", nil, [~ch1,~ch2,~ch3,~ch4,~ch5, ~perc, ~voc, ~master])
+~reverb.groupBusInfo
+~reverb.inbus
+~ringmod.inbus
+~master.outChannels = 10
+~buffersByCat[\base]
+

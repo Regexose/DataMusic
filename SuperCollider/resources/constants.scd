@@ -4,7 +4,8 @@
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~t = TempoClock(120/60).permanent_(true);
-~buffers = Dictionary.new;
+~buffersByName = Dictionary.new;
+~buffersByCat = Dictionary.with(*[\base -> List.new, \tension -> List.new, \relax -> List.new]);
 ~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);

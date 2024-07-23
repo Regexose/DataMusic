@@ -105,11 +105,19 @@ MIDIIn.connectAll;
 PathName(~samplesPath).entries.do({
     arg subfolder;
     var sampleDict=(), sample;
-    ~buffers.add(subfolder.folderName.asSymbol -> sampleDict);
+    ~buffersByName.add(subfolder.folderName.asSymbol -> sampleDict);
     subfolder.entries.do({
         |entry, i|
         var sampleName = entry.fileNameWithoutExtension.asSymbol;
-        ~buffers[subfolder.folderName.asSymbol].put(sampleName, Buffer.read(s, entry.fullPath))
+        var c;
+        sample = Buffer.read(s, entry.fullPath);
+        ~buffersByName[subfolder.folderName.asSymbol].put(sampleName, sample);
+        //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;
+        c = case
+        {sampleName.asString == "base"}{~buffersByCat[\base].add(sample.normalize)}
+        {sampleName.asString == "tension"}{~buffersByCat[\tension].add(sample.normalize)}
+        {sampleName.asString == "relax"}{~buffersByCat[\relax].add(sample.normalize)}
+        {true}{"no samplename".postln};
     });
 });
 
@@ -135,63 +143,6 @@ PathName(~samplesPath).entries.do({
             image.free;
         });
     }).play(AppClock);
-};
-
-
-
-//initialize currentData and currentSample
-~initCurrent = {
-
-    ~rf.keys.asArray.sort.do({
-        |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
-
-    });
-
-    ~patFuncs.keys.asArray.sort.do({
-        |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1));
-
-    });
-
-    [\base, \tension, \relax].do({
-        |k|
-        ~currentSample.add(k -> ~buffers[\marta][k])
-
-    });
-    ~keySelector.do({|n| n.valueAction = 1});
-    ~bufSelector.do({|n| n.valueAction = 11});
-};
-
-
-~makeNodes = {
-	//~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};
-	s.bind(
-		// Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
-		~master = MixerChannel(\master, s, 2, 2);
-		~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: ~master);
-		~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
-		~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
-		~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
-		~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);
-		~utt = MixerChannel(\utt, s, 2, 2, outbus: ~master);
-		~perc = MixerChannel(\perc, s, 2, 2, outbus: ~master);
-		~bass = MixerChannel(\bass, s, 2, 2, outbus: ~master);
-		~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
-		~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
-		~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
-		~cat2Channel = (
-		\pr: ~ch2,
-		\dis: ~ch1,
-		\con: ~ch4,
-		\lec: ~ch5,
-		\ins: ~ch3,
-		\perc: ~perc,
-		\utt : ~perc,
-		\bass: ~bass
-	)
-);
-
 };
 
 

@@ -15,6 +15,7 @@ Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
+Server.default.options.numOutputBusChannels_(10);
 Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
 //s.newBusAllocators;
@@ -25,8 +26,9 @@ s.waitForBoot({
 	OSCdef.freeAll;
 	MIDIdef.freeAll;
     MixerChannel.freeAll;
+    s.sync;
 	s.newBusAllocators;
-
+    ~outBus = Bus.audio(s, 10);
 	~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
 	s.sync;
@@ -34,23 +36,23 @@ s.waitForBoot({
 
 	(~resourcePath ++ "constants.scd").load;
 	(~resourcePath ++ "rf_climart.scd").load;
-	(~resourcePath ++ "initialization.scd").load;
-
-	~createData.();
+	(~resourcePath ++ "functions.scd").load;
      s.sync;
     ServerTree.add(~makeNodes);
     ServerTree.run;
+    s.sync;
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
-	(~resourcePath ++ "functions.scd").load;
+	(~resourcePath ++ "initialization.scd").load;
+    s.sync;
+	~createData.();
 	(~resourcePath ++ "patterns.scd").load;
-
-	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
+    thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
 	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
-    // ~rout = Routine(~rf[\48]);
+
        // Send Objekte machen
     ~sends = ~sends ? ();
 
-    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~utt, ~perc, ~bass].do{
+    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~voc, ~perc, ~bass].do{
         |ch, i|
         var sendName;
         //postf("channel %\t i %\n", ch, i);
@@ -62,7 +64,6 @@ s.waitForBoot({
         }
     };
 
-    ~runFx.();
      ~initCurrent.();
 	"done".postln;
 })
