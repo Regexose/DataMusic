@@ -9,7 +9,7 @@ GUI mit verschiedenen SubWindows
 
 ~buildSelectors = {
     | midikeys, keynames, buffers, datakeys, funcs, mode|
-    var win, boxes, pauses, keyLabels, bufLabels, knobs, modcase, toggles, toggleLabels, layout, lay=();
+    var win, boxes, pauses, keyLabels, bufLabels, knobs, modcase, toggles, fx, toggleLabels, layout, lay=();
 
     win = Window.new("selector", Rect(150, 30, 800, 400))
     .autoRememberPosition(\select, \w)
@@ -110,7 +110,6 @@ GUI mit verschiedenen SubWindows
     {mode=="pattern"}{
         toggles = midikeys.collect({
             |name, i|
-            "pattern".postln;
             Button.new(bounds: Rect(40, 20))
             .states_([
                 [(name ++ "__stop"), Color.red], [(name ++ "__start"), Color.green]
@@ -121,19 +120,33 @@ GUI mit verschiedenen SubWindows
             .autoRememberPosition(\select, \w)
 
             //.action_({|btn| ; func.(btn.value) })
-        })
+        }) ++ [
+            Button.new(bounds:Rect(40,20))
+            .states_([
+                ["FX_ON", Color.green], ["FX_OFF", Color.red]
+            ])
+            .mouseDownAction_({|btn| "switch % ".format(btn.value).postln; ~fxOnOff.(btn.value.asBoolean)})
+            .valueAction_(1)
+            .autoRememberPosition(\select, \w)
+        ]
+
     }
     {true}{"no modus".postln};
 
-    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
+  lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
     lay[\box] = HLayout(*boxes);
     lay[\paus] = HLayout(*pauses);
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
     lay[\buf] = VLayout( HLayout(*~bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
-    lay[\keys].postln;
-    //layout = VLayout(lay[\stack1], lay[\stack2], HLayout(*toggles));
-    //lay.values.do({|k| k.class.postln});
     layout = VLayout(lay[\stack1], nil, lay[\buf], nil, HLayout(*toggles));
+/*    lay[\keys] = HLayout(VLayout(*keyLabels), VLayout(*~keySelector), VLayout(*knobs));
+    lay[\box] = VLayout(*boxes);
+    lay[\paus] = VLayout(*pauses);
+    lay[\stack1] = StackLayout(View().layout_(HLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
+    lay[\data] = VLayout(dataView);
+    lay[\buf] = HLayout( VLayout(*~bufSelector), VLayout(*bufLabels)).margins_(0).spacing_(5);
+
+    layout = HLayout(lay[\stack1], nil, lay[\buf], nil, VLayout(*toggles));*/
     win.layout_(layout);
 
 };
@@ -151,7 +164,7 @@ GUI mit verschiedenen SubWindows
     .background_(~style[\top_level_frame_xcolor])
     .autoRememberPosition(\data, \view);
     win.front;
-    "building dataview ...".postln;
+    //"building dataview ...".postln;
     ~databg = View.new(win, Rect(5, 0, 900, 450)).backgroundImage_(image);
     ~cursor = UserView.new(win, Rect(0, 0, 900, 450))
     .drawFunc_({|uv|

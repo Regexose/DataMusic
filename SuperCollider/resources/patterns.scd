@@ -3,7 +3,7 @@ Pbindef(\klic,
     \freqs, 2200!3,
     \rings, 1!3,
     \amps, [1.2, 0.5, 0.7],
-    \dur, 2,
+    \dur, 1,
     \amp, 0.2,
     \punch, 0.3,
     \dec, 0.3,
@@ -15,6 +15,38 @@ Pbindef(\klic,
     \pan, 0,
     \pLag, 0.26,
     \out, ~perc.inbus,
+);
+
+
+Pbindef(\klank,
+    \instrument, \dynklank,
+    \freqs, Prand([2000!3, 900!3, 1500!3, 3500!3], inf),
+    \rings, 0.001!3,
+    \amps, Pfunc({Array.rand(3, 0.06, 0.74)}) * Pwhite(0.01, 0.03, inf),
+    \dur, Pwhite(0.01, 0.61, inf),
+    \amp, 0.1,
+    \punch, Pwhite(0.1, 0.5, inf),
+    \dec, Pkey(\punch) * 0.3,
+    \freqScale, Pwhite(0.8, 1.5, inf),
+    \decayScale, Pwhite(0.04, 0.1, inf),
+    \atk, 0.02,
+    \rls, 0.1,
+    \ffreq, Pwhite(100, 1200, inf),
+    \rq, 0.9,
+    \pan, Pwhite(-0.8, 0.8, inf),
+    \pLag, Pwhite(0.1, 1.7, inf),
+    \out, ~perc.inbus,
+);
+
+Pbindef(\snare,
+    \instrument, \snare,
+    \dur, Pwhite(0.17, 1.61, inf),
+     \amp, 0.4,
+   \freq, Pwhite(90, 140, inf),
+  \envsus, Pkey(\dur),
+    \envlast, 1,
+    \pan, Pwhite(-0.8, 0.8, inf),
+    \out, ~perc.inbus
 );
 
 Pbindef(\percvowel,
@@ -48,23 +80,7 @@ Pbindef(\snarl,
 );
 
 
-Pbindef(\arp1,
-    \instrument, \vowelklank,
-    \dur, 4,
-    \amp, 0.1,
-    \vow, Prand([0, 5, 6, 7], inf),
-    \rls, 0.01,
-    \buf, Pfunc({~currentSample[\relax].normalize}),
-    \decayScale, 0.1,
-    \phs, Prand([pi, pi/2, pi/4, pi/5, (3*pi)/2], inf),
-    \freqScale,2,
-    \decayScale, 0.201,
-    \fScale, Pwhite(0.1, 1, inf),
-    \ffreq, 800,
-    \dbScale, 0.04,
-    \out, ~ch3.inbus,
-    \outdry, ~dryBus
-);
+
 
 Pbindef(\arp2,
     \instrument, \vowelklank,
@@ -102,16 +118,11 @@ Pbindef(\arp3,
 Pbindef(\array01,
     \instrument, \arrayarg,
     \dur, 4,
-    \freqs, [250, 400, 600] * Pwhite(0.8, 1.3, inf),
-    \temps, [pi/2, pi/2, pi/2] * Prand([1.0, 1.0, 1.0], inf),
-    \lag, 2,
-    \modf, 0.3,
-    \mod, 0.3,
-    \modf2, 0.2,
-    \mod2, 0.5,
+    \freq, [65, 71].midicps,
+    \mods, [0, 0],
+    \lg, 2,
     \pm, pi,
     \fade, 0.22,
-    \fade2, 0.1,
     \atk, 0.4,
     \rls, 3,
     \amp, 0.05,
@@ -120,16 +131,17 @@ Pbindef(\array01,
     \out, ~ch2.inbus
 );
 
-Pbindef(\seq1,
+
+Pbindef(\arp1,
     \instrument, \array_1b,
     \dur, 1,
     \freq, Pseq([Pn(200, 7), Prand([800, 400, 600, 795, 402, 596], 1)], inf) * Pwhite(0.99, 1.01, inf),
     \otFreqs, Pfunc({Array.fill(8, {exprand(1,5)})}),
     \freqLag, Pwhite(0.02, 2.9, inf),
-    \otAmps, Pfunc({Array.fill(8, {0.2.rand})}),
-    \feedb, Pxrand([0, pi/8, pi/4, pi/2, pi/3], inf),
+    \otAmps, Pfunc({Array.fill(8, {0.6.rand})}),
+    \feedb, Pxrand([0, 1/8, 1/4, 1/2, 1/3], inf) * pi,
     \otLag, 0.1,
-    \dampExp, 0.9004,
+    \dampExp, 2.04,
     \fade, 0.1,
     \atk, Pwhite(0.01, 0.05, inf),
     \rls, 0.06,
@@ -139,11 +151,11 @@ Pbindef(\seq1,
 );
 
 
-Pbindef(\voc1,
+Pbindef(\voc2,
     \instrument, \vowelklank,
     \vow, 10,
     \buf, Pfunc({~currentSample[\base].normalize}),
-    \dur, 4,
+    \dur, 1,
     \amp, 0.05,
     \phs, pi,
     \fScale, Pwhite(0.1, 1, inf),
@@ -153,6 +165,22 @@ Pbindef(\voc1,
     \rls, 1,
     \out, ~voc.inbus,
     \outdry, ~dryBus
+);
+
+Pbindef(\voc1,
+    \instrument, \vowelklank,
+    \dur, 2,
+    \amp, 0.15,
+    \rls, 0.2,
+    \buf, Pfunc({~currentSample[\relax].normalize}),
+    //\phs, Prand([pi, pi/2, pi/4, pi/5, (3*pi)/2], inf),
+    \freqScale, 1,
+    \decayScale, 0.11,
+    \fScale, 1,
+    \ffreq, 6600,
+    \out, ~voc.inbus,
+    \outdry, ~dryBus
+
 );
 
 

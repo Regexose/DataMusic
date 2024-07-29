@@ -30,20 +30,21 @@
         und harmonischer verstimmung
         */
         var data, normalized, compressed, reduce, buf, syn;
-        /* s.record(~recordingPath ++ "/jan_solar.wav", duration: 60);
+       /* s.record(~recordingPath ++ "/proto01.wav", duration: 120);
         wait(0.02);*/
         reduce = ~currentData[\50][\reduce];
         data = ~currentData[\50][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
-        normalized = compressed.normalize(80, 3000);
+        normalized = compressed.normalize(80, 5000);
         buf = ~liveBuffer;
         s.sync;
-        syn = Synth(\tgrains_live, [\amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \harm, [0,0], \outdry, ~dryBus]);
+        syn = Synth(\tgrains_live, [\amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \harm, [0,0], \out, ~ch1.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\50, syn);
         normalized.do({
             |d, i|
             //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d, \harm, d.linlin(20, 3000, -12, 12));
+            syn.map(\duck, ~ducker);
             0.05.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
         });
@@ -253,49 +254,93 @@
     },
 
     \60 : {
-        var syn, data, compressed, normalized, reduce;
+        //MikrobenAktivität
+        var syn, data, compressed, normalized, reduce, lastPos, mn, mx, avg, ranges;
         reduce= ~currentData[\60][\reduce];
         data = ~currentData[\60][\data].asArray;
+        lastPos =  ~currentData[\60][\position];
         compressed = data.select({|item, i| i%reduce == 0});
-        normalized = compressed.normalize(80.0, 3500.0);
+        #mn, mx = [100, 820];
+        normalized = compressed.normalize(mn, mx);
+        avg = normalized.mean;
+        ranges = [0.1, 0.25, 0.5, 0.75] * avg;
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
-        syn = Synth(\arrayarg, [\amp, 0.2, \freqs, [ 48, 72, 84].midicps]);
+        syn = Synth(\crisps, [\amp, 0.4, \punch, 0.66, \trg, 12, \dec, 0.11, \out, ~perc.inbus]);
         ~activeSynths.put(\60, syn);
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\ffreq, d, \mod, d.linlin(80, 3500, 1.0, 5.0), \pm, d.linlin(80, 3500, 0.0, 2pi)) ;
-            0.05.wait;
+            var c;
+                c = case
+            {(d >= (avg - ranges[0])) && (d <= (avg + ranges[0]))}{"range 0".postln; syn.set(\trg, 40, \dec, 0.06)}
+            {(d >= (avg - ranges[1])) && (d <= (avg + ranges[1]))}{"range 1".postln;syn.set(\trg, 20, \dec, 0.116)}
+            {(d >=  (avg - ranges[2])) && (d <= (avg + ranges[2]))}{"range 2".postln;syn.set(\trg, 10, \dec, 0.26)}
+            {(d >= (avg - ranges[3])) && (d <= (avg + ranges[3]))}{"range 3".postln;syn.set(\trg, 5, \dec, 0.66)}
+            {(d >= 0) && (d <= mx)}{"range 4".postln; Pbindef(\voc1, \vow, 21)}
+            {true}{"d outside range".postln};
+            /*"original data  %   normalized data   %  at   %".format(compressed[i].round(0.01), d, i).postln;*/
+            syn.set(\ffreq, d, \rq, d.linlin(mn, mx, 0.1, 0.5)) ;
+            ~currentData[\60][\position] = i + lastPos;
+            ~t.beatDur.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
 
         });
         syn.release(2);
+        ~currentData[\60][\position] = 0;
+    },
+
+    \62 : {
+        // C-N Akkord
+        var syn, data, compressed, normalized, reduce, lastPos, mn, mx;
+        reduce= ~currentData[\62][\reduce];
+        data = ~currentData[\62][\data].asArray;
+        lastPos =  ~currentData[\60][\position];
+        compressed = data.select({|item, i| i%reduce == 0});
+        #mn, mx = [-25.0, 25.0];
+        normalized = compressed.normalize(mn, mx);
+        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+        wait(0.02);*/
+        syn = Synth(\arrayarg, [\amp, 0.1, \freq, [65, 71, 73].midicps -24, \mods, [2.0, -12.0, -3.0], \lg, 0.4, \rq, 0.2, \phsMod, 0.5, \out, ~ch1.inbus]);
+        ~activeSynths.put(\62, syn);
+        normalized.do({
+            |d, i|
+            //"original data  % freqs %  mods % at   %".format(compressed[i].trunc(0.0001), [d *2, d *2.5], Array.fill(3,  {|n| d.linlin(mn, mx, -100*(n+1), 100*(n+1))}),  i).postln;
+            syn.setn(\mods, Array.fill(3,  {|n| d * (n+1)}), \freq, [65, 71, 73].midicps * Array.fill(3, {d.linlin(mn, mx, 0.8, 1.2)}), \ffreq, d.linlin(mn, mx, 400, 4000));
+            ~currentData[\62][\position] = i + lastPos;
+            ~t.beatDur.wait;
+            defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
+
+        });
+        syn.release(2);
+        ~currentData[\62][\position] = 0;
     }
+
 
 );
 
 ~patFuncs = (
       \klic : {
-        var data, compressed, normalized, reduce, lastPos, oldSize;
+        var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx;
         reduce= ~currentData[\klic][\reduce];
         data = ~currentData[\klic][\data].asArray;
         lastPos =  ~currentData[\klic][\position];
         compressed = data.select({|item, i| i%reduce == 0});
         oldSize = compressed.size; //logic for pause/resume
-        normalized = compressed.normalize(0.05, 1.0)[lastPos..oldSize-1];
+        #mn, mx = [0.05, 0.9];
+        normalized = compressed.normalize(mn, mx)[lastPos..oldSize-1];
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
+            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
             Pbindef(\klic,
                 \freqScale, d,
                 \decayScale, d,
             );
+            ~sends.perc_snd_vrb1.level= d.explin(0.05, 1.0, 0.001, 0.04);
             ~currentData[\klic][\position] = i + lastPos;
 
-           0.05.wait;
+           ~t.beatDur.wait;
             defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
         Pbindef(\klic).stop;
@@ -314,13 +359,13 @@
         wait(0.02);*/
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
+            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
             Pbindef(\snarl,
                 \vowelIndex, d.linlin(0.05, 0.9, 0, 5).asInteger * 4,
                 \freqScale, d,
             );
               ~currentData[\snarl][\position] = i + lastPos;
-         0.05.wait;
+         ~t.beatDur.wait;
             defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
         Pbindef(\snarl).stop;
@@ -328,30 +373,36 @@
     },
 
     \voc1 : {
-        var data, compressed, normalized, reduce, lastPos, oldSize;
+        var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx, avg, ranges;
         reduce= ~currentData[\voc1][\reduce];
         data = ~currentData[\voc1][\data].asArray;
         lastPos =  ~currentData[\voc1][\position];
         compressed = data.select({|item, i| i%reduce == 0});
         oldSize = compressed.size; //logic for pause/resume
-        normalized = compressed.normalize(0.05, 0.9)[lastPos..oldSize-1];
+        #mn, mx = [0.05, 0.9];
+        normalized = compressed.normalize(mn, mx)[lastPos..oldSize-1];
+        avg = normalized.mean;
+        ranges = [0.1, 0.25, 0.5, 0.75] * avg;
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
-            Pbindef(\voc1,
-                \vow, d.linlin(0.05, 0.9, 0,4).asInteger *4,
-                \freqScale, d.linlin(0.05, 0.9, 0.09, 0.49),
-                \decayScale, d.linlin(0.05, 0.9, 0.09, 0.19),
-                \buf, ~currentSample[\base].normalize,
-            );
+            var c;
+            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
+            c = case
+            {(d >= (avg - ranges[0])) && (d <= (avg + ranges[0]))}{"range 0".postln; Pbindef(\voc1, \vow, 1)}
+            {(d >= (avg - ranges[1])) && (d <= (avg + ranges[1]))}{"range 1".postln;Pbindef(\voc1, \vow, 6)}
+            {(d >=  (avg - ranges[2])) && (d <= (avg + ranges[2]))}{"range 2".postln;Pbindef(\voc1, \vow, 11)}
+            {(d >= (avg - ranges[3])) && (d <= (avg + ranges[3]))}{"range 3".postln;Pbindef(\voc1, \vow, 16)}
+            {(d >= 0) && (d <= mx)}{"range 4".postln; Pbindef(\voc1, \vow, 21)}
+            {true}{"d outside range".postln};
+            Pbindef(\voc1, \fScale, d, \ffreq, d * 10000);
             ~currentData[\voc1][\position] = i+lastPos;
-             0.1.wait;
+             ~t.beatDur.wait;
             defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};
         });
         Pbindef(\voc1).stop;
            ~currentData[\voc1][\position] = 0;
-    }
+    },
 
 )

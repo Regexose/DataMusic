@@ -15,44 +15,45 @@ Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
-Server.default.options.numOutputBusChannels_(10);
+Server.default.options.numOutputBusChannels_(16);
 Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
 //s.newBusAllocators;
 
 s.waitForBoot({
-	s.freeAll;
+    s.freeAll;
     Buffer.freeAll;
-	OSCdef.freeAll;
-	MIDIdef.freeAll;
+    OSCdef.freeAll;
+    MIDIdef.freeAll;
     MixerChannel.freeAll;
     s.sync;
-	s.newBusAllocators;
-    ~outBus = Bus.audio(s, 10);
-	~dryBus = Bus.audio(s,2);
+    s.newBusAllocators;
+    ~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
-	s.sync;
-	/// load SynthDefs, Constants, Functions
+    ~ducker = Bus.control(s, 1);
+    s.sync;
+    /// load SynthDefs, Constants, Functions
 
-	(~resourcePath ++ "constants.scd").load;
-	(~resourcePath ++ "rf_climart.scd").load;
-	(~resourcePath ++ "functions.scd").load;
-     s.sync;
+    (~resourcePath ++ "constants.scd").load;
+    (~resourcePath ++ "rf_climart.scd").load;
+    (~resourcePath ++ "functions.scd").load;
+    s.sync;
     ServerTree.add(~makeNodes);
     ServerTree.run;
     s.sync;
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
-	(~resourcePath ++ "initialization.scd").load;
+    (~resourcePath ++ "initialization.scd").load;
     s.sync;
-	~createData.();
-	(~resourcePath ++ "patterns.scd").load;
+    ~createData.();
+    (~resourcePath ++ "patterns.scd").load;
+    //"patterns".postln;
     thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
-	thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
-
-       // Send Objekte machen
+    thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
+    //"GUI".postln;
+    // Send Objekte machen
     ~sends = ~sends ? ();
 
-    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~voc, ~perc, ~bass].do{
+    [~ch1, ~ch2, ~ch3, ~ch4, ~voc, ~perc, ~bass].do{
         |ch, i|
         var sendName;
         //postf("channel %\t i %\n", ch, i);
@@ -63,9 +64,10 @@ s.waitForBoot({
             ~sends.put(sendName.asSymbol, ch.newPostSend(fx, 0.01) ); // nicht an patch sondern an channel senden
         }
     };
-
-     ~initCurrent.();
-	"done".postln;
+    //"sends".postln;
+    s.sync;
+    ~initCurrent.();
+    "done".postln;
 })
 )
 
@@ -82,12 +84,7 @@ s.defaultGroup.freeAll
 ~makeDataImages.()
 s.makeWindow
 MIDIFunc.trace(true)
-Pbindef(\array01).play
-Pbindef(\klic).envir
-Pbindef(\array01).stop
-Pbindef(\array02).play
-Pbindef(\array02).stop
-
+~nuendo.rout6.set(\out, 6)
 
 
 SynthDescLib.global.browse

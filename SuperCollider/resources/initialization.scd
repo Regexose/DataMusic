@@ -22,7 +22,9 @@
 s.sync;
 (~resourcePath ++ "synthDefs.scd").load;
 s.sync;
-~dry = Synth(\dry, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
+
+
+~dry = Synth(\routing, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
 
 ~createData = {
     var flopped, headers;
@@ -36,7 +38,7 @@ s.sync;
         values = List.new;
         key = line[0].toLower.replace(" ", "_");
         key = key.replace(".", "_").asSymbol;
-        "key % ".format(key).postln;
+        //"key % ".format(key).postln;
         headers.add(key);
         ~data.add(key -> values); // add to ~data
         line.removeAt(0); //remove key from data values
@@ -58,8 +60,8 @@ s.sync;
 
 MIDIClient.init;
 MIDIIn.connectAll;
-~midiOut = MIDIOut.new(0);
-~midiIn = MIDIIn.new(0);
+/*~midiOut = MIDIOut.new(0);
+~midiIn = MIDIIn.new(0);*/
 
 ~routines = ();
 //Aktivieren von Fadern für die Lautstärke Regelung der midikeys
@@ -136,7 +138,7 @@ PathName(~samplesPath).entries.do({
             dataPlot = ~data[k].asArray.plot(bounds: Rect(0, 0, 900, 450));
             0.05.wait;
             image = Image.fromWindow(dataPlot.parent, dataPlot.interactionView.bounds); // get image from the view
-            //~dataImages.add(k -> image);
+            ~dataImages.add(k -> image);
             0.05.wait;
             image.write(path.standardizePath);
             0.05.wait;

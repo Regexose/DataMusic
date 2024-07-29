@@ -22,7 +22,7 @@ SynthDef(\bpfstack, {
 }).add;
 
 SynthDef(\vowelklank, {
-	|vow=1, freqScale=0.1, decayScale=0.1, buf=0|
+	|vow=1, freqScale=0.1, decayScale=0.1, buf=0, gate=1|
     var sig, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
@@ -30,7 +30,7 @@ SynthDef(\vowelklank, {
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
     vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(pi)!5;
-	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, \gate.kr(1));
+	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
     //exc = WhiteNoise.ar(0.5);
 	sig = DynKlank.ar(
@@ -40,7 +40,7 @@ SynthDef(\vowelklank, {
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
 	sig = Pan2.ar(sig, \pan.kr(0));
-    sig = RHPF.ar(sig, \ffreq.kr(500));
+    sig = RLPF.ar(sig, \ffreq.kr(500));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
     Out.ar(\outdry.kr(2), exc);
@@ -70,7 +70,7 @@ SynthDef(\oddeven, {
 
 	// there are 5 formants in each vowel, ergo 5 filter orders may be provided
 	orders = stopFilterOrders.collect{|stop, i|
-        "Env % start: % , stop: %  dur: %".format(i, startFilterOrders[i], stopFilterOrders[i],  (2 * i )).postln;
+        //"Env % start: % , stop: %  dur: %".format(i, startFilterOrders[i], stopFilterOrders[i],  (2 * i )).postln;
         stop * EnvGen.kr(Env([startFilterOrders[i]/stop, 1.0] , (2 * i), curve: 3), timeScale: \envScale.kr(1));
 
 	};
@@ -102,23 +102,79 @@ SynthDef(\dynklank, {
 			amps,
 			rings
 	], exc, freqscale: freqScale,  decayscale: decayScale);
-    sig = RLPF.ar(sig, \ffreq.kr(1800));
+    sig = BPF.ar(sig, \ffreq.kr(1800), \rq.kr(0.5));
 	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0.01));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
+SynthDef(\crisps, {
+    var exc, freqs, rings, amps, sig, env, trig, freqMod;
+    // env = Env.perc(\atk.kr(0.01), \rls.kr(0.08)).kr(2);
+    var freqArray = NamedControl.kr(\freq, [80, 120, 350, 1010]);
+    var ampArray = NamedControl.kr(\levels, [0.5, 0.24, 0.14, 0.423]);
+    var ringArray = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
+    freqs = freqArray.collect({
+        |f|
+        var area = Array.fill(3, {linrand((f- (f/10)), f+ (f/10))});
+        //"freqArea  %".format(area).postln;
+        area;
+
+    }).flat;
+    amps = ampArray.collect({
+        |a|
+        var area = Array.fill(3, {linrand((a- (a/10)), a+ (a/10))});
+        //"freqArea  %".format(area).postln;
+        area;
+    }).flat;
+    rings = ringArray.collect({
+        |r|
+        var area = Array.fill(3, {linrand(0.05, 0.6)});
+        //"ampArea  %".format(area).postln;
+        area;
+    }).flat ;
+    trig = Dust.kr(\trg.kr(4));
+    SendTrig.kr(trig);
+    freqMod = TRand.kr( 1, 5, trig)  ;
+    exc = WhiteNoise.ar(\punch.kr(0.1)) * Decay2.kr(trig, 0.001, \dec.kr(0.9));
+    sig = Klank.ar(`[
+        freqs,
+        amps,
+        rings
+    ], exc, \freqScale.kr(0.4) *freqMod);
+    sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000) * freqMod, \rq.kr(1.0)), \pan.kr(0.0));
+    sig = sig * \amp.kr(0.3);
+    Out.ar(\out.kr, sig);
+}).add;
+
+//https://www.youtube.com/watch?v=xYc7_PbbtuE&t=1579s  ab 30:00
+SynthDef(\snare, {
+	var sig;
+	sig = SinOsc.ar(\freq.kr(200) * (1 + (2* Env.perc(0.001, 0.03).ar)) * [1, 2.3, 3.5, 5.8]); // multichannel
+	sig = sig * Env.perc(0, [2, 0.4, 0.2, 0.1]).ar; // multichannel
+	sig = sig * [0, -20, -12, -24].dbamp; // multichannel
+	sig = sig.sum;
+	sig = sig + (SinOsc.ar(XLine.ar(3000, 100, 0.03)) * Env.perc(0.01, 0.03).ar); // klick
+	sig = sig + (BPF.ar(Hasher.ar(Sweep.ar), \shapFreq1.kr(2120), 0.3) + Env.perc(0.05, 0.1).ar * \shaper1.kr(0.5)); // different timmbres
+	sig = sig + ((sig * 13.dbamp).tanh * -10.dbamp); // paralell distortion
+	sig = sig * Env.perc(0.001, \envsus.kr(0.75), curve: -4).ar;
+	sig = sig +( GVerb.ar(sig, 16, 2) * -30.dbamp);
+	sig = sig * Env.perc(0.001, \envlast.kr(1), curve: -4).ar(Done.freeSelf);
+	sig = sig * \amp.kr(-5.dbamp);
+	sig = Pan2.ar(sig, \pan.kr(0));
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+
 SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
-	var freqs = NamedControl.kr(\freqs, [100, 200, 400]);
-	var temps = NamedControl.kr(\temps, (pi/2)!3);
+	var freqs = NamedControl.kr(\freq, [200, 400]);
+    var mods = NamedControl.kr(\mods, [ 0, 0]);
 	var env,sines, sines2, sig;
 	env = Linen.kr(gate,\atk.kr(0.1), 1, \rls.kr(1), 2) ;
-    sines =  PMOsc.ar(freqs.varlag(\lag.kr(0.5)), freqs * SinOsc.kr(\modf.kr(0.3), pi/2).bipolar(\mod.kr(1)), LFNoise2.kr(1) * \pm.kr(pi), temps);
-	sines2 =  PMOsc.ar(freqs.varlag(0.5), freqs * SinOsc.kr(\modf2.kr(0.3), pi/2).bipolar( \mod2.kr(1)), modphase: temps);
-	sines = Splay.ar(sines)  * \fade.kr(0.6);
-	sines2 = Splay.ar(sines2) * \fade2.kr(0.1);
+    sines = SinOsc.ar(freqs.varlag(\lg.kr(0.2)) + mods, SinOsc.kr(\phsMod.kr(0.2))).sum;
+	sines = Splay.ar(sines, 1)  * \fade.kr(0.6);
 	sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
-    sig = Mix.ar([sines, sines2]) * env * amp;
+    sig = sines * env * amp;
 	Out.ar(out, sig );
 }).add;
 
@@ -163,7 +219,8 @@ SynthDef(\tgrains_live, {
 		interp: \ip.kr(4)
 	);
 	sig2 = BufRd.ar(1, buf, ptr) * env;
-	sig = sig * env * \amp.kr(1) * \fade.kr(1);
+    sig = sig * \duck.kr(1).varlag(0.5);
+	sig = sig * env * \amp.kr(1) * \fade.kr(1.0);
 	Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), sig2);
 }).add;
@@ -267,7 +324,7 @@ SynthDef(\recOne, {
 	BufWr.ar(input, buf, ptr);
 }).add;
 
-SynthDef(\dry, {
+SynthDef(\routing, {
 	var sig = In.ar(\in.kr(0), 2);
 	sig = sig * \fade.kr(0.0);
 	Out.ar(\out.kr(0), sig);

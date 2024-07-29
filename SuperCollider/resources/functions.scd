@@ -37,7 +37,7 @@
     filePath = PathName(~samplesPath +/+ selected +/+ key ++ ".wav");
     buf = Buffer.read(s, filePath.fullPath);
     ~currentSample.add(key.asSymbol -> buf);
-    "set % with %".format(key, selected).postln;
+    "set buffer % with %".format(key, selected).postln;
 };
 
 ~reduceAction = {
@@ -118,29 +118,37 @@
 
     });
 
-    [\base, \tension, \relax].do({
-        |k|
-        ~currentSample.add(k -> ~buffersByName[\marta][k])
-
-    });
     ~keySelector.do({|n| n.valueAction = 1});
-    ~bufSelector.do({|n| n.valueAction = 11});
+    ~bufSelector.do({|n| n.valueAction = 13});
 
 };
+
+// ~makeRouting = {
+//     // 16 Busse für diskretes Routing, das funktioniert noch nicht
+//     ~routingGrp = Group.new(addAction: \addToTail);
+//     16.do({
+//         |n|
+//         var busName = "bus" ++ n.asString;
+//         var bus = Bus.audio(s, 2);
+//         var routingName = "rout" ++ n.asString;
+//         //"making bus %".format(busName).postln;
+//         ~nuendo.put(busName.asSymbol, bus);
+//         ~nuendo.put(routingName.asSymbol, Synth(\routing, [\in, bus, \out, n], target: ~routingGrp));
+//     });
+// };
 
 ~makeNodes = {
     //~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};
     s.bind(
         // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
         ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: ~master);
-        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
-        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
-        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
-        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);
-        ~voc = MixerChannel(\utt, s, 2, 2, outbus: ~master);
-        ~perc = MixerChannel(\perc, s, 2, 2, outbus: ~master);
-        ~bass = MixerChannel(\bass, s, 2, 2, outbus: ~master);
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  4);
+        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
+        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
+        ~voc = MixerChannel(\voc, s, 2, 2, outbus:  ~master);
+        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
+        ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
         ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
         ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
         ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
@@ -285,7 +293,8 @@
             });
         },{
 
-            "freeing MIDIdefs".postln;
+            "freeing MIDIdefs amd routine".postln;
+            rout.stop;
             [\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
         }
     )
