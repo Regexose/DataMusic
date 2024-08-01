@@ -28,31 +28,20 @@ x.set(\startFilterOrders, [2, 0.1, 2.0, 0.25], \stopFilterOrders, [3.0, 3.1, 3.5
 x.free
 
 
-(
-~r = Routine({
-    var num= 3.0;
-    loop{
-
-        var stops= Array.fill(5, {num.rand});
-        x.set(\stopFilterOrders, stops, \lg, 0.6);
-        0.04.wait;
-        num = 3.0.rand;
-    }
-});
-
-)
 ~r.play
 ~r.stop
-~fxOnff.(true)
+~fxOnOff.(true)
 ~fxOnOff.(false)
 ~play.()
 Pbindef.all.do(_.stop)
 Pbindef.all.do({|k| k.key.postln})
 
 ~master.outChannels_(10)
-Pbindef(\klank).play(~t, quant:4)
+Pbindef(\arp2).play(~t, quant:4)
+Pbindef(\arp2, \phs, 0.9)
 Pbindef(\array01).stop
 Pbindef(\klic).isPlaying
+0.2/0.8**4
 (
 
 c = Synth(\crisps, [\amp, 0.4, \punch, 0.66, \trg, 12, \dec, 0.11, \out, ~perc.inbus]);
@@ -63,6 +52,9 @@ c.set(\trg, 20, \dec, 0.03, \amp, 0.4, \ffreq, 100, \rq, 0.3, \punch, 1.0);
 c.set(\trg, 25, \dec, 0.02, \amp, 0.4, \ffreq, 80, \rq, 0.1, \punch, 0.7);
 //c.setn(\freq, [120, 510, 1010, 800] *5)
 //c.free
+
+x= Synth(\arrayarg, [\amp, 0.1, \freq, [65, 71, 73].midicps -24, \mods, [2.0, -12.0, -3.0], \lg, 0.01, \rq, 0.2, \phsMod, 0.5, \out, ~ch1.inbus])
+x.setn(\freq, Array.fill(10, {rrand(100, 999)}), \mods, Array.fill(10, {rrand(-12.0, 12.0)}), \phsMod, 1 )
 
 n = Synth(\arrayarg, [\amp, 0.1, \freq, [65, 71, 73].midicps -24, \mods, [2.0, -12.0, -3.0], \lg, 0.01, \rq, 0.2, \phsMod, 0.5, \out, ~ch1.inbus]);
 //n.free
@@ -78,11 +70,11 @@ o = OSCFunc({
     |msg, time|
     //[time, msg].postln;
     Routine({
-    ~ducker.set(0);
+    ~ducker.set(0.2);
         0.1.wait;
     ~ducker.set(1);
 
-    })
+    }).play
 
 
 }, 'tr', s.addr);
@@ -110,11 +102,11 @@ Pbindef(\voc1, \ffreq, 4000)
 })
 ~master.postSettings
 ~perc.inbus.index
-~sends.perc_snd_vrb1.level= 0.05
-~sends.perc_snd_ring.level=0.1
+~sends.ch1_snd_vrb1.level= 0.1
+~sends.ch1_snd_ring.level=0.6
 ~sends.perc_snd_chrs.level=0.0
 
-~fx.rev.synth.run(true)˝˝
+~fx.rev.synth.run(true)
 ~fx.perc_cmp.synth.run(true)
 ~fx.utt_cmp.synth.run(false)
 

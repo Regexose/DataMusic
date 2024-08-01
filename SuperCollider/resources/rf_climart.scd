@@ -291,13 +291,16 @@
 
     \62 : {
         // C-N Akkord
-        var syn, data, compressed, normalized, reduce, lastPos, mn, mx;
+        var syn, data, compressed, normalized, reduce, oldSize, lastPos, mn, mx;
         reduce= ~currentData[\62][\reduce];
         data = ~currentData[\62][\data].asArray;
         lastPos =  ~currentData[\60][\position];
         compressed = data.select({|item, i| i%reduce == 0});
+          oldSize = compressed.size; //logic for pause/resume
         #mn, mx = [-25.0, 25.0];
-        normalized = compressed.normalize(mn, mx);
+        if (~currentData[\globalPos] == 0, {normalized = compressed.normalize(mn, mx)[lastPos..oldSize-1]},{normalized = compressed.normalize(mn, mx)[~currentData[\globalPos]..oldSize-1]});
+
+
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
         syn = Synth(\arrayarg, [\amp, 0.1, \freq, [65, 71, 73].midicps -24, \mods, [2.0, -12.0, -3.0], \lg, 0.4, \rq, 0.2, \phsMod, 0.5, \out, ~ch1.inbus]);
@@ -320,6 +323,7 @@
 
 ~patFuncs = (
       \klic : {
+        // ist der Master, der die globale Position vorgibt
         var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx;
         reduce= ~currentData[\klic][\reduce];
         data = ~currentData[\klic][\data].asArray;
@@ -327,7 +331,9 @@
         compressed = data.select({|item, i| i%reduce == 0});
         oldSize = compressed.size; //logic for pause/resume
         #mn, mx = [0.05, 0.9];
+        //
         normalized = compressed.normalize(mn, mx)[lastPos..oldSize-1];
+
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
         normalized.do({
@@ -339,6 +345,7 @@
             );
             ~sends.perc_snd_vrb1.level= d.explin(0.05, 1.0, 0.001, 0.04);
             ~currentData[\klic][\position] = i + lastPos;
+           ~currentData[\globalPos] = i + ~currentData[\globalPos];
 
            ~t.beatDur.wait;
             defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 14, 900); ~cursor.refresh};

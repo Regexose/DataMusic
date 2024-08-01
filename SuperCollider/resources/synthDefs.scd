@@ -29,7 +29,7 @@ SynthDef(\vowelklank, {
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
     vowel = Vowel.basicNew(freqs, dBs, widths);
-    phases = \phs.kr(pi)!5;
+    phases = \phs.kr(1)!5;
 	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
     //exc = WhiteNoise.ar(0.5);
@@ -39,8 +39,8 @@ SynthDef(\vowelklank, {
 			dBs.dbamp.normalizeSum,
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
+    sig = LPF.ar(sig, \ffreq.kr(500)).poll;
 	sig = Pan2.ar(sig, \pan.kr(0));
-    sig = RLPF.ar(sig, \ffreq.kr(500));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
     Out.ar(\outdry.kr(2), exc);
@@ -179,12 +179,12 @@ SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
 }).add;
 
 SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
-	atk = 0.01, rls = 0.6, amp = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
+	atk = 0.01, rls = 0.6, ampA = 0.1, gate = 1, freqLag = 0.02, otLag = 0.02|
 	var otAmps = NamedControl.kr(\otAmps, 0.2!8); // shortcut: otAmps = \otAmps.kr(1!n);
-	var otFreqs= NamedControl.kr(\otFreqs, Array.fill(8, {rrand(1, 5)})); // shortcut: otAmps = \otAmps.kr(1!n);
+	var otFreqs= NamedControl.kr(\otFreqs, Array.fill(8, {[0.5, 0.25, 1, 2, 4].choose})); // shortcut: otAmps = \otAmps.kr(1!n);
 	var sig, env, freqs, amps;
 	freqs = (freq * otFreqs).lag(freqLag);
-	amps = ((otAmps / ((1..8) ** dampExp)).normalizeSum * amp).lag(otLag);
+	amps = ((otAmps / ((1, 1.5..4) ** dampExp)).normalizeSum * ampA).lag(otLag);
     sig = 3.collect({
         var fmod, ampmod;
         fmod = {ExpRand(0.98, 1.02)};

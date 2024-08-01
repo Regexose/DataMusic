@@ -117,6 +117,7 @@
         ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
+    ~currentData.add(\globalPos -> 0);//For synchronous data playback
 
     ~keySelector.do({|n| n.valueAction = 1});
     ~bufSelector.do({|n| n.valueAction = 13});
