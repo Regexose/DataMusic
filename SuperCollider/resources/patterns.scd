@@ -84,8 +84,8 @@ Pbindef(\snarl,
 
 Pbindef(\arp2,
     \instrument, \vowelklank,
-    \dur, 4,
-    \amp, 0.1,
+    \dur, 0.5,
+    \amp, 0.4,
     \fade, 0.2,
     \vow, Pseq([0, 5, 10, 15], inf),
     \rls, 0.1,
@@ -94,7 +94,7 @@ Pbindef(\arp2,
     \decayScale, Pwhite(0.1, 0.9, inf),
     \freqScale, 1.5,
     \fScale,  Pwhite(0.1, 1, inf),
-    \ffreq, 600,
+    \ffreq, 4000,
     \out, ~ch3.inbus,
     \outdry, ~dryBus
 );
@@ -152,7 +152,7 @@ Pbindef(\arp1,
 );
 Pbindef(\quirkator,
     \otLag, 4, \dampExp, 0.2,
-    \otAmps, 0.5!8, \ampA, Prand([0.5, 2, 1], inf), \amp, Pwhite(2.2, 5, inf),
+    \otAmps, 0.5!8, \ampA, Prand([0.5, 2, 1], inf), \amp, Pwhite(0.7, 1.5, inf),
     \freq, Pseq([60, 63, 68, Prand([ 72, 75], 1)].midicps, inf) * Pxrand([ 0.95, 1.05, 0.99, 1.01], inf),
     \freqLag, 3.2,
     \feedb, pi *3/8,
@@ -161,14 +161,16 @@ Pbindef(\quirkator,
 );
 
 Pbindef(\dark,
+    \instrument, \array_1b,
     \otLag, 4,
     \dampExp, 0.2,
     \otAmps, 0.5!8,
-    \amp, Pwhite(0.2, 5, inf),
+    \amp, Pwhite(1.75, 4.33, inf),
     \freq, Pseq([Pn(24, 7), Prand([24, 36, 48, 60, 72].midicps, 1)], inf) * Pxrand([2.99, 3.01, 3.99, 4.01], inf),
     \freqLag, 3.2, \feedb, pi *3/8,
     \dur, 4,
-    \rls, 3, \atk, 0.5
+    \rls, 2, \atk, 0.5,
+    \out, ~ch1.inbus;
 
 );
 

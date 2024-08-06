@@ -39,7 +39,7 @@ SynthDef(\vowelklank, {
 			dBs.dbamp.normalizeSum,
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
-    sig = LPF.ar(sig, \ffreq.kr(500)).poll;
+    sig = LPF.ar(sig, \ffreq.kr(500));
 	sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
@@ -110,40 +110,33 @@ SynthDef(\dynklank, {
 
 SynthDef(\crisps, {
     var exc, freqs, rings, amps, sig, env, trig, freqMod;
-    // env = Env.perc(\atk.kr(0.01), \rls.kr(0.08)).kr(2);
     var freqArray = NamedControl.kr(\freq, [80, 120, 350, 1010]);
     var ampArray = NamedControl.kr(\levels, [0.5, 0.24, 0.14, 0.423]);
     var ringArray = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
+    //env = Env.perc(\atk.kr(0.01), \rls.kr(0.08), curve: \crv.kr(-4.0)).kr(2);
     freqs = freqArray.collect({
-        |f|
-        var area = Array.fill(3, {linrand((f- (f/10)), f+ (f/10))});
-        //"freqArea  %".format(area).postln;
-        area;
-
+        |f, i|
+        [(f- (f/10)), f,  f+ (f/10)];
     }).flat;
     amps = ampArray.collect({
         |a|
-        var area = Array.fill(3, {linrand((a- (a/10)), a+ (a/10))});
-        //"freqArea  %".format(area).postln;
-        area;
+        [(a- (a/10)), a,  a+ (a/10)]
     }).flat;
     rings = ringArray.collect({
         |r|
-        var area = Array.fill(3, {linrand(0.05, 0.6)});
-        //"ampArea  %".format(area).postln;
-        area;
-    }).flat ;
+        [(r- (r/10)), r,  r+ (r/10)]
+    }).flat;
     trig = Dust.kr(\trg.kr(4));
     SendTrig.kr(trig);
     freqMod = TRand.kr( 1, 5, trig)  ;
     exc = WhiteNoise.ar(\punch.kr(0.1)) * Decay2.kr(trig, 0.001, \dec.kr(0.9));
-    sig = Klank.ar(`[
-        freqs,
-        amps,
-        rings
-    ], exc, \freqScale.kr(0.4) *freqMod);
-    sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000) * freqMod, \rq.kr(1.0)), \pan.kr(0.0));
-    sig = sig * \amp.kr(0.3);
+    sig = DynKlank.ar(`[
+        freqs ,
+        amps.ampdb.normalizeSum,
+         rings
+    ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
+    sig = sig * \amp.kr(0.3) ;
+    sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000), \rq.kr(1.0)), \pan.kr(0.0));
     Out.ar(\out.kr, sig);
 }).add;
 
@@ -219,10 +212,9 @@ SynthDef(\tgrains_live, {
 		interp: \ip.kr(4)
 	);
 	sig2 = BufRd.ar(1, buf, ptr) * env;
-    sig = sig * \duck.kr(1).varlag(0.5);
 	sig = sig * env * \amp.kr(1) * \fade.kr(1.0);
 	Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(0), sig2);
+	Out.ar(\outdry.kr(20), sig2);
 }).add;
 
 SynthDef(\tgrains, {

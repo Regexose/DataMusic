@@ -49,6 +49,18 @@
     "set keyKnob % to  %".format(keyKnob, knobVal).postln;
 };
 
+~dataRange = {
+    |x, y, data|
+    var range;
+    if (x.notNil, {
+         ~currentData.dataIn = x.linlin(15, 885, 0, ~data.temp.size-1)
+    }, {
+        ~currentData.dataOut = y.linlin(15, 885, 0, ~data.temp.size-1);
+        "range from % to % is %".format(~currentData.dataIn, ~currentData.dataOut, (~currentData.dataOut - ~currentData.dataIn)).postln;
+    });
+    ~currentData
+
+};
 
 ~recordUser = {
     |username, typename|
@@ -118,6 +130,9 @@
 
     });
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
+    ~currentData.add(\dataIn -> 0);//zum auswählen von Datensegmenten --> ~databg
+    ~currentData.add(\dataOut -> 0);//zum auswählen von Datensegmenten --> ~databg
+
 
     ~keySelector.do({|n| n.valueAction = 1});
     ~bufSelector.do({|n| n.valueAction = 13});
@@ -144,11 +159,11 @@
         // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
         ~master = MixerChannel(\master, s, 2, 2);
         ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
-        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  4);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
         ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
         ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
         ~voc = MixerChannel(\voc, s, 2, 2, outbus:  ~master);
-        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
+        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  12);
         ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
         ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
         ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);

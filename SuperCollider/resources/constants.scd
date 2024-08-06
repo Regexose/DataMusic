@@ -16,10 +16,18 @@
 ~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
+
+
 ~data = ();
-~currentData = Dictionary.new;
+~currentData = ();
 
 ~dataGroups = (
+    \sm : (//ausgehend von 66% AP (Pflanzenreste) und 34% CM (Tierkot etc). WHC 50, 70, 90%
+        \50 : 41.48,
+        \70 : 47.5,
+        \90 : 70.39
+    ),
+
 	\freq: [// suitable for frequency values
 		\solar,
 		\yearly,

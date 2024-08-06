@@ -153,19 +153,29 @@ GUI mit verschiedenen SubWindows
 
 ~buildDataView = {
     /*
-    - Recording Vorzähler und Fortschritt
-    - Knobs mit Auflösung: manipulation des reduce Faktors
+    - Update und Skalierung von Views (UserView)
+    - Auswahl von Datenbereichen mit Mouse
     */
     var win, dataView, dataPlot, image, recCountdown, recProgress;
-    //image = Image.open(~imagePath +/+ "temp.png").setSize(900, 450, \keepAspectRatio );
     image = Image.open(~imagePath +/+ "temp.png");
     image.setSize(900, 450, \keepAspectRatio );
     win = Window.new("UserControl", Rect(450, 450, 1000, 460))
     .background_(~style[\top_level_frame_xcolor])
+     .acceptsMouseOver_(true)
     .autoRememberPosition(\data, \view);
     win.front;
     //"building dataview ...".postln;
-    ~databg = View.new(win, Rect(5, 0, 900, 450)).backgroundImage_(image);
+    ~databg = View.new(win, Rect(5, 0, 900, 450))
+    .backgroundImage_(image)
+    .background_(Color.green)
+    .acceptsMouse_(true)
+    .mouseDownAction_({|v, x| x.postln; ~currentData.dataIn = x })
+    .mouseUpAction_({|v, x|
+        "new range % from % to %".format(~currentData.dataIn, x, x - ~currentData.dataIn).postln;
+        ~currentData.dataOut = x })
+    .front
+    ;
+
     ~cursor = UserView.new(win, Rect(0, 0, 900, 450))
     .drawFunc_({|uv|
         Pen.strokeColor = Color.red;

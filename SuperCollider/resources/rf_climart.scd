@@ -29,23 +29,25 @@
         /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
         und harmonischer verstimmung
         */
-        var data, normalized, compressed, reduce, buf, syn;
-       /* s.record(~recordingPath ++ "/proto01.wav", duration: 120);
+        var data, normalized, compressed, reduce, buf, syn, mn, mx;
+      /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
         wait(0.02);*/
         reduce = ~currentData[\50][\reduce];
         data = ~currentData[\50][\data].asArray;
         compressed = data.select({|item, i| i%reduce == 0});
-        normalized = compressed.normalize(80, 5000);
+        # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
+        normalized = compressed.normalize(mn, mx);
         buf = ~liveBuffer;
         s.sync;
-        syn = Synth(\tgrains_live, [\amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \harm, [0,0], \out, ~ch1.inbus, \outdry, ~dryBus]);
+        "pre Syn".postln;
+        syn = Synth(\tgrains_live, [\in, 16, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~ch1.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\50, syn);
         normalized.do({
             |d, i|
-            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
-            syn.set(\ffreq, d, \harm, d.linlin(20, 3000, -12, 12));
-            syn.map(\duck, ~ducker);
-            0.05.wait;
+            //"original data  %   normalized data   %  at  %".format(normalized[i].trunc(0.001), d, i).postln;
+
+            syn.set(\rate, d.linlin(mn, mx, 0.75, 1.25), \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
+           ~t.beatDur.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
@@ -254,32 +256,33 @@
     },
 
     \60 : {
-        //MikrobenAktivität
+        //MikrobenAktivität && Temperatur
         var syn, data, compressed, normalized, reduce, lastPos, mn, mx, avg, ranges;
         reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data].asArray;
+        data = ~currentData[\60][\data][~dataIn.asInteger .. ~dataOut.asInteger].asArray;
         lastPos =  ~currentData[\60][\position];
         compressed = data.select({|item, i| i%reduce == 0});
-        #mn, mx = [100, 820];
+        #mn, mx = [-5, 50];
         normalized = compressed.normalize(mn, mx);
         avg = normalized.mean;
         ranges = [0.1, 0.25, 0.5, 0.75] * avg;
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
-        syn = Synth(\crisps, [\amp, 0.4, \punch, 0.66, \trg, 12, \dec, 0.11, \out, ~perc.inbus]);
+        syn = Synth(\crisps, ~synthArgs.wimper);
         ~activeSynths.put(\60, syn);
         normalized.do({
             |d, i|
             var c;
                 c = case
-            {(d >= (avg - ranges[0])) && (d <= (avg + ranges[0]))}{"range 0".postln; syn.set(\trg, 40, \dec, 0.06)}
-            {(d >= (avg - ranges[1])) && (d <= (avg + ranges[1]))}{"range 1".postln;syn.set(\trg, 20, \dec, 0.116)}
-            {(d >=  (avg - ranges[2])) && (d <= (avg + ranges[2]))}{"range 2".postln;syn.set(\trg, 10, \dec, 0.26)}
-            {(d >= (avg - ranges[3])) && (d <= (avg + ranges[3]))}{"range 3".postln;syn.set(\trg, 5, \dec, 0.66)}
-            {(d >= 0) && (d <= mx)}{"range 4".postln; Pbindef(\voc1, \vow, 21)}
+            {d > 35}{"over max".postln; syn.set(\trg, d.linlin(35, mx, 75, 125), \dec, 0.01)}
+                {(d >= 25) && (d <= 35)}{"max".postln; syn.set(\trg, d.linlin(25, 35, 30, 75), \dec, 0.01)}
+            {(d >= 18 ) && (d <= 24)}{"hoch".postln;syn.set(\trg, d.linlin(18, 24, 20, 30), \dec, 0.06)}
+            {(d >= 8) && (d <= 17)}{"mittel".postln;syn.set(\trg, d.linlin(8, 17, 8, 20), \dec, 0.09)}
+            {(d >= 0 ) && (d <= 7)}{"niedrig".postln;syn.set(\trg, d.linlin(8, 17, 1, 8), \dec, 0.126)}
+            {d < 0}{"keine Aktivität".postln; syn.set(\trg, 0.001, \dec, 0.136)}
             {true}{"d outside range".postln};
             /*"original data  %   normalized data   %  at   %".format(compressed[i].round(0.01), d, i).postln;*/
-            syn.set(\ffreq, d, \rq, d.linlin(mn, mx, 0.1, 0.5)) ;
+            syn.set(\ffreq, d.linlin(mn, mx, 120, 2300), \rq, d.linlin(mn, mx, 0.1, 0.5)) ;
             ~currentData[\60][\position] = i + lastPos;
             ~t.beatDur.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
@@ -308,7 +311,8 @@
         normalized.do({
             |d, i|
             //"original data  % freqs %  mods % at   %".format(compressed[i].trunc(0.0001), [d *2, d *2.5], Array.fill(3,  {|n| d.linlin(mn, mx, -100*(n+1), 100*(n+1))}),  i).postln;
-            syn.setn(\mods, Array.fill(3,  {|n| d * (n+1)}), \freq, [65, 71, 73].midicps * Array.fill(3, {d.linlin(mn, mx, 0.8, 1.2)}), \ffreq, d.linlin(mn, mx, 400, 4000));
+            syn.setn(\mods, Array.fill(3,  {|n| d * (n+1)}),
+                \freq, [53, 49, 51].midicps * [[0.8, 1.2], [0.5, 1.9], [0.95, 1.05] ].collect({|r| {d.linlin(mn, mx, r[0], r[1])}}));
             ~currentData[\62][\position] = i + lastPos;
             ~t.beatDur.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh;};
@@ -316,7 +320,7 @@
         });
         syn.release(2);
         ~currentData[\62][\position] = 0;
-    }
+    },
 
 
 );
@@ -411,5 +415,6 @@
         Pbindef(\voc1).stop;
            ~currentData[\voc1][\position] = 0;
     },
+
 
 )
