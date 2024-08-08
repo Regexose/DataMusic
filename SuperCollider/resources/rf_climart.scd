@@ -6,10 +6,11 @@
         var data, normalized, compressed, reduce, buf, syn;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
-        reduce = ~currentData[\48][\reduce];
+        //reduce = ~currentData[\48][\reduce];
         data = ~currentData[\48][\data].asArray;
-        compressed = data.select({|item, i| i%reduce == 0});
-        normalized = compressed.normalize(80, 3000);
+        ~currentData.globalKey = \48; // für handling des RangeSliders
+        //compressed = data.select({|item, i| i%reduce == 0});
+        normalized = data.normalize(80, 5000);
         buf = ~currentSample[\base].normalize;
         s.sync;
         syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \outdry, ~dryBus]);
@@ -19,7 +20,7 @@
             //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d);
             0.05.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 14, 900); ~cursor.refresh}; // Update GUI
+            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
 
@@ -32,11 +33,11 @@
         var data, normalized, compressed, reduce, buf, syn, mn, mx;
       /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
         wait(0.02);*/
-        reduce = ~currentData[\50][\reduce];
+        //reduce = ~currentData[\50][\reduce];
         data = ~currentData[\50][\data].asArray;
-        compressed = data.select({|item, i| i%reduce == 0});
+        //compressed = data.select({|item, i| i%reduce == 0});
         # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
-        normalized = compressed.normalize(mn, mx);
+        normalized = data.normalize(mn, mx);
         buf = ~liveBuffer;
         s.sync;
         "pre Syn".postln;
@@ -60,10 +61,11 @@
         var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
-        reduce = ~currentData[\52][\reduce];
+        //reduce = ~currentData[\52][\reduce];
         data = ~currentData[\52][\data].asArray;
-        compressed = data.select({|item, i| i%reduce == 0});
-        normalized = compressed.normalize(36.0, 60.0);
+          ~currentData.globalKey = \52;
+        //compressed = data.select({|item, i| i%reduce == 0});
+        normalized = data.normalize(36.0, 60.0);
         mean = normalized.mean;
         range = mean / 30;
         buf1 = ~currentSample[\base].normalize;
@@ -257,9 +259,11 @@
 
     \60 : {
         //MikrobenAktivität && Temperatur
-        var syn, data, compressed, normalized, reduce, lastPos, mn, mx, avg, ranges;
+        var syn, data, in, out, compressed, normalized, reduce, lastPos, mn, mx, avg, ranges;
         reduce= ~currentData[\60][\reduce];
-        data = ~currentData[\60][\data][~dataIn.asInteger .. ~dataOut.asInteger].asArray;
+        # in, out = [~currentData.dataIn, ~currentData.dataOut];
+        data = ~currentData[\60][\data][in .. out].asArray;
+
         lastPos =  ~currentData[\60][\position];
         compressed = data.select({|item, i| i%reduce == 0});
         #mn, mx = [-5, 50];

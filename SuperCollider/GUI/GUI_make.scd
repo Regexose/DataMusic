@@ -19,7 +19,7 @@ var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "live", "3 m
 Window.closeAll;
 ~selectors = ~buildSelectors.(midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
 ~patSelectors = ~buildSelectors.(patternkeys, patternkeys, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
-~dataView = ~buildDataView.();
+~dataView = ~buildDataView.(~data.soilmoisture1, 30);
 
 //CmdPeriod.add({ [~selectors, ~dataView].close});
 

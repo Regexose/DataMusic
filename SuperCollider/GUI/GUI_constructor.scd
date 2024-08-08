@@ -57,6 +57,7 @@ GUI mit verschiedenen SubWindows
         .autoRememberPosition(\select, \w)
         .items_(datakeys.asArray)
         .allowsReselection_(True)
+        .valueAction_(1)
         .action_({arg pm; ~selectorAction.(pm)})
         .name_(k)
 
@@ -67,7 +68,6 @@ GUI mit verschiedenen SubWindows
         .autoRememberPosition(\select, \w)
         .action_({arg kn; ~reduceAction.(kn)})
         .name_(k)
-
     });
 
     bufLabels = [\base, \tension, \relax].collect({
@@ -75,7 +75,6 @@ GUI mit verschiedenen SubWindows
         StaticText.new()
         .autoRememberPosition(\select, \w)
         .string_("buffer " ++ l)
-
     });
 
     ~bufSelector = [\base, \tension, \relax].collect({
@@ -86,7 +85,6 @@ GUI mit verschiedenen SubWindows
         .allowsReselection_(True)
         .action_({arg pm; ~bufferSelectorAction.(pm)})
         .name_(k)
-
     });
 
     modcase = case
@@ -153,42 +151,122 @@ GUI mit verschiedenen SubWindows
 
 ~buildDataView = {
     /*
-    - Update und Skalierung von Views (UserView)
-    - Auswahl von Datenbereichen mit Mouse
+    - Auswahl von Datenbereichen mit rangeSlider
     */
-    var win, dataView, dataPlot, image, recCountdown, recProgress;
+    |data, reduce|
+    var win, dataPlot, image, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data2, resetButton, refreshButton, vLines = 100, hLines;
     image = Image.open(~imagePath +/+ "temp.png");
     image.setSize(900, 450, \keepAspectRatio );
-    win = Window.new("UserControl", Rect(450, 450, 1000, 460))
+    # inIdx, outIdx = [0, data.size-1];
+    data = data[inIdx.. outIdx].select({|n, i| i%reduce==0});
+    data2 = data.copy;
+    hLines = [0.1, 0.25, 0.75, 1.0, 1.25].collect({|n| data.maxItem *n});
+    hLines.insert(2, data.mean);
+    win = Window.new("UserControl", Rect(450, 450, 1000, 600))
     .background_(~style[\top_level_frame_xcolor])
-     .acceptsMouseOver_(true)
-    .autoRememberPosition(\data, \view);
-    win.front;
-    //"building dataview ...".postln;
-    ~databg = View.new(win, Rect(5, 0, 900, 450))
-    .backgroundImage_(image)
-    .background_(Color.green)
-    .acceptsMouse_(true)
-    .mouseDownAction_({|v, x| x.postln; ~currentData.dataIn = x })
-    .mouseUpAction_({|v, x|
-        "new range % from % to %".format(~currentData.dataIn, x, x - ~currentData.dataIn).postln;
-        ~currentData.dataOut = x })
-    .front
-    ;
+    //.autoRememberPosition(\data, \view)
+    .front;
 
-    ~cursor = UserView.new(win, Rect(0, 0, 900, 450))
+    ~drawData = UserView.new(win,  Rect(0, 0, 1000, 500))
+    .background_(~style.top_level_frame_color)
+    .drawFunc_({|uv|
+        var  x, y,  in, out, height=500;
+        #x, y = [0, 0];
+        Pen.fillColor_(Color.black);
+        hLines.do({|leg|
+            var l = leg.linlin(0, 80, height, 0);
+            Pen.moveTo(0@l);
+            Pen.lineTo(1000@l);
+            StaticText(win, Rect(960, l, 40, 30)).string_(leg.asString)
+        });
+        Pen.fillStroke;
+        Pen.width_(2);
+        Pen.lineTo(0@0);
+        data.do{ |d, i|
+            Pen.moveTo(x@y);
+            x = (i+1).linlin(0, data.size-1, 0, win.bounds.width).asInteger;
+            y = d.linlin(data.minItem, data.maxItem, height, 0);
+            Pen.lineTo(x@y);
+            if (i%vLines==0, {
+                //"d % x  %   y % ".format(d, x, y).postln;
+                StaticText(win, Rect(x, 20, 30, 30))
+                .string_(d.asString)
+                .align_(\left);
+                //lines
+                Pen.strokeColor_(Color.grey);
+                Pen.moveTo(x@y);
+                Pen.lineTo(x@50);
+                Pen.fillStroke;
+
+            });
+            Pen.strokeColor_(Color.blue);
+            Pen.fillStroke;
+        };
+    });
+
+
+    ~dataSlider = RangeSlider.new(win, Rect(0, 550, 1000, 50))
+    .lo_(0.12)
+    .hi_(0.59)
+    .background_(Color.green(0.5, 0.1))
+    .action_({|sl|
+        [ inIdx, outIdx].postln;
+        [sl.lo, sl.hi ].postln;
+        inIdx = (sl.lo * (data.size-1)).asInteger;
+        outIdx = (sl.hi * (data.size-1)).asInteger;
+        "new range % mit in % out %".format(outIdx- inIdx, inIdx, outIdx).postln;
+
+    });
+
+
+    ~cursor = UserView.new(win, ~drawData.bounds)
     .drawFunc_({|uv|
         Pen.strokeColor = Color.red;
+        Pen.fillColor = Color.red;
+        Pen.width = 5;
         Pen.moveTo(~posX@0);
         Pen.lineTo(~posX@win.bounds.height);
-        Pen.fillStroke;
+        //Pen.addRect(Rect(~posX, 0, 5, win.bounds.height ))
+        Pen.stroke;
+    })
+
+    ;
+
+    resetButton = Button.new(win, Rect(50, 510, 70, 20))
+    .states_([["no", Color.white, Color.grey], ["reset", Color.grey, Color.white]])
+    .font_(~style.textFont)
+
+    .action_({|btn|
+      "reset size with %".format(btn.value).postln;
+         if (btn.value==0, {
+            var key= ~currentData.globalKey;
+            data = data2;
+            ~currentData[key][\data] = data;
+            "data2 size % reset data size %".format(data2.size, data.size).postln;
+            ~drawData.refresh})
     });
-    win.layout_(StackLayout(~cursor, ~databg ).mode_(\stackAll));
 
 
-    //ToDo: einen dataBufer als backgroundImage und dann einen Playhead analog zur spielenden Funktion
+    refreshButton = Button.new(win, Rect(150, 510, 70, 20))
+    .states_([
+        [ "refreshON", Color.black, Color.white],
+        [ "refreshOFF", Color.red, Color.white]
+    ])
+     .font_(~style.textFont)
 
+    .action_({|btn|
+        var key;
+        btn.value.postln;
+        if (btn.value==0, {
+            (data[0..data2.size].size).postln;
+            data = data[inIdx..outIdx];
+            key= ~currentData.globalKey;
+            ~currentData[key][\data] = data;
+            "new Data size %".format(data.size).postln;
+            ~drawData.refresh})
+    });
 
+    //win.layout_(StackLayout( ~cursor, ~drawData, ~dataSlider, resetButton, refreshButton ).mode_(\stackAll));
 
 };
 

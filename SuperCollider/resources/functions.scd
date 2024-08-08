@@ -18,13 +18,15 @@
 
 ~selectorAction = {
     |menu|
-    var key, selected, imgPath, image;
+    var key, selected, imgPath, image, reduce;
     selected = menu.item.asSymbol;
     key = menu.name;
     imgPath = ~imagePath +/+ selected.asString ++ ".png";
     image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );
-    ~currentData[key.asSymbol][\data] = ~data[selected];
-    ~databg.setBackgroundImage(image);
+    reduce = ~currentData[key.asSymbol][\reduce];
+    ~currentData[key.asSymbol][\data] = ~data[selected].select({|item, i| i%reduce == 0});
+    //~databg.setBackgroundImage(image);
+    ~dataView = ~buildDataView.(~currentData[key.asSymbol][\data], reduce );
     ~dataView.refresh;
     "set % with %".format(key, selected).postln;
 };
@@ -45,22 +47,10 @@
     var keyKnob, knobVal;
     keyKnob = knob.name.asSymbol;
     knobVal = knob.value.linlin(0.0, 1.0, 1, 50).asInteger;
-    ~currentData[keyKnob][\reduce] = knobVal;
+    ~currentData[keyKnob][\reduce] = knobVal; // sollte in Zukunft von ~drawData ausgehen
     "set keyKnob % to  %".format(keyKnob, knobVal).postln;
 };
 
-~dataRange = {
-    |x, y, data|
-    var range;
-    if (x.notNil, {
-         ~currentData.dataIn = x.linlin(15, 885, 0, ~data.temp.size-1)
-    }, {
-        ~currentData.dataOut = y.linlin(15, 885, 0, ~data.temp.size-1);
-        "range from % to % is %".format(~currentData.dataIn, ~currentData.dataOut, (~currentData.dataOut - ~currentData.dataIn)).postln;
-    });
-    ~currentData
-
-};
 
 ~recordUser = {
     |username, typename|
@@ -117,41 +107,25 @@
 
 //initialize currentData and currentSample
 ~initCurrent = {
-
+    var reduce = 10;
     ~rf.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
 
     ~patFuncs.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> 10, \data -> ~data.soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
-    ~currentData.add(\dataIn -> 0);//zum auswählen von Datensegmenten --> ~databg
-    ~currentData.add(\dataOut -> 0);//zum auswählen von Datensegmenten --> ~databg
+    ~currentData.add(\globalKey -> \48);
 
-
-    ~keySelector.do({|n| n.valueAction = 1});
+    //~keySelector.do({|n| n.valueAction = 1});
     ~bufSelector.do({|n| n.valueAction = 13});
 
 };
-
-// ~makeRouting = {
-//     // 16 Busse für diskretes Routing, das funktioniert noch nicht
-//     ~routingGrp = Group.new(addAction: \addToTail);
-//     16.do({
-//         |n|
-//         var busName = "bus" ++ n.asString;
-//         var bus = Bus.audio(s, 2);
-//         var routingName = "rout" ++ n.asString;
-//         //"making bus %".format(busName).postln;
-//         ~nuendo.put(busName.asSymbol, bus);
-//         ~nuendo.put(routingName.asSymbol, Synth(\routing, [\in, bus, \out, n], target: ~routingGrp));
-//     });
-// };
 
 ~makeNodes = {
     //~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};

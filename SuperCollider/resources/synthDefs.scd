@@ -299,7 +299,7 @@ SynthDef(\brsaw, {
     ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
     sig2 = BufRd.ar(1, buf, ptr) * env;
 	sig = BufRd.ar(1, buf, ptr );
-	sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.5));
+	sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.1));
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), sig2);

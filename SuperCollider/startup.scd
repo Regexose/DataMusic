@@ -11,6 +11,7 @@ ServerTree.removeAll; // löscht alle funktionen
 ~configFile = ~projectRoot ++ "config.scd";
 ~configFile.load;
 ~resourcePath = ~projectRoot ++ "resources/";
+
 Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);

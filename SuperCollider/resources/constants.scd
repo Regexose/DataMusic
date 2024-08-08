@@ -16,8 +16,6 @@
 ~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
-
-
 ~data = ();
 ~currentData = ();
 
