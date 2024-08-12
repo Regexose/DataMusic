@@ -43,6 +43,7 @@ s.waitForBoot({
     s.sync;
     ServerTree.add(~makeNodes);
     ServerTree.run;
+
     s.sync;
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
     (~resourcePath ++ "initialization.scd").load;

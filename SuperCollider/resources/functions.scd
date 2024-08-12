@@ -18,16 +18,15 @@
 
 ~selectorAction = {
     |menu|
-    var key, selected, imgPath, image, reduce;
+    var key, selected, res, imgPath, image, reduce;
     selected = menu.item.asSymbol;
-    key = menu.name;
-  /*  imgPath = ~imagePath +/+ selected.asString ++ ".png";
-    image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );*/
-    reduce = ~currentData[key.asSymbol][\reduce];
-    ~currentData[key.asSymbol][\data] = ~data[selected].select({|item, i| i%reduce == 0});
-    //~databg.setBackgroundImage(image);
+    key = menu.name.asSymbol;
+    res = ~currentData[key][\reduce];
+    "selected % key % selector reduce %".format(selected, key, res).postln;
+    ~currentData[key][\data] = ~data[selected].select({|n, i| i%res==0});
+    ~currentData[key][\datakey] = selected;
     ~dataView.close;
-    ~dataView = ~buildDataView.(~currentData[key.asSymbol][\data], reduce );
+    ~dataView = ~buildDataView.(selected, res );
     ~dataView.refresh;
     "set % with %".format(key, selected).postln;
 };
@@ -44,12 +43,16 @@
 };
 
 ~reduceAction = {
-    |knob|
-    var keyKnob, knobVal;
-    keyKnob = knob.name.asSymbol;
-    knobVal = knob.value.linlin(0.0, 1.0, 1, 50).asInteger;
-    ~currentData[keyKnob][\reduce] = knobVal; // sollte in Zukunft von ~drawData ausgehen
-    "set keyKnob % to  %".format(keyKnob, knobVal).postln;
+    |menu|
+    var midikey, datakey, res;
+    midikey = menu.name.asSymbol;
+    datakey = ~currentData[midikey][\datakey];
+    res = menu.item.asInteger;
+    ~currentData[midikey][\reduce] = res;
+    ~currentData[midikey][\data] = ~data[datakey].select({|n, i| i%res==0});
+    ~dataView.close;
+    ~dataView = ~buildDataView.(datakey, res );
+    "set key % to  %".format(datakey, res).postln;
 };
 
 
@@ -111,13 +114,13 @@
     var reduce = 10;
     ~rf.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \image -> ~dataImages.soilmoisture1, \position -> 0));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
 
     ~patFuncs.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \image -> ~dataImages.soilmoisture1, \position -> 0));
+        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
 
     });
     ~currentData.add(\globalPos -> 0);//For synchronous data playback

@@ -13,6 +13,7 @@ w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 w.front;
 )
 
+
 o = OSCFunc({ |msg| msg[3].postln; }, '/cursor');
 (
 
@@ -43,7 +44,7 @@ Pbindef(\klic).isPlaying
 
 )
 
-~currentData.globalPos
+~currentData.keys
 
 [0.1, 0.25, 0.5, 0.75, 1.0, 1.25].collect({|n| ~data.temp.maxItem *n})
 ~sends.keys.do({

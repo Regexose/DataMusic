@@ -9,7 +9,7 @@ GUI mit verschiedenen SubWindows
 
 ~buildSelectors = {
     | midikeys, keynames, buffers, datakeys, funcs, mode|
-    var win, boxes, pauses, keyLabels, bufLabels, knobs, modcase, toggles, fx, toggleLabels, layout, lay=();
+    var win, boxes, pauses, keyLabels, bufLabels, res, modcase, toggles, fx, toggleLabels, layout, lay=();
 
     win = Window.new("selector", Rect(150, 30, 800, 400))
     .autoRememberPosition(\select, \w)
@@ -62,11 +62,14 @@ GUI mit verschiedenen SubWindows
         .name_(k)
 
     });
-    knobs = midikeys.collect({
+    res = midikeys.collect({
         |k,i|
-        Knob.new(bounds: Rect(0, 0, 5, 5))
+       PopUpMenu.new()
         .autoRememberPosition(\select, \w)
-        .action_({arg kn; ~reduceAction.(kn)})
+        .allowsReselection_(True)
+        .items_([2, 5, 8, 10,20] )
+        .valueAction_(1)
+        .action_({arg pm; ~reduceAction.(pm)})
         .name_(k)
     });
 
@@ -131,7 +134,7 @@ GUI mit verschiedenen SubWindows
     }
     {true}{"no modus".postln};
 
-  lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*knobs));
+  lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res));
     lay[\box] = HLayout(*boxes);
     lay[\paus] = HLayout(*pauses);
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
@@ -145,20 +148,18 @@ GUI mit verschiedenen SubWindows
     /*
     - Auswahl von Datenbereichen mit rangeSlider
     */
-    |data, reduce|
-    var win, dataPlot, image, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data2, resetButton, refreshButton, hLines, sliderLine, layout, stack, vLines = 100, loX=400, hiX=1000;
-    image = Image.open(~imagePath +/+ "temp.png");
-    image.setSize(900, 450, \keepAspectRatio );
+    |key, reduce|
+    var win, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data, resetButton, refreshButton, hLines, sliderLine, layout, stack, vLines = 100, loX=400, hiX=1000;
     # inIdx, outIdx = [0, data.size-1];
-    data = data[inIdx.. outIdx].select({|n, i| i%reduce==0});
-    data2 = data.copy;
+    "key % reduce %".format(key, reduce).postln;
+    data = ~data[key].select({|n, i| i%reduce==0});
+    "data 1 % data size %".format(data[..4], data.size).postln;
     hLines = [0.1, 0.25, 0.75, 1.0, 1.25].collect({|n| data.maxItem *n});
     hLines.insert(2, data.mean);
     win = Window.new("UserControl", Rect(450, 450, 1000, 600))
    .background_(~style[\top_level_frame_xcolor])
     //.autoRememberPosition(\data, \view)
     .front;
-
     ~drawData = UserView.new(win, Rect(0, 0, 1000, 500))
     .background_(Color.cyan(1.0, 0.2))
     .drawFunc_({|uv|
@@ -244,12 +245,13 @@ GUI mit verschiedenen SubWindows
     .font_(~style.textFont)
 
     .action_({|btn|
-      "reset size with %".format(btn.value).postln;
+      //"reset size with %".format(btn.value).postln;
          if (btn.value==0, {
-            var key= ~currentData.globalKey;
-            data = data2;
-            ~currentData[key][\data] = data;
-            "data2 size % reset data size %".format(data2.size, data.size).postln;
+            var k = ~currentData.globalKey;
+            var oldsize = data.size;
+            "k is % key is %m reduce is %".format(k, key, reduce).postln;
+            ~currentData[k][\data] = data = ~data[key].select({|n, i| i%reduce==0});
+            "old size % reset data size %".format(oldsize, data.size).postln;
             ~drawData.refresh})
     });
 
@@ -261,13 +263,12 @@ GUI mit verschiedenen SubWindows
     ])
      .font_(~style.textFont)
     .action_({|btn|
-        var key;
+        var k = ~currentData.globalKey;
         btn.value.postln;
         if (btn.value==0, {
-            (data[0..data2.size].size).postln;
+            (data[0..data.size].size).postln;
             data = data[inIdx..outIdx];
-            key= ~currentData.globalKey;
-            ~currentData[key][\data] = data;
+            ~currentData[k][\data] = data;
             "new Data size %".format(data.size).postln;
             ~drawData.refresh})
     });
