@@ -13,7 +13,7 @@
 ~vowelDict = Dictionary.new;
 ~vowelIndex = 0;
 ~dataImages = ();
-~posX = 14; //position of the cursor in ~dataView, manipulated by ~moveCursor
+~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
 ~data = ();

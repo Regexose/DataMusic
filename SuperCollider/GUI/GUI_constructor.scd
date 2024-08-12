@@ -137,14 +137,6 @@ GUI mit verschiedenen SubWindows
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
     lay[\buf] = VLayout( HLayout(*~bufSelector), HLayout(*bufLabels)).margins_(0).spacing_(5);
     layout = VLayout(lay[\stack1], nil, lay[\buf], nil, HLayout(*toggles));
-/*    lay[\keys] = HLayout(VLayout(*keyLabels), VLayout(*~keySelector), VLayout(*knobs));
-    lay[\box] = VLayout(*boxes);
-    lay[\paus] = VLayout(*pauses);
-    lay[\stack1] = StackLayout(View().layout_(HLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
-    lay[\data] = VLayout(dataView);
-    lay[\buf] = HLayout( VLayout(*~bufSelector), VLayout(*bufLabels)).margins_(0).spacing_(5);
-
-    layout = HLayout(lay[\stack1], nil, lay[\buf], nil, VLayout(*toggles));*/
     win.layout_(layout);
 
 };
@@ -154,7 +146,7 @@ GUI mit verschiedenen SubWindows
     - Auswahl von Datenbereichen mit rangeSlider
     */
     |data, reduce|
-    var win, dataPlot, image, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data2, resetButton, refreshButton, vLines = 100, hLines;
+    var win, dataPlot, image, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data2, resetButton, refreshButton, hLines, sliderLine, layout, stack, vLines = 100, loX=400, hiX=1000;
     image = Image.open(~imagePath +/+ "temp.png");
     image.setSize(900, 450, \keepAspectRatio );
     # inIdx, outIdx = [0, data.size-1];
@@ -163,21 +155,22 @@ GUI mit verschiedenen SubWindows
     hLines = [0.1, 0.25, 0.75, 1.0, 1.25].collect({|n| data.maxItem *n});
     hLines.insert(2, data.mean);
     win = Window.new("UserControl", Rect(450, 450, 1000, 600))
-    .background_(~style[\top_level_frame_xcolor])
+   .background_(~style[\top_level_frame_xcolor])
     //.autoRememberPosition(\data, \view)
     .front;
 
-    ~drawData = UserView.new(win,  Rect(0, 0, 1000, 500))
-    .background_(~style.top_level_frame_color)
+    ~drawData = UserView.new(win, Rect(0, 0, 1000, 500))
+    .background_(Color.cyan(1.0, 0.2))
     .drawFunc_({|uv|
         var  x, y,  in, out, height=500;
         #x, y = [0, 0];
         Pen.fillColor_(Color.black);
         hLines.do({|leg|
-            var l = leg.linlin(0, 80, height, 0);
+            var l = leg.linlin(0, data.maxItem *1.25, height, 0);
             Pen.moveTo(0@l);
             Pen.lineTo(1000@l);
-            StaticText(win, Rect(960, l, 40, 30)).string_(leg.asString)
+            StaticText(win, Rect(960, l, 40, 30)).string_(leg.round(0.02).asString)
+            .background_(Color.white)
         });
         Pen.fillStroke;
         Pen.width_(2);
@@ -185,7 +178,7 @@ GUI mit verschiedenen SubWindows
         data.do{ |d, i|
             Pen.moveTo(x@y);
             x = (i+1).linlin(0, data.size-1, 0, win.bounds.width).asInteger;
-            y = d.linlin(data.minItem, data.maxItem, height, 0);
+            y = d.linlin(0, data.maxItem *1.25, height, 0);
             Pen.lineTo(x@y);
             if (i%vLines==0, {
                 //"d % x  %   y % ".format(d, x, y).postln;
@@ -205,21 +198,34 @@ GUI mit verschiedenen SubWindows
     });
 
 
-    ~dataSlider = RangeSlider.new(win, Rect(0, 550, 1000, 50))
+    ~dataSlider = RangeSlider(win, bounds: Rect(0, 500, 1000, 50))
     .lo_(0.12)
     .hi_(0.59)
-    .background_(Color.green(0.5, 0.1))
     .action_({|sl|
-        [ inIdx, outIdx].postln;
-        [sl.lo, sl.hi ].postln;
+        loX = sl.lo * 1000;
+        hiX = sl.hi * 1000;
+        sliderLine.refresh;
+        [loX, hiX].postln;
         inIdx = (sl.lo * (data.size-1)).asInteger;
         outIdx = (sl.hi * (data.size-1)).asInteger;
         "new range % mit in % out %".format(outIdx- inIdx, inIdx, outIdx).postln;
-
     });
 
+    sliderLine = UserView(win,Rect(0, 400, 1000, 500))
+    .drawFunc_({|uv|
+        Pen.strokeColor= Color.grey;
+        Pen.width = 2;
+        Pen.moveTo(loX @ 0);
+        Pen.lineTo(loX @ ~drawData.bounds.height);
+        Pen.stroke;
+        Pen.strokeColor= Color.magenta;
+        Pen.width = 2;
+        Pen.moveTo(hiX @ 0);
+        Pen.lineTo(hiX @ ~drawData.bounds.height);
+        Pen.stroke;
+    });
 
-    ~cursor = UserView.new(win, ~drawData.bounds)
+    ~cursor = UserView.new(win, bounds: ~drawData.bounds)
     .drawFunc_({|uv|
         Pen.strokeColor = Color.red;
         Pen.fillColor = Color.red;
@@ -230,9 +236,10 @@ GUI mit verschiedenen SubWindows
         Pen.stroke;
     })
 
+
     ;
 
-    resetButton = Button.new(win, Rect(50, 510, 70, 20))
+    resetButton = Button.new(win, bounds: Rect(50, 550, 70, 20))
     .states_([["no", Color.white, Color.grey], ["reset", Color.grey, Color.white]])
     .font_(~style.textFont)
 
@@ -247,13 +254,12 @@ GUI mit verschiedenen SubWindows
     });
 
 
-    refreshButton = Button.new(win, Rect(150, 510, 70, 20))
+    refreshButton = Button.new(win, bounds: Rect(150, 550, 70, 20))
     .states_([
         [ "refreshON", Color.black, Color.white],
         [ "refreshOFF", Color.red, Color.white]
     ])
      .font_(~style.textFont)
-
     .action_({|btn|
         var key;
         btn.value.postln;
@@ -265,8 +271,8 @@ GUI mit verschiedenen SubWindows
             "new Data size %".format(data.size).postln;
             ~drawData.refresh})
     });
-
-    //win.layout_(StackLayout( ~cursor, ~drawData, ~dataSlider, resetButton, refreshButton ).mode_(\stackAll));
+    layout = VLayout(resetButton, refreshButton, ~dataSlider);
+    win.layout_(StackLayout( ~drawData, sliderLine, ~cursor, layout).mode_(\stackAll));
 
 };
 

@@ -21,11 +21,12 @@
     var key, selected, imgPath, image, reduce;
     selected = menu.item.asSymbol;
     key = menu.name;
-    imgPath = ~imagePath +/+ selected.asString ++ ".png";
-    image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );
+  /*  imgPath = ~imagePath +/+ selected.asString ++ ".png";
+    image = Image.open(imgPath).setSize(900, 450, \keepAspectRatio );*/
     reduce = ~currentData[key.asSymbol][\reduce];
     ~currentData[key.asSymbol][\data] = ~data[selected].select({|item, i| i%reduce == 0});
     //~databg.setBackgroundImage(image);
+    ~dataView.close;
     ~dataView = ~buildDataView.(~currentData[key.asSymbol][\data], reduce );
     ~dataView.refresh;
     "set % with %".format(key, selected).postln;

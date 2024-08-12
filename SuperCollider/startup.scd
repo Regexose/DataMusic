@@ -30,6 +30,7 @@ s.waitForBoot({
     MixerChannel.freeAll;
     s.sync;
     s.newBusAllocators;
+    ~soundIn = Bus.audio(s, 1);
     ~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
     ~ducker = Bus.control(s, 1);

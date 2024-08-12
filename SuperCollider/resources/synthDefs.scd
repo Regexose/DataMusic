@@ -10,13 +10,13 @@ SynthDef(\bpfstack, {
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
-    env = Env.perc(\atk.kr(0.01), \rls.kr(0.5)).kr(2);
+    //env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:0); //mit Env endet der Synth vorzeitig
     ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
     vowel = Vowel.basicNew(freqs, dBs, widths);
     sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel, \freqMods.kr(0.5), \ampMods.kr(0.5),  \widthMods.kr(1));
-    sig = sig * env * \amp.kr(0.4) * \fade.kr(1);
+    sig = sig * \amp.kr(0.4) * \fade.kr(1); // * env;
     sig = RLPF.ar(sig, \ffreq.kr(4000));
-    sig2 = BufRd.ar(1, buf, ptr) * env;
+    sig2 = BufRd.ar(1, buf, ptr); // * env;
     Out.ar(\out.kr(0), sig!2);
     Out.ar(\outdry.kr(0), sig2);
 }).add;
@@ -195,7 +195,7 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 SynthDef(\tgrains_live, {
 	var sig, sig2, env, mic, pos, ptr, buf=\buf.kr(0);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-	mic = SoundIn.ar(0, \in.kr(1));
+	mic = SoundIn.ar(0, \in.kr(0));
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
 	BufWr.ar(mic, buf, ptr);
 	pos = (ptr/SampleRate.ir) -1;
@@ -234,7 +234,7 @@ SynthDef(\tgrains, {
 		amp: \grainAmp.kr(0.3),
 		interp: 4
 	);
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9));
+    sig = RLPF.ar(sig, \ffreq.kr(200).varlag(\lg.kr(0.0)), \rq.kr(0.9));
 	sig = sig * env * \amp.kr(1) * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), sig2);
@@ -299,7 +299,7 @@ SynthDef(\brsaw, {
     ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
     sig2 = BufRd.ar(1, buf, ptr) * env;
 	sig = BufRd.ar(1, buf, ptr );
-	sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.1));
+	sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), sig2);

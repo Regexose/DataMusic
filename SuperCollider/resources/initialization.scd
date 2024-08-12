@@ -22,9 +22,7 @@
 s.sync;
 (~resourcePath ++ "synthDefs.scd").load;
 s.sync;
-
-
-~dry = Synth(\routing, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
+~dry = Synth(\dry, [in: ~dryBus, fade: 0.0, out:0], addAction: \addToHead);
 
 ~createData = {
     var flopped, headers;
@@ -38,7 +36,7 @@ s.sync;
         values = List.new;
         key = line[0].toLower.replace(" ", "_");
         key = key.replace(".", "_").asSymbol;
-        //"key % ".format(key).postln;
+        "key % ".format(key).postln;
         headers.add(key);
         ~data.add(key -> values); // add to ~data
         line.removeAt(0); //remove key from data values
@@ -60,8 +58,8 @@ s.sync;
 
 MIDIClient.init;
 MIDIIn.connectAll;
-/*~midiOut = MIDIOut.new(0);
-~midiIn = MIDIIn.new(0);*/
+~midiOut = MIDIOut.new(0);
+~midiIn = MIDIIn.new(0);
 
 ~routines = ();
 //Aktivieren von Fadern für die Lautstärke Regelung der midikeys
@@ -99,6 +97,31 @@ MIDIIn.connectAll;
 
 });
 
+
+
+PathName(~samplesPath).entries.do({
+    arg subfolder;
+    var sampleDict=(), sample;
+    ~buffersByName.add(subfolder.folderName.asSymbol -> sampleDict);
+    ~buffersByCat.add(subfolder.folderName.asSymbol -> sampleDict);
+    subfolder.entries.do({
+        |entry, i|
+        var sampleName = entry.fileNameWithoutExtension.asSymbol;
+        var c;
+        sample = Buffer.read(s, entry.fullPath);
+        ~buffersByName[subfolder.folderName.asSymbol].put(sampleName, sample);
+        //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;
+        c = case
+        {sampleName.asString == "base"}{~buffersByCat[\base].add(sample.normalize)}
+        {sampleName.asString == "tension"}{~buffersByCat[\tension].add(sample.normalize)}
+        {sampleName.asString == "relax"}{~buffersByCat[\relax].add(sample.normalize)}
+        {true}{"no samplename".postln};
+
+        //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;
+
+    });
+});
+
 ~synthArgs = (
 \bak: [\amp, 0.2, \punch, 0.02, \trg, 5, \dec, 0.071, \out, ~perc.inbus, \freq, [420, 810, 1010, 2800] *0.7, \levels, [0.2, 0.24, 0.14, 0.223] *2, \ring, [0.1, 0.06, 0.04, 0.023] * 25, \ffreq, exprand(300,350), \rq, 0.1],
 \pilz:  [\amp, 0.2, \punch, 0.04, \trg, 5, \dec, 0.071, \out, ~perc.inbus, \freq, [1220, 2510, 3010, 3800], \levels, [0.12, 0.14, 0.14, 0.223] *2, \ring, [0.1, 0.06, 0.04, 0.023] * 5, \ffreq, exprand(900,1150), \rq, 0.1],
@@ -116,35 +139,9 @@ MIDIIn.connectAll;
 
 );
 
-~patFuncs.keys.asArray.sort.do({
-    |ch, i|
-    ~routines[ch] = Routine(~patFuncs[ch]);
-});
-
-
-PathName(~samplesPath).entries.do({
-    arg subfolder;
-    var sampleDict=(), sample;
-    ~buffersByName.add(subfolder.folderName.asSymbol -> sampleDict);
-    subfolder.entries.do({
-        |entry, i|
-        var sampleName = entry.fileNameWithoutExtension.asSymbol;
-        var c;
-        sample = Buffer.read(s, entry.fullPath);
-        ~buffersByName[subfolder.folderName.asSymbol].put(sampleName, sample);
-        //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;
-        c = case
-        {sampleName.asString == "base"}{~buffersByCat[\base].add(sample.normalize)}
-        {sampleName.asString == "tension"}{~buffersByCat[\tension].add(sample.normalize)}
-        {sampleName.asString == "relax"}{~buffersByCat[\relax].add(sample.normalize)}
-        {true}{"no samplename".postln};
-    });
-});
-
-
 // make background images for dataView GUI
 
-
+/*
 ~makeDataImages = {
     r({
         var dataPlot, image;
@@ -156,7 +153,7 @@ PathName(~samplesPath).entries.do({
             dataPlot = ~data[k].asArray.plot(bounds: Rect(0, 0, 900, 450));
             0.05.wait;
             image = Image.fromWindow(dataPlot.parent, dataPlot.interactionView.bounds); // get image from the view
-            ~dataImages.add(k -> image);
+            //~dataImages.add(k -> image);
             0.05.wait;
             image.write(path.standardizePath);
             0.05.wait;
@@ -164,6 +161,4 @@ PathName(~samplesPath).entries.do({
         });
     }).play(AppClock);
 };
-
-
-
+*/
