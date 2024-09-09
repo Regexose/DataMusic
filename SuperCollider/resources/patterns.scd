@@ -150,14 +150,21 @@ Pbindef(\arp1,
     \ffreq, Pkey(\freq) * Prand([3, 4, 5], inf),
     \out, ~ch3.inbus,
 );
+
 Pbindef(\quirkator,
-    \otLag, 4, \dampExp, 0.2,
-    \otAmps, 0.5!8, \ampA, Prand([0.5, 2, 1], inf), \amp, Pwhite(0.7, 1.5, inf),
+    \instrument, \array_1b,
+    \otLag, 0.3, \dampExp, 0.2,
+    \otAmps, Pfunc({rrand(0.01, 0.2)}!4),
+    \otFreqs, Pfunc({rrand(0.1, 3.6)}!4),
+
+    \ampA, Prand([0.4, 0.6, 0.77], inf),   \amp, Pwhite(0.7, 1.5, inf),
     \freq, Pseq([60, 63, 68, Prand([ 72, 75], 1)].midicps, inf) * Pxrand([ 0.95, 1.05, 0.99, 1.01], inf),
-    \freqLag, 3.2,
-    \feedb, pi *3/8,
-    \atk, 0.02, \rls, 0.05, \sustain, 0.05,
-    \dur, Pseq([Pn(0.25, 45), Pn(0.125, 16)], inf)
+    \freqLag, 0.3,
+    \feedb, pi *1/8,
+    \atk, Prand([0.01, 0.04, 0.08], inf), \rls, Prand([0.041, 0.15, 0.3], inf), \sustain, Pkey(\rls),
+    \dur, Pseq([Pn(0.25, 45), Pn(0.125, 16)], inf),
+    \ffreq, Pwhite(300, 3000, inf), \rq, Prand([0.1, 0.13, 0.5], inf),
+    \out, ~ch1.inbus
 );
 
 Pbindef(\dark,
@@ -169,7 +176,7 @@ Pbindef(\dark,
     \freq, Pseq([Pn(24, 7), Prand([24, 36, 48, 60, 72].midicps, 1)], inf) * Pxrand([2.99, 3.01, 3.99, 4.01], inf),
     \freqLag, 3.2, \feedb, pi *3/8,
     \dur, 4,
-    \rls, 2, \atk, 0.5,
+   \rls, 2, \atk, 0.5,
     \out, ~ch1.inbus;
 
 );

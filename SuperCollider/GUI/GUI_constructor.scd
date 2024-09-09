@@ -8,10 +8,10 @@ GUI mit verschiedenen SubWindows
 (
 
 ~buildSelectors = {
-    | midikeys, keynames, buffers, datakeys, funcs, mode|
+    |name, midikeys, keynames, buffers, datakeys, funcs, mode|
     var win, boxes, pauses, keyLabels, bufLabels, res, modcase, toggles, fx, toggleLabels, layout, lay=();
 
-    win = Window.new("selector", Rect(150, 30, 800, 400))
+    win = Window.new(name, Rect(150, 30, 800, 400))
     .autoRememberPosition(\select, \w)
     .alwaysOnTop_(true)
     .front;
@@ -24,8 +24,8 @@ GUI mit verschiedenen SubWindows
             [(k.asString ++ "__ON"), Color.red], [(k.asString ++ "__OFF"), Color.black]
         ])
         .background_(Color.rand)
-        .mouseDownAction_({arg btn; "mouse boxes down".postln; ~onOffUserMouse.(true, ~routines[k], k)})
-        .mouseUpAction_({arg btn; "mouse boxes up".postln; ~onOffUserMouse.(false, ~routines[k], k)})
+        .mouseDownAction_({arg btn; "mouse boxes down".postln; ~onOffUserMouse.(true, k, name)})
+        .mouseUpAction_({arg btn; "mouse boxes up".postln; ~onOffUserMouse.(false, k, name)})
 
     });
 
@@ -76,14 +76,14 @@ GUI mit verschiedenen SubWindows
     bufLabels = [\base, \tension, \relax].collect({
         |l,i|
         StaticText.new()
-        .autoRememberPosition(\select, \w)
+        //.autoRememberPosition(\select, \w)
         .string_("buffer " ++ l)
     });
 
     ~bufSelector = [\base, \tension, \relax].collect({
         |k, i|
         PopUpMenu.new()
-        .autoRememberPosition(\select, \w)
+       // .autoRememberPosition(\select, \w)
         .items_(buffers)
         .allowsReselection_(True)
         .action_({arg pm; ~bufferSelectorAction.(pm)})
@@ -100,7 +100,7 @@ GUI mit verschiedenen SubWindows
                 [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black
                 ],
             ])
-            .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value)})
+            .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value, name)})
             .focusColor_(Color.blue)
             .valueAction_(1)
             .autoRememberPosition(\select, \w)
@@ -128,13 +128,12 @@ GUI mit verschiedenen SubWindows
             ])
             .mouseDownAction_({|btn| "switch % ".format(btn.value).postln; ~fxOnOff.(btn.value.asBoolean)})
             .valueAction_(1)
-            .autoRememberPosition(\select, \w)
         ]
 
     }
     {true}{"no modus".postln};
 
-  lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res));
+    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res));
     lay[\box] = HLayout(*boxes);
     lay[\paus] = HLayout(*pauses);
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
@@ -148,20 +147,19 @@ GUI mit verschiedenen SubWindows
     /*
     - Auswahl von Datenbereichen mit rangeSlider
     */
-    |key, reduce|
-    var win, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data, resetButton, refreshButton, hLines, sliderLine, layout, stack, vLines = 100, loX=400, hiX=1000;
+    | key, reduce|
+    var win, recCountdown, recProgress, inIdx, outIdx, dataMin, dataMax, data, dataPt, resetButton, refreshButton, hLines, sliderLine, layout, stack, vLines = 100, loX=400, hiX=1000;
     # inIdx, outIdx = [0, data.size-1];
-    "key % reduce %".format(key, reduce).postln;
+    //"key % reduce %".format(key, reduce).postln;
     data = ~data[key].select({|n, i| i%reduce==0});
-    "data 1 % data size %".format(data[..4], data.size).postln;
+    //" data size %".format( data.size).postln;
     hLines = [0.1, 0.25, 0.75, 1.0, 1.25].collect({|n| data.maxItem *n});
     hLines.insert(2, data.mean);
-    win = Window.new("UserControl", Rect(450, 450, 1000, 600))
+    win = Window.new("Current Data Display",  Rect(450, 450, 1000, 600))
    .background_(~style[\top_level_frame_xcolor])
     //.autoRememberPosition(\data, \view)
     .front;
     ~drawData = UserView.new(win, Rect(0, 0, 1000, 500))
-    .background_(Color.cyan(1.0, 0.2))
     .drawFunc_({|uv|
         var  x, y,  in, out, height=500;
         #x, y = [0, 0];
@@ -170,8 +168,9 @@ GUI mit verschiedenen SubWindows
             var l = leg.linlin(0, data.maxItem *1.25, height, 0);
             Pen.moveTo(0@l);
             Pen.lineTo(1000@l);
-            StaticText(win, Rect(960, l, 40, 30)).string_(leg.round(0.02).asString)
-            .background_(Color.white)
+            Pen.stroke;
+            StaticText(~drawData, Rect(960, l, 40, 30))
+            .string_(leg.round(0.02).asString);
         });
         Pen.fillStroke;
         Pen.width_(2);
@@ -180,10 +179,11 @@ GUI mit verschiedenen SubWindows
             Pen.moveTo(x@y);
             x = (i+1).linlin(0, data.size-1, 0, win.bounds.width).asInteger;
             y = d.linlin(0, data.maxItem *1.25, height, 0);
+            dataPt = d;
             Pen.lineTo(x@y);
             if (i%vLines==0, {
                 //"d % x  %   y % ".format(d, x, y).postln;
-                StaticText(win, Rect(x, 20, 30, 30))
+                StaticText(~drawData, Rect(x, 20, 30, 30))
                 .string_(d.asString)
                 .align_(\left);
                 //lines
@@ -191,7 +191,6 @@ GUI mit verschiedenen SubWindows
                 Pen.moveTo(x@y);
                 Pen.lineTo(x@50);
                 Pen.fillStroke;
-
             });
             Pen.strokeColor_(Color.blue);
             Pen.fillStroke;
@@ -206,10 +205,10 @@ GUI mit verschiedenen SubWindows
         loX = sl.lo * 1000;
         hiX = sl.hi * 1000;
         sliderLine.refresh;
-        [loX, hiX].postln;
+        //[loX, hiX].postln;
         inIdx = (sl.lo * (data.size-1)).asInteger;
         outIdx = (sl.hi * (data.size-1)).asInteger;
-        "new range % mit in % out %".format(outIdx- inIdx, inIdx, outIdx).postln;
+        //"new range % mit in % out %".format(outIdx- inIdx, inIdx, outIdx).postln;
     });
 
     sliderLine = UserView(win,Rect(0, 400, 1000, 500))
@@ -235,10 +234,7 @@ GUI mit verschiedenen SubWindows
         Pen.lineTo(~posX@win.bounds.height);
         //Pen.addRect(Rect(~posX, 0, 5, win.bounds.height ))
         Pen.stroke;
-    })
-
-
-    ;
+    });
 
     resetButton = Button.new(win, bounds: Rect(50, 550, 70, 20))
     .states_([["no", Color.white, Color.grey], ["reset", Color.grey, Color.white]])
@@ -249,8 +245,11 @@ GUI mit verschiedenen SubWindows
          if (btn.value==0, {
             var k = ~currentData.globalKey;
             var oldsize = data.size;
-            "k is % key is %m reduce is %".format(k, key, reduce).postln;
+           // "k is % key is %m reduce is %".format(k, key, reduce).postln;
             ~currentData[k][\data] = data = ~data[key].select({|n, i| i%reduce==0});
+            ~currentData[k][\in] = 0;
+            ~currentData[k][\reduce] = 10;
+            ~currentData[k][\out] = data.size-1;
             "old size % reset data size %".format(oldsize, data.size).postln;
             ~drawData.refresh})
     });
@@ -266,10 +265,12 @@ GUI mit verschiedenen SubWindows
         var k = ~currentData.globalKey;
         btn.value.postln;
         if (btn.value==0, {
-            (data[0..data.size].size).postln;
             data = data[inIdx..outIdx];
+            ~currentData[k][\in] = (~dataSlider.lo * (~data[key].size-1)).asInteger; //der absolute Wert der Originaldaten
+            ~currentData[k][\out] = (~dataSlider.hi * (~data[key].size-1)).asInteger;
             ~currentData[k][\data] = data;
-            "new Data size %".format(data.size).postln;
+            ~currentData[k][\reduce] = 0;
+            "new Data size %  in % out %".format(data.size, ~currentData[k][\in], ~currentData[k][\out]).postln;
             ~drawData.refresh})
     });
     layout = VLayout(resetButton, refreshButton, ~dataSlider);

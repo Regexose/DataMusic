@@ -1,5 +1,13 @@
 (
-var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "live", "3 mean samples pitch", "3 mean samples", "3 plain samples", "organ"], trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser), patternkeys = ~patFuncs.keys.asArray.sort, patFuncs = (\startPattern: ~startPattern, \stopPattern: ~stopPattern);
+var mkImg, midikeys= ~midi.keys.asArray.sort,
+keynames = ["br_ffreq", "nitrifikation", "3 mean samples pitch", "3 mean samples", "3 plain samples", "organ"],
+trigFuncs = (\onOffUser: ~onOffUser, \oneShotUser: ~oneShotUser),
+patternkeys = ~patFuncs.keys.asArray.sort,
+patternNames = ~patFuncs.keys.asArray.sort.collect({|n| n.asString}),
+patFuncs = (\startPattern: ~startPattern, \stopPattern: ~stopPattern),
+livekeys = ~live.keys.asArray.sort,
+liveNames = ~live.keys.asArray.sort.collect({|n| n.asString});
+
 
 ~style = (
 	// FONTS
@@ -17,10 +25,14 @@ var mkImg, midikeys= ~rf.keys.asArray.sort, keynames = ["br_ffreq", "live", "3 m
 );
 
 Window.closeAll;
-~selectors = ~buildSelectors.(midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
-//~patSelectors = ~buildSelectors.(patternkeys, patternkeys, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
+~midiSelectors = ~buildSelectors.("midi", midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
+
+~patSelectors = ~buildSelectors.("patFuncs", patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
+
+~liveSelectors = ~buildSelectors.("live", livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
+
 ~dataView = ~buildDataView.(\soilmoisture1, 10);
-//CmdPeriod.add({ [~selectors, ~dataView].close});
+CmdPeriod.add({ [~selectors, ~dataView].close});
 
 
 )

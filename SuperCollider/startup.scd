@@ -17,46 +17,52 @@ Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
 Server.default.options.numOutputBusChannels_(16);
-
 Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
-//s.newBusAllocators;
 
 s.waitForBoot({
+    //s.dumpOSC(1);
     s.freeAll;
     Buffer.freeAll;
     OSCdef.freeAll;
     MIDIdef.freeAll;
-    MixerChannel.freeAll;
+    // s.dumpOSC(0);
     s.sync;
     s.newBusAllocators;
     ~soundIn = Bus.audio(s, 1);
     ~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
-    ~ducker = Bus.control(s, 1);
-    s.sync;
     /// load SynthDefs, Constants, Functions
-
+    //"busses \n".postln;
     (~resourcePath ++ "constants.scd").load;
-    (~resourcePath ++ "rf_climart.scd").load;
-    (~resourcePath ++ "functions.scd").load;
+//"constants.scd \n".postln;
+    (~resourcePath ++ "rf_midikeys.scd").load;
+//"midikeys.scd \n".postln;
+    (~resourcePath ++ "rf_patterns.scd").load;
+//"patterns.scd \n".postln;
+    (~resourcePath ++ "rf_live.scd").load;
+//"live.scd \n".postln;
+    (~resourcePath ++ "synthDefs.scd").load;
+   // "synthdefs \n".postln;
     s.sync;
+    (~resourcePath ++ "functions.scd").load;
+   // "functions\n ".postln;
+    s.sync;
+    //https://www.youtube.com/watch?v=ztVLMS15n1c&t=1279s  ab 40:00
     ServerTree.add(~makeNodes);
     ServerTree.run;
-
     s.sync;
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
     (~resourcePath ++ "initialization.scd").load;
     s.sync;
-    ~createData.();
     (~resourcePath ++ "patterns.scd").load;
     //"patterns".postln;
     thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
     thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
     //"GUI".postln;
     // Send Objekte machen
+    s.sync;
     ~sends = ~sends ? ();
-
     [~ch1, ~ch2, ~ch3, ~ch4, ~voc, ~perc, ~bass].do{
         |ch, i|
         var sendName;
@@ -74,39 +80,11 @@ s.waitForBoot({
     "done".postln;
 })
 )
-
+s.queryAllNodes;
 (
-~recordUser.("boris","base");
+~recordUser.("nitro","base");
 ~recordUser.("boris", "tension");
 ~recordUser.("boris", "relax");
 )
- ~activeSynths[\57].free
-// stop all Synths
-~currentSample[\base]
-s.defaultGroup.freeAll
-~vowelDict.keys
-~makeDataImages.()
-s.makeWindow
+
 MIDIFunc.trace(true)
-~nuendo.rout6.set(\out, 6)
-
-
-SynthDescLib.global.browse
-ServerOptions.defaultValues.keys.do{|k|
-    var value=ServerOptions.defaultValues[k];
-    "key: %  value: %".format(k, value).postln;
-}
-s.options.numWireBufs
-
-(
-
-{
-    var buf = ~currentSample[\relax] , trate, dur, clk, pos, pan;
-    trate = MouseY.kr(8,120,1);
-    dur = 12 / trate;
-    clk = Impulse.kr(trate);
-    pos = MouseX.kr(0,BufDur.kr(buf)) + TRand.kr(0, 0.01, clk);
-    pan = WhiteNoise.kr(0.6);
-    TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
-}.play;
-)

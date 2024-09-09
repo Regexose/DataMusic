@@ -35,11 +35,38 @@ SynthDef(\vowelklank, {
     //exc = WhiteNoise.ar(0.5);
 	sig = DynKlank.ar(
 		`[
+			freqs,
+			dBs.dbamp.normalizeSum,
+			phases
+	], exc, freqscale: freqScale,  decayscale: decayScale);
+
+    sig = LPF.ar(sig, \ffreq.kr(500));
+	sig = Pan2.ar(sig, \pan.kr(0));
+	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
+	Out.ar(\out.kr(0), sig);
+    Out.ar(\outdry.kr(2), exc);
+}).add;
+
+SynthDef(\voweltrig, {
+	|vow=1, freqScale=0.1, decayScale=0.1, buf=0, gate=1|
+    var sig, env, vowel, baseIndex, freqs, widths, dBs, phases, exc, trig;
+    baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    widths = Select.kr(baseIndex + (5..9), ~vowelArray);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
+    vowel = Vowel.basicNew(freqs, dBs, widths);
+    phases = \phs.kr(1!5);
+	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
+    trig = Dust.kr(\trg.kr(4));
+    exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf))) * Decay2.kr(trig, \att.kr(0.001), \dec.kr(0.9));
+	sig = DynKlank.ar(
+		`[
 			freqs * \fScale.kr(1),
 			dBs.dbamp.normalizeSum,
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
-    sig = LPF.ar(sig, \ffreq.kr(500));
+
+    sig = BPF.ar(sig, \ffreq.kr(500) , \rq.kr(0.3));
 	sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
@@ -90,12 +117,13 @@ SynthDef(\oddeven, {
 
 SynthDef(\dynklank, {
 	| freqScale=0.1, decayScale=0.1|
-	var freqs = NamedControl.kr(\freqs, 900 !3) + SinOsc.kr([0.2,0.1,0.05]).bipolar(-10, 10);
+	var freqs = NamedControl.kr(\freqs, 900 !3) ;
     var amps = NamedControl.kr(\amps, [0.2, 0.1, 0.4]);
 	var rings = NamedControl.kr(\rings, 2 !3) ;
 	var sig, exc, env;
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(0.5), 0.01, \dec.kr(0.9));
+    freqs = freqs + SinOsc.kr([0.2,0.1,0.05]).bipolar(-10, 10);
 	sig = DynKlank.ar(
 		`[
 			freqs ,
@@ -162,10 +190,12 @@ SynthDef(\snare, {
 SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
 	var freqs = NamedControl.kr(\freq, [200, 400]);
     var mods = NamedControl.kr(\mods, [ 0, 0]);
-	var env,sines, sines2, sig;
+	var env,sines, sines2, sig, lagF, lagM;
 	env = Linen.kr(gate,\atk.kr(0.1), 1, \rls.kr(1), 2) ;
-    sines = SinOsc.ar(freqs.varlag(\lg.kr(0.2)) + mods, SinOsc.kr(\phsMod.kr(0.2))).sum;
-	sines = Splay.ar(sines, 1)  * \fade.kr(0.6);
+    lagF = ExpRand(\flg1.kr(0.2), \flg2.kr(0.4));
+    lagM = ExpRand(\mlg1.kr(0.2), \mlg2.kr(0.4));
+    sines = SinOsc.ar(freqs.varlag(lagF) + mods.varlag(lagM), SinOsc.kr(\phsMod.kr(0.2))).sum;
+	sines = Splay.ar(sines, 1) ;
 	sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
     sig = sines * env * amp;
 	Out.ar(out, sig );
@@ -184,16 +214,15 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
         ampmod = Dust.kr(50).bipolar(0.03);
         SinOscFB.ar(freqs * fmod, \feedb.kr(pi/4), amps + ampmod);
     }).sum;
-	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
+	sig = BPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
 	Out.ar(out, Splay.ar(sig) * env * \fade.kr(1));
 }).add;
 
-
 // Granular Synth
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
-	var sig, sig2, env, mic, pos, ptr, buf=\buf.kr(0);
+	var sig, fm, env, mic, pos, ptr, buf=\buf.kr(0);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	mic = SoundIn.ar(0, \in.kr(0));
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
@@ -203,27 +232,33 @@ SynthDef(\tgrains_live, {
 	sig = TGrains.ar(
 		numChannels: 2,
 		trigger: Impulse.kr(\dens.kr(40)),
-		bufnum: \buf.kr(0),
+		bufnum: buf,
 		rate: \rate.kr(1) * \harm.kr([0, 0]).midiratio,
-		centerPos: pos,
+		centerPos: pos, // Sekunden
 		dur: \grainDur.kr(1.5),
 		pan: 0,
 		amp: \grainAmp.kr(0.3),
 		interp: \ip.kr(4)
 	);
-	sig2 = BufRd.ar(1, buf, ptr) * env;
-	sig = sig * env * \amp.kr(1) * \fade.kr(1.0);
+	fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
+        \carfreq.kr(400), \modfreq.kr(10), LFNoise1.kr(\iMod.kr(1).range(1,\index.kr(1))), //release Phase Nitrifikation
+        \fmAmp.kr(0.5)
+    );
+    fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
+    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
+    sig = Splay.ar([sig, fm]);
+	sig = sig * env * \amp.kr(1);
 	Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(20), sig2);
+
 }).add;
 
 SynthDef(\tgrains, {
-	var sig, sig2, ptr, env, buf;
+	var sig, fm, ptr, env, buf;
     buf = \buf.kr(0);
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    sig2 = BufRd.ar(1, buf, ptr) * env ;
-	sig = TGrains.ar(
+   // sig2 = BufRd.ar(1, buf, ptr) * env ;
+	sig = TGrains2.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
 		bufnum: buf,
@@ -231,14 +266,21 @@ SynthDef(\tgrains, {
 		centerPos: \pos.kr(0.5),
 		dur: \grainDur.kr(1.5),
 		pan: \pan.kr(0),
-		amp: \grainAmp.kr(0.3),
-		interp: 4
+		amp: \grainAmp.kr(0.7),
+		att: \grainDur.kr(1.5) * 0.3,
+        dec: \grainDur.kr(1.5) * 0.5;
 	);
-    sig = RLPF.ar(sig, \ffreq.kr(200).varlag(\lg.kr(0.0)), \rq.kr(0.9));
-	sig = sig * env * \amp.kr(1) * \fade.kr(1);
+    	fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
+        \carfreq.kr(400).varlag(\lg.kr(0.0)), \modfreq.kr(10), LFNoise1.kr(\iMod.kr(1).range(1,\index.kr(1))), //release Phase Nitrifikation
+        \fmAmp.kr(0.5)
+    );
+    fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
+    sig = Splay.ar([sig, fm]);
+    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
+	sig = sig * env * \amp.kr(0.4);
     Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(0), sig2);
 }).add;
+
 
 // Scrubbing GrainSynth von Tgrains2 helpfile
 SynthDef(\grainScrub, {
@@ -407,9 +449,9 @@ Instr(#[\busfx, \vrb1], { arg bus, numChan, room, damp, mult;
 	sig = FreeVerb.ar(sig, 1, room, damp, mult);
 }, [\audiobus, ObjectSpec(2), #[0.1, 1.0, \linear, 0, 0.85], #[0.1, 1.0, \exponential, 0, 0.5],  #[1, 10, \exponential, 0, 4.5]]
 );
-
 Instr(#[\busfx, \limiter], { arg bus, numChannels, level, lookAhead, gain;
 	Limiter.ar(In.ar(bus, numChannels), level, lookAhead) * gain;
 }, [\mybuf, ObjectSpec(2), #[0, 1, \linear, 0, 1], #[0.001, 0.2],
 	#[0.1, 4, \exponential, 0, 1]]
 );
+

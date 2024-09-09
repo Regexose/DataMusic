@@ -1,4 +1,4 @@
-~rf = (
+~midi = (
     // on Off Play
     \48 : {
         /* spielt brsaw-Synth mit filter frequency manipulation \ffreq
@@ -13,7 +13,7 @@
         normalized = data.normalize(80, 5000);
         buf = ~currentSample[\base].normalize;
         s.sync;
-        syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \rq, 0.44, \outdry, ~dryBus]);
+        syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \rq, 0.44, \out, ~ch1.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\48, syn);
         normalized.do({
             |d, i|
@@ -26,76 +26,30 @@
 
     },
 
-    \50 :{
-        /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
-        und harmonischer verstimmung
+    \50 : {
+        /* Nitrifikation
         */
-        var data, normalized, compressed, reduce, buf, syn, mn, mx;
-      /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
+        var data, normalized, buf, syn;
+        /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
-        //reduce = ~currentData[\50][\reduce];
+        //reduce = ~currentData[\48][\reduce];
         data = ~currentData[\50][\data].asArray;
-        ~currentData.globalKey = \50;
-        //compressed = data.select({|item, i| i%reduce == 0});
-        # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
-        normalized = data.normalize(mn, mx);
-        buf = ~liveBuffer;
+        ~currentData.globalKey = \50; // für handling des RangeSliders
+        normalized = data.normalize(80, 5000);
+        buf = ~currentSample[\base].normalize;
         s.sync;
-        "pre Syn".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\vowelklank, [\amp, 0.35, \buf, buf, \rq, 0.44, \out, ~voc.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\50, syn);
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
-
-            syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
-           ~t.beatDur.wait;
+            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            syn.set(\ffreq, d);
+            0.05.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
+
     },
-
-\51 :{
-        /* spielt liveSynth-Synth mit rate analog zu Temperatur Aktivität
-        */
-        var data, normalized, borders, compressed, reduce, buf, syn, mn, mx;
-      /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
-        wait(0.02);*/
-        //reduce = ~currentData[\50][\reduce];
-        data = ~currentData[\51][\data].asArray;
-        ~currentData.globalKey = \51;
-        //compressed = data.select({|item, i| i%reduce == 0});
-        //# mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
-        //normalized = data.normalize(mn, mx);
-        borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
-
-        buf = ~liveBuffer;
-        s.sync;
-        "pre Syn".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
-        ~activeSynths.put(\51, syn);
-        data.do({
-            |d, i|
-            var c;
-            "original data %  at %".format(d, data[i].trunc(0.01), i).postln;
-            c = case
-            {d > borders[3][1]} {syn.set(\rate, d.linexp(0, 50, 2.1, 3.5))}
-            {(d > borders[3][0]) && (d <= borders[3][1])}
-            {syn.set(\rate, d.linexp(0, 50, 1.6, 2.5))}
-            {(d > borders[2][0]) && (d <= borders[2][1])}
-            {syn.set(\rate, d.linexp(0, 50, 1.01, 1.6))}
-            {(d > borders[1][0]) && (d <= borders[1][1])}
-            {syn.set(\rate, d.linexp(0, 50, 0.85, 1.0))}
-            {(d > borders[0][0]) && (d <= borders[0][1])}
-            {syn.set(\rate, d.linexp(0, 50, 0.45, 0.87))}
-            {true}{"data % out of border".format(d).postln};
-
-            0.1.wait;
-            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
-        });
-        syn.release(2);
-    },
-
 
 
     \52: {
@@ -380,100 +334,3 @@
 
 
 );
-
-~patFuncs = (
-      \klic : {
-        // ist der Master, der die globale Position vorgibt
-        var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx;
-        reduce= ~currentData[\klic][\reduce];
-        data = ~currentData[\klic][\data].asArray;
-        ~currentData.globalKey = \klic;
-        lastPos =  ~currentData[\klic][\position];
-        //compressed = data.select({|item, i| i%reduce == 0});
-        oldSize = data.size; //logic for pause/resume
-        #mn, mx = [0.05, 0.9];
-        //
-        normalized = data.normalize(mn, mx)[lastPos..oldSize-1];
-
-        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-        wait(0.02);*/
-        normalized.do({
-            |d, i|
-            Pbindef(\klic,
-                \freqScale, d,
-                \decayScale, d,
-            );
-            ~sends.perc_snd_vrb1.level= d.explin(mn, mx, 0.001, 0.04);
-            ~currentData[\klic][\position] = i + lastPos;
-           ~currentData[\globalPos] = i + ~currentData[\globalPos];
-
-          ( ~t.beatDur * 4).wait;
-            defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
-        });
-        Pbindef(\klic).stop;
-         ~currentData[\klic][\position] = 0;
-    },
-
-    \snarl : {
-        var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx;
-        reduce= ~currentData[\snarl][\reduce];
-        data = ~currentData[\snarl][\data].asArray;
-        ~currentData.globalKey = \snarl;
-        lastPos =  ~currentData[\snarl][\position];
-        //compressed = data.select({|item, i| i%reduce == 0});
-        oldSize = data.size; //logic for pause/resume
-        #mn, mx = [0.05, 0.9];
-        normalized = data.normalize(0.05, 0.9)[lastPos..oldSize-1];
-        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-        wait(0.02);*/
-        normalized.do({
-            |d, i|
-            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
-            Pbindef(\snarl,
-                \vowelIndex, d.linlin(mn, mx, 0, 5).asInteger * 4,
-                \freqScale, d,
-            );
-              ~currentData[\snarl][\position] = i + lastPos;
-         ~t.beatDur.wait;
-            defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
-        });
-        Pbindef(\snarl).stop;
-         ~currentData[\snarl][\position] = 0;
-    },
-
-    \voc1 : {
-        var data, compressed, normalized, reduce, lastPos, oldSize, mn, mx, avg, ranges;
-        reduce= ~currentData[\voc1][\reduce];
-        data = ~currentData[\voc1][\data].asArray;
-        ~currentData.globalKey = \voc1;
-        lastPos =  ~currentData[\voc1][\position];
-        //compressed = data.select({|item, i| i%reduce == 0});
-        oldSize = data.size; //logic for pause/resume
-        #mn, mx = [0.05, 0.9];
-        normalized = data.normalize(mn, mx)[lastPos..oldSize-1];
-        avg = normalized.mean;
-        ranges = [0.1, 0.25, 0.5, 0.75] * avg;
-        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
-        wait(0.02);*/
-        normalized.do({
-            |d, i|
-            var c;
-            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
-            c = case
-            {(d >= (avg - ranges[0])) && (d <= (avg + ranges[0]))}{"range 0".postln; Pbindef(\voc1, \vow, 1)}
-            {(d >= (avg - ranges[1])) && (d <= (avg + ranges[1]))}{"range 1".postln;Pbindef(\voc1, \vow, 6)}
-            {(d >=  (avg - ranges[2])) && (d <= (avg + ranges[2]))}{"range 2".postln;Pbindef(\voc1, \vow, 11)}
-            {(d >= (avg - ranges[3])) && (d <= (avg + ranges[3]))}{"range 3".postln;Pbindef(\voc1, \vow, 16)}
-            {(d >= 0) && (d <= mx)}{"range 4".postln; Pbindef(\voc1, \vow, 21)}
-            {true}{"d outside range".postln};
-            Pbindef(\voc1, \fScale, d, \ffreq, d * 10000);
-            ~currentData[\voc1][\position] = i+lastPos;
-             ~t.beatDur.wait;
-            defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
-        });
-        Pbindef(\voc1).stop;
-           ~currentData[\voc1][\position] = 0;
-    },
-
-
-)

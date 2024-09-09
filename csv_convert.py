@@ -2,6 +2,7 @@ import pandas as pd
 import csv
 import re
 
+
 txt_file_path = 'data/test_data01.txt'
 csv_path = 'data/zku_OpenHausData_noTime.csv'
 csv_file = 'data/zku_OpenHausData.csv'

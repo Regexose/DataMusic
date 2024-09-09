@@ -1,3 +1,54 @@
+~makeNodes = {
+    s.bind {
+        // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
+        ~master = MixerChannel(\master, s, 2, 2);
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
+        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
+        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
+        ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  10);
+        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
+        ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
+        ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
+        ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
+        ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
+    };
+};
+
+~createData = {
+    |dataPath, fileName|
+    var data, csvFile, flopped, headers;
+    data = ();
+    headers = List.new;
+    csvFile = CSVFileReader.read(dataPath +/+ fileName);
+    flopped = csvFile.flop; // Invert rows and columns
+    flopped.removeAt(0); //erste Zeile mit Indices löschen
+    flopped.do({
+        |line, i|
+        var key, values;
+        values = List.new;
+        key = line[0].toLower.replace(" ", "_");
+        key = key.replace(".", "_").asSymbol;
+        //"key % ".format(key ++ "  " ++ fileName).postln;
+        headers.add(key);
+        data.add(key -> values);
+        line.removeAt(0); //remove key from data values
+        //
+        block{
+            |break|
+            line.do({
+                |e, idx|
+                if (e == "", { break.value(idx+1)});
+                values.add(e.asFloat);
+            })
+        };
+        //"values of % are % long".format(key, values.size).postln;
+        data.put(key, values);
+    });
+
+    data;
+};
+
 ~makeWaveTable = {
     |size=4096, external, name|
     var sig, wt, buf;
@@ -14,6 +65,21 @@
         "made buffer  %".format(~buffersByName[name]).postln;
 
     }.play(AppClock);
+};
+
+
+~alignData = {
+    |keyCurrent, refDataPointer|
+    var compareData = ~currentData[keyCurrent][\data];
+    var in = ~currentData[keyCurrent][\in], out = ~currentData[keyCurrent][\out], reduce = ~currentData[keyCurrent][\reduce];
+    var divisor = ~currentData[keyCurrent][\originalSize] / ~currentData[keyCurrent][\data].size; // maximale Datenpunkte / aktuelle Datenpunkte
+    var maxMinutes = max(~currentData[keyCurrent][\originalSize], (60 * 24 * 7 * 4)); // maximale Datenmenge, die ersten 4 Wochen
+    var refData = currentEnvironment[refDataPointer][\minutes][0..maxMinutes]; // die ersten 4 Wochen
+    var refReduced = refData.select({|n, i| i%reduce==0}); // reduziert
+    //welche Auflösung braucht refData ?
+    refData = refReduced[in..out]; // entspricht der Verkleinerung durch die ~rangeSlider
+    "refData from in % to out % ... size %".format(in, out, refData.size).postln;
+    refData;
 };
 
 ~selectorAction = {
@@ -112,16 +178,24 @@
 //initialize currentData and currentSample
 ~initCurrent = {
     var reduce = 10;
-    ~rf.keys.asArray.sort.do({
+    ~midi.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
-
+        ~currentData.add(k.asSymbol ->
+            Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \in -> 0, \out -> (~data.soilmoisture1.size-1), \position -> 0, \originalSize -> ~data.soilmoisture1.size)
+        );
     });
-
     ~patFuncs.keys.asArray.sort.do({
         |k, i|
-        ~currentData.add(k.asSymbol -> Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \image -> ~dataImages.soilmoisture1, \position -> 0));
+        ~currentData.add(k.asSymbol ->
+            Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \in -> 0, \out -> (~data.soilmoisture1.size-1), \position -> 0, \originalSize -> ~data.soilmoisture1.size)
+        );
+    });
 
+    ~live.keys.asArray.sort.do({
+        |k, i|
+        ~currentData.add(k.asSymbol ->
+            Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \in -> 0, \out -> (~data.soilmoisture1.size-1), \position -> 0, \originalSize -> ~data.soilmoisture1.size)
+        );
     });
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
     ~currentData.add(\globalKey -> \48);
@@ -131,24 +205,7 @@
 
 };
 
-~makeNodes = {
-    //~channels.do{|c| if (c.active, {postf("free channel %\n", c.asString); c.free;})};
-    s.bind(
-        // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
-        ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
-        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
-        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
-        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
-        ~voc = MixerChannel(\voc, s, 2, 2, outbus:  ~master);
-        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  12);
-        ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
-        ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
-        ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
-        ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
-    );
 
-};
 
 ~toggleFx = {
     |key, on|
@@ -176,24 +233,29 @@
 
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUser = {
-    |act|
-    var rout;
+    |act, dictName |
+    var rout, dictVar;
+    case
+    {dictName == "midi"}{dictVar = ~midi}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs}
+    {dictName == "live"}{dictVar = ~live}
+    {true}{nil};
     if (act == 1,
         {
             MIDIdef.noteOn(\onoffUserOn, {
                 |vel, num|
                 if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
-                if (~rf.keys.includes(num.asSymbol),{
-                    rout = Routine(~rf[num.asSymbol]).play
+                if (dictVar.keys.includes(num.asSymbol),{
+                    rout = Routine(dictVar[num.asSymbol]).play
                 });
-                "on off playing/restart routine %".format(num.asSymbol).postln;
+                "on off % playing/restart routine %".format(dictName, num).postln;
             });
             MIDIdef.noteOff(\onoffUserOff, {
                 |vel, num|
-                if (~rf.keys.includes(num.asSymbol),{
+                if (dictVar.keys.includes(num.asSymbol),{
                     rout.stop;
                     ~activeSynths[num.asSymbol].free;
-                    "stopped routine %  released  %".format(num, ~activeSynths[num.asSymbol]).postln;
+                    "% stopped routine %  released  %".format(dictName, num, ~activeSynths[num.asSymbol]).postln;
                 });
             });
         },{
@@ -206,18 +268,24 @@
 };
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUserMouse = {
-    |pressed, rout, num|
-    [pressed, rout, num].postln;
+    |pressed, num, dictName|
+    var rout, dictVar;
+    case
+    {dictName == "midi"}{dictVar = ~midi}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs}
+    {dictName == "live"}{dictVar = ~live}
+    {true}{nil};
+    rout = Routine(dictVar[num]);
     if (pressed, {
        "reset rout".postln;  rout.reset;
         rout.play;
         //"playing/restart routine %".format(num.asSymbol).postln;
-        "playing/restart routine".postln;
+        "% playing/restart routine %".format(dictName, num).postln;
     },{
         rout.stop;
          ~activeSynths[num.asSymbol].release(3);
             //"stopped routine %  released Synth %".format(~rout.isPlaying,~activeSynths[num.asSymbol]).postln;
-        "stopped routine   released Synth ".postln;
+        "stopped routine %  released Synth ".format(num).postln;
         });
 
 };

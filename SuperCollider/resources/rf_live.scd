@@ -1,0 +1,171 @@
+~live = (
+
+    \48 :{
+        /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
+        und harmonischer verstimmung
+        */
+        var midikey, data, normalized, compressed, reduce, buf, syn, mn, mx;
+        /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
+        wait(0.02);*/
+        midikey = \48;
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        //compressed = data.select({|item, i| i%reduce == 0});
+        # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
+        normalized = data.normalize(mn, mx);
+        buf = ~liveBuffer;
+        s.sync;
+        "pre Syn".postln;
+        syn = Synth(\tgrains, [\amp, 0.45, \buf, buf, \dens, 5, \grainDur, 0.4, \grainAmp, 0.5,
+            \fmdens, 4, \numharm,3, \carfreq, 200, \modfreq, 1, \index, 2,
+            \out, ~voc.inbus]);
+        ~activeSynths.put(midikey, syn);
+        normalized.do({
+            |d, i|
+            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
+
+            syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
+            ~t.beatDur.wait;
+            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+    },
+
+
+    \50 :{
+        /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
+        und harmonischer verstimmung
+        */
+        var midikey, data, normalized, compressed, reduce, buf, syn, mn, mx;
+        /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
+        wait(0.02);*/
+        midikey = \50;
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        //compressed = data.select({|item, i| i%reduce == 0});
+        # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
+        normalized = data.normalize(mn, mx);
+        buf = ~liveBuffer;
+        s.sync;
+        "pre Syn".postln;
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
+        ~activeSynths.put(midikey, syn);
+        normalized.do({
+            |d, i|
+            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
+
+            syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
+            ~t.beatDur.wait;
+            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+    },
+
+    \51 :{
+        /* spielt liveSynth-Synth mit rate analog zu Temperatur Aktivität
+        */
+        var midikey, data, normalized, borders, compressed, reduce, buf, syn, mn, mx;
+        /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
+        wait(0.02);*/
+        //reduce = ~currentData[\50][\reduce];
+        midikey = \51;
+        data = ~currentData[midikey][\data].asArray;
+        "pre Syn".postln;
+        ~currentData.globalKey = midikey;
+        //# mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
+        borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
+        buf = ~grainBuffer;
+        s.sync;
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
+        ~activeSynths.put(midikey, syn);
+        data.do({
+            |d, i|
+            var c;
+            "original data %  at %".format(d, i).postln;
+            c = case
+            {d > borders[3][1]} {syn.set(\rate, d.linexp(0, 50, 2.1, 3.5))}
+            {(d > borders[3][0]) && (d <= borders[3][1])}
+            {syn.set(\rate, d.linexp(0, 50, 1.6, 2.5))}
+            {(d > borders[2][0]) && (d <= borders[2][1])}
+            {syn.set(\rate, d.linexp(0, 50, 1.01, 1.6))}
+            {(d > borders[1][0]) && (d <= borders[1][1])}
+            {syn.set(\rate, d.linexp(0, 50, 0.85, 1.0))}
+            {(d > borders[0][0]) && (d <= borders[0][1])}
+            {syn.set(\rate, d.linexp(0, 50, 0.45, 0.87))}
+            {true}{"data % out of border".format(d).postln};
+
+            0.05.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+    },
+
+    \52 :{
+        /*
+        SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
+        Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
+        attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
+        release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
+        */
+        var midikey=\52, data, ref50, buf, syn, mn, mx;
+        /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
+        wait(0.02);*/
+        data = ~currentData[midikey][\data].asArray;
+        ref50 = ~alignData.(midikey, \sm50);
+        ~currentData.globalKey = midikey;
+        # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
+        buf = ~buffersByName[\nitro][\base];
+        s.sync;
+        syn = Synth(\tgrains, [\buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \out, ~voc.inbus]);
+        ~activeSynths.put(midikey, syn);
+        ref50.do({
+            |r, i|
+            var d = data[i]; // Nitrifikation
+            var dFactor = d.linlin(mn, mx, 0.0, 1.5); // Annahme: bei 90 % WHC ist der Faktor 1.5 Um diesen Faktor wird der prognostizierte Wert erniedrigt oder erhöht
+            "original data %  ref % at %  dFactor %".format(d.trunc(0.01), r, i, dFactor).postln;
+            syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve( mn, 60, 0.01, 0.5), \rate, dFactor,  \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor *50, \fmAmp, r.lincurve( mn, 60, 0.01, 0.5));
+
+            0.025.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+    }
+    ,
+
+    \53 :{
+        /*
+        gleich wie 52 aber mit Live Stimme (tgrains_live)
+        SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
+        Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
+        attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
+        release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
+        */
+        var midikey=\53, data, ref50, buf, syn, mn, mx;
+        /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
+        wait(0.02);*/
+        data = ~currentData[midikey][\data].asArray;
+        ref50 = ~alignData.(midikey, \sm50);
+        ~currentData.globalKey = midikey;
+        # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
+        buf = ~liveBuffer;
+        s.sync;
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \lg, 0.5,  \out, ~voc.inbus]);
+        ~activeSynths.put(midikey, syn);
+        ref50.do({
+            |r, i|
+            var d = data[i]; // Nitrifikation
+            var dFactor = d.linlin(mn, mx, 0.0, 1.5); // Annahme: bei 90 % WHC ist der Faktor 1.5 Um diesen Faktor wird der prognostizierte Wert erniedrigt oder erhöht
+            var day, hour;
+            day =  ~currentData[midikey][\in] + i /(60*24);
+            hour = (~currentData[midikey][\in] + i /60) % 24;
+            if (i%60==0,
+                {"\t++++\t+++\noriginal data %  ref % \nat day: %  hour: %\ndFactor: %".format(d.trunc(0.01), r, day.trunc(0.01), hour, dFactor.trunc(0.01)).postln;});
+            syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve(mn, 60, 0.01, 0.5), \rate, dFactor, \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor * 25 * rrand(0.9, 1.1), \index, min(10, r), \fmAmp, r.lincurve( mn, 60, 0.01, 0.25), \modfreq, d/r);
+
+            0.025.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+    }
+)
+
