@@ -2,13 +2,14 @@
     s.bind {
         // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
         ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  2);
         ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
         ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
         ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
-        ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  10);
+        ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  ~master);
         ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
         ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
+        ~grainGrp = MixerChannel(\grain, s, 2, 2, outbus: ~master);
         ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
         ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
         ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
@@ -268,24 +269,23 @@
 };
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUserMouse = {
-    |pressed, num, dictName|
+    |pressed, k, i, dictName|
     var rout, dictVar;
     case
     {dictName == "midi"}{dictVar = ~midi}
     {dictName == "patFuncs"}{dictVar = ~patFuncs}
     {dictName == "live"}{dictVar = ~live}
     {true}{nil};
-    rout = Routine(dictVar[num]);
-    if (pressed, {
-       "reset rout".postln;  rout.reset;
+    rout = ~routines[dictName.asSymbol][i];
+    if (pressed==1, {
+       "reset rout %".format(i).postln;  rout.reset;
         rout.play;
-        //"playing/restart routine %".format(num.asSymbol).postln;
-        "% playing/restart routine %".format(dictName, num).postln;
+        "% playing/restart routine % % ".format(dictName, i, rout.isPlaying).postln;
     },{
-        rout.stop;
-         ~activeSynths[num.asSymbol].release(3);
-            //"stopped routine %  released Synth %".format(~rout.isPlaying,~activeSynths[num.asSymbol]).postln;
-        "stopped routine %  released Synth ".format(num).postln;
+        "stopping routine %  % releasing %".format(i, ~activeSynths[k.asSymbol]).postln;
+       rout.stop;
+         ~activeSynths[k.asSymbol].free;
+            "stopped routine %  released Synth %".format(~activeSynths[k.asSymbol]).postln;
         });
 
 };

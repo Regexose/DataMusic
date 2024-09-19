@@ -18,21 +18,20 @@ GUI mit verschiedenen SubWindows
 
     boxes = midikeys.collect({
         |k,i|
-        Button.new(bounds: Rect(40, 20))
-        .autoRememberPosition(\select, \w)
+        Button() // initialState
         .states_([
-            [(k.asString ++ "__ON"), Color.red], [(k.asString ++ "__OFF"), Color.black]
+             [(k.asString ++ "__OFF"), Color.black], [(k.asString ++ "__ON"), Color.red],
         ])
-        .background_(Color.rand)
-        .mouseDownAction_({arg btn; "mouse boxes down".postln; ~onOffUserMouse.(true, k, name)})
-        .mouseUpAction_({arg btn; "mouse boxes up".postln; ~onOffUserMouse.(false, k, name)})
+        .action_({|btn| btn.value.postln; ~onOffUserMouse.(btn.value, k,  i, name)})
+  /*      .mouseDownAction_({arg btn; "mouse boxes % ".format(btn.value).postln; ~onOffUserMouse.(true, k, name)})
+        .mouseUpAction_({arg btn; "mouse boxes %".format(btn.value).postln; ~onOffUserMouse.(false, k, name)})*/
 
     });
 
     pauses = midikeys.collect({
         |k,i|
         Button.new(bounds: Rect(40, 20))
-        .autoRememberPosition(\select, \w)
+
         .states_([
             [(k.asString ++ "__PAUS"), Color.blue], [(k.asString ++ "__RESUME"), Color.green],
         ])
@@ -46,15 +45,15 @@ GUI mit verschiedenen SubWindows
     keyLabels = midikeys.collect({
         |k,i|
         StaticText.new()
-        .autoRememberPosition(\select, \w)
-        .string_(keynames[i].asString ++ "__" ++ k)
+
+        .string_(keynames[i].asString)
         .align_(\center)
 
     });
     ~keySelector = midikeys.collect({
         |k,i|
         PopUpMenu.new()
-        .autoRememberPosition(\select, \w)
+
         .items_(datakeys.asArray)
         .allowsReselection_(True)
         .valueAction_(1)
@@ -206,8 +205,8 @@ GUI mit verschiedenen SubWindows
         hiX = sl.hi * 1000;
         sliderLine.refresh;
         //[loX, hiX].postln;
-        inIdx = (sl.lo * (data.size-1)).asInteger;
-        outIdx = (sl.hi * (data.size-1)).asInteger;
+        inIdx = (sl.lo * ~data[key].size).asInteger;
+        outIdx = (sl.hi * ~data[key].size).asInteger;
         //"new range % mit in % out %".format(outIdx- inIdx, inIdx, outIdx).postln;
     });
 
@@ -245,10 +244,10 @@ GUI mit verschiedenen SubWindows
          if (btn.value==0, {
             var k = ~currentData.globalKey;
             var oldsize = data.size;
-           // "k is % key is %m reduce is %".format(k, key, reduce).postln;
-            ~currentData[k][\data] = data = ~data[key].select({|n, i| i%reduce==0});
-            ~currentData[k][\in] = 0;
+           "k is % key is %m reduce is %".format(k, key, reduce).postln;
             ~currentData[k][\reduce] = 10;
+            ~currentData[k][\data] = data = ~data[key].select({|n, i| i%10==0});
+            ~currentData[k][\in] = 0;
             ~currentData[k][\out] = data.size-1;
             "old size % reset data size %".format(oldsize, data.size).postln;
             ~drawData.refresh})
@@ -263,13 +262,14 @@ GUI mit verschiedenen SubWindows
      .font_(~style.textFont)
     .action_({|btn|
         var k = ~currentData.globalKey;
+        var zoomReduce = 4;
         btn.value.postln;
         if (btn.value==0, {
-            data = data[inIdx..outIdx];
+            data = ~data[key][inIdx..outIdx].select({|n, i| i%zoomReduce==0});
             ~currentData[k][\in] = (~dataSlider.lo * (~data[key].size-1)).asInteger; //der absolute Wert der Originaldaten
             ~currentData[k][\out] = (~dataSlider.hi * (~data[key].size-1)).asInteger;
             ~currentData[k][\data] = data;
-            ~currentData[k][\reduce] = 0;
+            ~currentData[k][\reduce] = zoomReduce;
             "new Data size %  in % out %".format(data.size, ~currentData[k][\in], ~currentData[k][\out]).postln;
             ~drawData.refresh})
     });

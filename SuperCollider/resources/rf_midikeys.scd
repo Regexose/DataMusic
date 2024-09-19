@@ -3,49 +3,78 @@
     \48 : {
         /* spielt brsaw-Synth mit filter frequency manipulation \ffreq
         */
-        var data, normalized, compressed, reduce, buf, syn;
+        var data, reduce, buf, syn;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
-        //reduce = ~currentData[\48][\reduce];
         data = ~currentData[\48][\data].asArray;
         ~currentData.globalKey = \48; // für handling des RangeSliders
-        //compressed = data.select({|item, i| i%reduce == 0});
-        normalized = data.normalize(80, 5000);
+        data = data.normalize(80, 5000);
         buf = ~currentSample[\base].normalize;
         s.sync;
         syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \rq, 0.44, \out, ~ch1.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\48, syn);
-        normalized.do({
+        data.do({
             |d, i|
             //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
             syn.set(\ffreq, d);
             0.05.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
 
+    },
+  \49 :{
+        /*
+        SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
+        Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
+        attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
+        release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
+        */
+        var midikey=\49, data, ref50, buf, syn, mn, mx;
+        /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
+        wait(0.02);*/
+        data = ~currentData[midikey][\data].asArray;
+        ref50 = ~alignData.(midikey, \sm50);
+        ~currentData.globalKey = midikey;
+        # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
+        buf = ~buffersByName[\nitro][\base];
+        s.sync;
+        syn = Synth(\tgrains, [\buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \out, ~voc.inbus]);
+        ~activeSynths.put(midikey, syn);
+        ref50.do({
+            |r, i|
+            var d = data[i]; // Nitrifikation
+            var dFactor = d.linlin(mn, mx, 0.0, 1.5); // Annahme: bei 90 % WHC ist der Faktor 1.5 Um diesen Faktor wird der prognostizierte Wert erniedrigt oder erhöht
+            "original data %  ref % at %  dFactor %".format(d.trunc(0.01), r, i, dFactor).postln;
+            syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve( mn, 60, 0.01, 0.5), \rate, dFactor,  \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor *50, \fmAmp, r.lincurve( mn, 60, 0.01, 0.5));
+
+            0.025.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
     },
 
     \50 : {
         /* Nitrifikation
         */
-        var data, normalized, buf, syn;
+        var data, buf, syn, mn, mx;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
-        //reduce = ~currentData[\48][\reduce];
         data = ~currentData[\50][\data].asArray;
+        #mn, mx = [80, 5000];
         ~currentData.globalKey = \50; // für handling des RangeSliders
-        normalized = data.normalize(80, 5000);
+        data = data.normalize(mn, mx);
         buf = ~currentSample[\base].normalize;
         s.sync;
-        syn = Synth(\vowelklank, [\amp, 0.35, \buf, buf, \rq, 0.44, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\vowelklank, [\amp, 0.15, \buf, buf, \vow, 5, \rq, 0.24, \out, ~voc.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(\50, syn);
-        normalized.do({
+        data.do({
             |d, i|
-            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            "original data  %  at   %".format( d.trunc(0.01), i).postln;
+            //syn.set(\ffreq, d,  \freqScale, d.linlin(mn, mx, 0.1, 1.0));
             syn.set(\ffreq, d);
             0.05.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
 
@@ -113,7 +142,7 @@
         buf2 = ~currentSample[\tension].normalize;
         buf3 = ~currentSample[\relax].normalize;
         s.sync;
-        syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \outdry, ~dryBus]);
+        syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \out, ~voc.inbus, \outdry, ~dryBus]);
         s.sync;
         ~activeSynths.put(\53, syn1);
         normalized.do({
@@ -143,117 +172,107 @@
     },
 
     \55: {
-        // sample switch mit LFSaw als Pointer (simuliert Normalgeschwindigkeit)
-        var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, speed;
+        // vowel trig
+        var midikey= \55, data, reduce, buf1, buf2, buf3, syn1, mean, range, speed, mn, mx;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
-        reduce = ~currentData[\55][\reduce];
-        data = ~currentData[\55][\data].asArray;
+        #mn, mx = [300, 3000];
+        reduce = ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray.normalize(mn,mx);
         ~currentData.globalKey = \55;
-        //compressed = data.select({|item, i| i%reduce == 0});
-        normalized = data.normalize(300, 3000);
-        mean = normalized.mean;
+        mean = data.mean;
         range = mean / 6;
         buf1 = ~currentSample[\base].normalize;
         buf2 = ~currentSample[\tension].normalize;
         buf3 = ~currentSample[\relax].normalize;
         s.sync;
-        syn1 = Synth(\brsaw, [\buf, buf1, \amp, 0.4, \out, ~ch2.inbus, \outdry, ~dryBus]);
+        syn1 = Synth(\voweltrig, [\buf, buf1, \amp, 0.4, \out, ~ch2.inbus, \outdry, ~dryBus]);
         s.sync;
         ~activeSynths.put(\55, syn1);
-        normalized.do({
+        data.do({
             |d, i|
             var c;
             //"original data  %  normalized data   %  at  %".format(compressed[i].trunc(0.0001), d, i).postln;
             c = case
-            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
-                syn1.set(\buf, buf1, \ffreq, d);
+            {(d >= (mean - range)) && (d<= (mean + range))}{
+                syn1.set(\buf, buf1, \vow, 1 ,\ffreq, d.linlin(mn, mx, 100, 799));
                 "mean".postln;
 
             }
-            {d < (normalized.mean - range)}{
-                syn1.set(\buf, buf2, \ffreq, d.linlin(300, 3000, 800, 4000));
+            {d < (mean - range)}{
+                syn1.set(\buf, buf2, \vow, 6, \ffreq, d.linlin(mn, mx, 800, 2000));
                 "tension".postln;
 
             }
-            {(d > (normalized.mean + range))}{
-                syn1.set(\buf, buf3, \ffreq, d.linlin(300, 3000, 800, 4000));
+            {(d > (mean + range))}{
+                syn1.set(\buf, buf3, \vow, 11, \ffreq, d.linlin(mn, mx, 2000, 4000));
                 "relax".postln;
 
 
             }
             {true}{"no case".postln};
             0.04.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
         });
         syn1.release(2);
 
     },
 
-    \57 : {// für Vowel Synthesis
-        var syn, data, compressed, normalized, reduce, dbs, buf, mn, mx;
-        reduce= ~currentData[\57][\reduce];
-        data = ~currentData[\57][\data].asArray;
-        ~currentData.globalKey = \57;
-        //compressed = data.select({|item, i| i%reduce == 0});
-        #mn, mx = [0.02, 0.09];
-        normalized = data.normalize(mn, mx);
+    \57 : {// für Vowel hard choose
+        var midikey = \57, syn, data, reduce, buf, mn, mx;
+        #mn, mx = [0.02, 0.2];
+        reduce= ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        data = data.normalize(mn, mx);
         buf = ~currentSample[\base].normalize;
-        syn = Synth(\bpfstack, [\buf, buf, \amp, 0.7, \rls, 1.0, \outdry, ~dryBus]);
+        syn = Synth(\vowelklank, [\buf, buf, \ffreq, 4000, \amp, 0.2, \rls, 1.0, \out, ~voc.inbus, \outdry, ~dryBus]);
         s.sync;
-        ~activeSynths.put(\57, syn);
-        normalized.do({
+        ~activeSynths.put(midikey, syn);
+        data.do({
             |d, i|
             // welche Werte werden für Vowels benutzt?
             var key = d.linlin(mn, mx, 1, 24).asInteger;
-            dbs =  Vowel.formLib.at(~vowelDict[key][0], ~vowelDict[key][1], \db);
-            "key % dbs %  sum % ".format(key, dbs, dbs[0..2].sum).postln;
-            if (dbs[0..2].sum > -16, {
-                syn.set(\vow, key, \fade, 0.9)
-            },{
-                syn.set(\vow, key, \fade, 1.5);
-            }
-            );
+            syn.set(\vow, key, \freqScale, d.linlin(mn, mx, 0.1, 1.0));
+
             d.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
         });
         syn.release(2);
 
     },
 
    \58 : {// für Vowel Synthesis
-        var syn, data, compressed, normalized, reduce, buf1, buf2, buf3, mean, range, mn, mx;
-        reduce= ~currentData[\58][\reduce];
-        data = ~currentData[\58][\data].asArray;
-         ~currentData.globalKey = \58;
-        //compressed = data.select({|item, i| i%reduce == 0});
-        #mn, mx = [1, 100];
-        normalized = data.normalize(mn, mx);
-        mean = normalized.mean;
+        var syn, data, mean, reduce, range, mn, mx,  midikey=\58;
+        reduce= ~currentData[midikey][\reduce];
+        #mn, mx = [30, 70];
+        data = ~currentData[midikey][\data].asArray.normalize(mn, mx);
+         ~currentData.globalKey = midikey;
+
+        mean = data.mean;
         range = mean / 30;
-        buf1 = ~currentSample[\base].normalize;
-        buf2 = ~currentSample[\tension].normalize;
-        buf3 = ~currentSample[\relax].normalize;
-        syn = Synth(\vowelklank2, [\buf, buf1, \amp, 0.1, \out, ~voc, \outdry, ~dryBus]);
+        syn = Synth(\oddeven, [\vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~voc.inbus, \outdry, ~dryBus]);
         s.sync;
         ~activeSynths.put(\58, syn);
-        normalized.do({
+        data.do({
             |d, i|
             // Vowels werden mit key geändert
             var c, key = d.linlin(1, 100, 0, 20).asInteger;
+           //"key % d %  i % ".format(key, d, i).postln;
+            syn.set(\baseFreq, d.linlin(mn, mx, 800, 820), \ampFreq, d.linlin(mn, mx, 0.4, 5.5));
             c = case
-            {(d >= (normalized.mean - range)) && (d<= (normalized.mean + range))}{
-                syn.set(\vow, 0, \stp, d.linlin(mn, mx, 0.1, 2.1), \buf, buf1, \freqScale, d.linlin(1, 100, 0.1, 0.6));
+            {(d >= (mean - range)) && (d<= (data.mean + range))}{
+                syn.set(\vow, [0, 1, 2, 3, 4].choose, \bright, d.linlin(mn, mx, 0.1, 0.4), \envScale, d.linlin(mn, mx, 0.1, 0.4));
             }
-            {d < (normalized.mean -range)}{
-                syn.set(\vow, 5, \stp, d.linlin(mn, mx, 0.1, 2.1), \buf, buf1,\freqScale, d.linlin(1, 100, 0.1, 0.6));
+            {d < (mean -range)}{
+                syn.set(\vow, (5..9).choose,\bright, d.linlin(mn, mx, 0.5, 1.00), \envScale, d.linlin(mn, mx, 0.41, 1.0));
             }
-            {(d > (normalized.mean + range))}{
-                syn.set(\vow, 10, \stp, d.linlin(mn, mx, 0.1, 2.1), \buf, buf1,\freqScale, d.linlin(1, 100, 0.1, 0.6))
+            {(d > (mean + range))}{
+                syn.set(\vow, (10..14).choose, \bright, d.linlin(mn, mx, 1.01, 2.5), \envScale, d.linlin(mn, mx, 1.01, 1.9))
             }
             {true}{"no case".postln};
-           0.03.wait;
-            defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
+           0.06.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
         });
         syn.release(2);
 
@@ -268,7 +287,7 @@
          ~currentData.globalKey = \60;
         lastPos =  ~currentData[\60][\position];
         //compressed = data.select({|item, i| i%reduce == 0});
-        #mn, mx = [-5, 50];
+        #mn, mx = [0, 40];
         normalized = data.normalize(mn, mx);
         avg = normalized.mean;
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
@@ -282,16 +301,16 @@
             c = case
             {d > borders[3][1]} {syn.set(\trg, d.linexp(0, 50, 75, 125))}
             {(d > borders[3][0]) && (d <= borders[3][1])}
-            {syn.set(\trg, d.linexp(0, 50, 30, 75))}
+            {syn.set(\trg, d.linexp(mn, mx, 30, 75))}
             {(d > borders[2][0]) && (d <= borders[2][1])}
-            {syn.set(\trg, d.linexp(0, 50, 20, 30))}
+            {syn.set(\trg, d.linexp(mn, mx, 20, 30))}
             {(d > borders[1][0]) && (d <= borders[1][1])}
-            {syn.set(\trg, d.linexp(0, 50, 8, 20))}
+            {syn.set(\trg, d.linexp(mn, mx, 8, 20))}
             {(d > borders[0][0]) && (d <= borders[0][1])}
-            {syn.set(\trg, d.linexp(0, 50, 1, 8))}
+            {syn.set(\trg, d.linexp(mn, mx, 1, 8))}
             {true}{"data % out of border".format(d).postln};
             "original data  %  at  %".format(d.round(0.01),  i).postln;
-            syn.set(\ffreq, d.linlin(0, 50, 120, 4300), \rq, d.linlin(0, 50, 0.1, 0.5), \pan, d.explin(8, 40, -0.5, 0.5 )) ;
+            syn.set(\ffreq, d.linlin(mn, mx, 120, 4300), \rq, d.linlin(mn, mx, 0.1, 0.5), \pan, d.linlin(mn, mx, -1.0, 1.0 ), \decayScale, d.linlin(mn, mx, 0.6, 0.06)) ;
             ~currentData[\60][\position] = i + lastPos;
            0.1.wait;
             defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};

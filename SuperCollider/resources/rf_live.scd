@@ -1,8 +1,7 @@
 ~live = (
 
     \48 :{
-        /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
-        und harmonischer verstimmung
+        /* spielt liveSynth-Synth mit und harmonischer verstimmung
         */
         var midikey, data, normalized, compressed, reduce, buf, syn, mn, mx;
         /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
@@ -13,18 +12,16 @@
         //compressed = data.select({|item, i| i%reduce == 0});
         # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
         normalized = data.normalize(mn, mx);
-        buf = ~liveBuffer;
+        buf = ~grainBuffer;
         s.sync;
         "pre Syn".postln;
-        syn = Synth(\tgrains, [\amp, 0.45, \buf, buf, \dens, 5, \grainDur, 0.4, \grainAmp, 0.5,
-            \fmdens, 4, \numharm,3, \carfreq, 200, \modfreq, 1, \index, 2,
-            \out, ~voc.inbus]);
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
             "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
 
-            syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
+            syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [24.0, 18.0, 12.5]));
             ~t.beatDur.wait;
             defer{~posX = i.linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
@@ -36,7 +33,7 @@
         /* spielt liveSynth-Synth mit filter frequency manipulation \ffreq
         und harmonischer verstimmung
         */
-        var midikey, data, normalized, compressed, reduce, buf, syn, mn, mx;
+        var midikey, data, normalized, reduce, buf, syn, mn, mx;
         /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
         wait(0.02);*/
         midikey = \50;
@@ -48,7 +45,7 @@
         buf = ~liveBuffer;
         s.sync;
         "pre Syn".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \ffreq, 4000, \out, ~voc.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
@@ -76,7 +73,7 @@
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
         buf = ~grainBuffer;
         s.sync;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \ffreq, 4000, \out, ~voc.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
@@ -102,45 +99,13 @@
 
     \52 :{
         /*
-        SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
-        Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
-        attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
-        release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
-        */
-        var midikey=\52, data, ref50, buf, syn, mn, mx;
-        /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
-        wait(0.02);*/
-        data = ~currentData[midikey][\data].asArray;
-        ref50 = ~alignData.(midikey, \sm50);
-        ~currentData.globalKey = midikey;
-        # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
-        buf = ~buffersByName[\nitro][\base];
-        s.sync;
-        syn = Synth(\tgrains, [\buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \out, ~voc.inbus]);
-        ~activeSynths.put(midikey, syn);
-        ref50.do({
-            |r, i|
-            var d = data[i]; // Nitrifikation
-            var dFactor = d.linlin(mn, mx, 0.0, 1.5); // Annahme: bei 90 % WHC ist der Faktor 1.5 Um diesen Faktor wird der prognostizierte Wert erniedrigt oder erhöht
-            "original data %  ref % at %  dFactor %".format(d.trunc(0.01), r, i, dFactor).postln;
-            syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve( mn, 60, 0.01, 0.5), \rate, dFactor,  \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor *50, \fmAmp, r.lincurve( mn, 60, 0.01, 0.5));
-
-            0.025.wait;
-            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
-        });
-        syn.release(2);
-    }
-    ,
-
-    \53 :{
-        /*
         gleich wie 52 aber mit Live Stimme (tgrains_live)
         SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
         Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
         attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
         release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
         */
-        var midikey=\53, data, ref50, buf, syn, mn, mx;
+        var midikey=\52, data, ref50, buf, syn, mn, mx;
         /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
         wait(0.02);*/
         data = ~currentData[midikey][\data].asArray;
@@ -166,6 +131,31 @@
             defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
         });
         syn.release(2);
-    }
+    },
+
+    \53 : {
+        /* Live filter frequency manipulation \ffreq
+        */
+        var midikey=\53, data, reduce, buf, mic, ptr, rec, syn, mn, mx;
+        /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
+        wait(0.02);*/
+        #mn, mx = [150, 5000];
+        data = ~currentData[midikey][\data].asArray.normalize(mn, mx);
+        ~currentData.globalKey = midikey; // für handling des RangeSliders
+        buf = ~grainBuffer;
+        buf.zero;
+        s.sync;
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.1, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
+        ~activeSynths.put(midikey, syn);
+        data.do({
+            |d, i|
+            //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i).postln;
+            syn.set( \ffreq, d);
+            0.05.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh}; // Update GUI
+        });
+        syn.release(2);
+
+    },
 )
 

@@ -40,7 +40,7 @@ SynthDef(\vowelklank, {
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
 
-    sig = LPF.ar(sig, \ffreq.kr(500));
+    sig = RLPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));
 	sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
@@ -66,7 +66,7 @@ SynthDef(\voweltrig, {
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
 
-    sig = BPF.ar(sig, \ffreq.kr(500) , \rq.kr(0.3));
+    sig = BPF.ar(sig, \ffreq.kr(500), \rq.kr(0.3));
 	sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
@@ -83,7 +83,7 @@ SynthDef(\oddeven, {
 	var sig, baseIndex, vowel, selectfreqs, selectamps, selectwidths, freqs, evenFreqs, oddFreqs, amps, evenAmps, oddAmps, orders;
 	var evenAmpMod = SinOsc.kr(\ampFreq.kr(1)).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
 	var oddAmpMod = SinOsc.kr(freq: 1, phase: pi).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
-    var ampEnv = Env.perc(\atk.kr( 0.01),\rls.kr( 0.2), curve: \crv.kr(0)).kr(doneAction: 2);
+    //var ampEnv = Env.perc(\atk.kr( 0.01),\rls.kr( 0.2), curve: \crv.kr(0)).kr(doneAction: 2);
 
 
     baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
@@ -110,7 +110,7 @@ SynthDef(\oddeven, {
 
 	amps = amps.normalizeSum; // tame amplitudes
 
-    sig = DynKlang.ar(`[freqs, amps, nil], \freqScale.kr(0.1) ) * \amp.kr(0.1) * ampEnv ;
+    sig = DynKlang.ar(`[freqs, amps, nil], \freqScale.kr(0.1) ) * \amp.kr(0.1) ;
     Out.ar(\out.kr(0), sig!2);
 }).add;
 
@@ -241,7 +241,7 @@ SynthDef(\tgrains_live, {
 		interp: \ip.kr(4)
 	);
 	fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
-        \carfreq.kr(400), \modfreq.kr(10), LFNoise1.kr(\iMod.kr(1).range(1,\index.kr(1))), //release Phase Nitrifikation
+        \carfreq.kr(400), \modfreq.kr(10), \index.kr(1), //release Phase Nitrifikation
         \fmAmp.kr(0.5)
     );
     fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
@@ -313,7 +313,38 @@ SynthDef(\grainScrub, {
     Out.ar(\outdry.kr(3), sig2);
 }).add;
 
+SynthDef(\livegran, {
+    |buf=0, durRand=1, rateRand=1, panRand=0, dens=40, ptrBus=0, ptrSampleDelay=20000,
+    ptrRandSamples= 3000, minPtrDelay=1000, maxGrainDur, grainEnv = (-1)|
+    var sig, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay;
 
+    env = EnvGen.kr(Env.asr(\atk.kr(1), 1, \rls.kr(1)), \gate.kr(1), doneAction:2);
+    densCtrl = Select.ar(\sync.kr(1), [Dust.ar(dens), Impulse.ar(dens)]);
+    durCtrl = \baseDur.kr(0.05) * LFNoise1.ar(100).exprange(1/durRand, durRand);
+    rateCtrl = \rate.kr(1) * LFNoise1.ar(100).exprange(1/rateRand, rateRand) * \harm.kr(0).midiratio;
+    panCtrl = \pan.kr(0) * LFNoise1.ar(100).bipolar(panRand);
+    ptrRand = LFNoise1.ar(100).bipolar(ptrRandSamples); // zitter effekt
+    totalDelay =  max(ptrSampleDelay - ptrRand, minPtrDelay);//gesamt Zahl Delay samples
+    ptr = In.ar(ptrBus, 1);
+    ptr = ptr - totalDelay; // pointer immer hinter dem ptrBus
+    ptr = ptr/BufFrames.kr(buf); //normalisierter Pointer
+    maxGrainDur = (totalDelay/rateCtrl) / SampleRate.ir; // Wie lang darf ein Grain sein, ohne über die Schreiblücke zu springen?
+    durCtrl = min(durCtrl, maxGrainDur);
+    sig = GrainBuf.ar(
+        2,
+        densCtrl,
+        durCtrl,
+        buf,
+        rateCtrl,
+        ptr,
+        2,
+        panCtrl,
+        grainEnv
+    );
+    sig = RLPF.ar( sig, \ffreq.kr(4000), \rq.kr(0.5));
+    sig = sig * env * \amp.kr(0.5);
+    Out.ar(\out.kr(0), sig);
+}).add;
 
 SynthDef(\br, {
 	arg buf=0, rate=1, start=0, end;
@@ -342,6 +373,7 @@ SynthDef(\brsaw, {
     sig2 = BufRd.ar(1, buf, ptr) * env;
 	sig = BufRd.ar(1, buf, ptr );
 	sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
+    sig = Pan2.ar(sig, \pan.kr(0));
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), sig2);
@@ -358,21 +390,30 @@ SynthDef(\recOne, {
 	BufWr.ar(input, buf, ptr);
 }).add;
 
+// Live granulation https://www.youtube.com/watch?v=MnD8stNB5tE&list=PLPYzvS8A_rTaNDweXe6PX4CXSGq4iEWYC&index=27
+// ab 8:00
+
 SynthDef(\routing, {
-	var sig = In.ar(\in.kr(0), 2);
+	var sig = SoundIn.ar(\in.kr(0));
 	sig = sig * \fade.kr(0.0);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
+SynthDef(\pointer, {
+    |out=0, buf=0|
+    var sig;
+    sig = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
+    Out.ar(out, sig);
+}).add;
 
 // record stuff with mic
 SynthDef(\rec, {
-	|len=4|
-	var input, ptr, buf= \buf.kr(0);
-	input = SoundIn.ar(\in.kr(0));
-	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+	|len=4, ptrIn=0, micIn=0, buf=0|
+	var ptr, sig;
+	ptr = In.ar(ptrIn, 1);
+	sig = In.ar(micIn, 1);
 	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
-	BufWr.ar(input, buf, ptr);
+	BufWr.ar(sig, buf, ptr);
 	//RecordBuf.ar(input, \buf.kr(0), recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
 }).add;
 

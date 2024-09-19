@@ -30,6 +30,8 @@ s.waitForBoot({
     s.sync;
     s.newBusAllocators;
     ~soundIn = Bus.audio(s, 1);
+    ~micBus = Bus.audio(s, 1);
+    ~ptrBus = Bus.audio(s, 1);
     ~dryBus = Bus.audio(s,2);
     ~wetBus = Bus.audio(s,2);
     /// load SynthDefs, Constants, Functions

@@ -1,5 +1,5 @@
 //ServerOptions.devices;
-//~audioInterface = "MacBook Pro-Lautsprecher";
+//~audioOut= "Scarlett 4i4 USB";
 //~audioOut = "MacBook Pro-Lautsprecher";
 //~audioOut = "Externe Kopfhöre";
 //~audioOut = "BlackHole 16ch";
@@ -8,5 +8,5 @@
 ~audioIn = "Fireface 400 (BEF)";
 //~audioIn = "Scarlett 4i4 USB";
 //~audioInterface = "Fireface 400 (BEF)";
-//~audioIn = "Fireface 400 (BEF)";
+//~audioIn = "MacBook Pro-Mikrofon";
 //~audioInterface = "Scarlett 4i4 USB";

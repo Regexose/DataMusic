@@ -14,7 +14,12 @@ w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 };
 w.front;
 
+~grainBuffer.plot
+x = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \minPtrDelay,  1000, \out, 0], ~grainGrp);
+x.set(\ptrRandSamples, 100)
+x.free
 
+~currentData[\60][\reduce].size
 s.queryAllNodes
 ServerTree.removeAll
 ServerTree.objects
