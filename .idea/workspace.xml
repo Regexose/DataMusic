@@ -1,33 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="bdcc2f95-d36e-4c10-8a5f-10340dd6eede" name="Default Changelist" comment="" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="bdcc2f95-d36e-4c10-8a5f-10340dd6eede" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/DataMusic.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DataMusic.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/GUI/GUI_constructor.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/GUI/GUI_constructor.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/GUI/GUI_make.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/GUI/GUI_make.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/config.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/config.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/constants.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/constants.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/functions.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/functions.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/initialization.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/initialization.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/patterns.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/patterns.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/rf_climart.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/rf_climart.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/resources/synthDefs.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/resources/synthDefs.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/startup.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/startup.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SuperCollider/tests.scd" beforeDir="false" afterPath="$PROJECT_DIR$/SuperCollider/tests.scd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/create_curve.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_curve.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/csv_convert.py" beforeDir="false" afterPath="$PROJECT_DIR$/csv_convert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/zku_OpenHausData_noTime.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/zku_OpenHausData_noTime.csv" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="ProjectId" id="2T9n47bj76OHVjZ4YrtMjc7WG7H" />
-  <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
       <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
+        <option value="Python Script" />
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.csv_convert">
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2T9n47bj76OHVjZ4YrtMjc7WG7H" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "/Users/borisjoens/Documents/Projekte/DataMusic/DataMusic",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Python"
+    ]
+  }
+}]]></component>
+  <component name="RunManager" selected="Python.scratch">
+    <configuration name="create_curve" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="DataMusic" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../Kommentariat/Meinungsorgel_Git/smalldata_audioinput/venv/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_curve.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="csv convert" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="DataMusic" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -70,13 +123,37 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="scratch" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="DataMusic" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.scratch" />
+        <item itemvalue="Python.create_curve" />
         <item itemvalue="Python.csv_convert" />
         <item itemvalue="Python.csv convert" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -95,9 +172,7 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
+            <State />
           </value>
         </entry>
       </map>

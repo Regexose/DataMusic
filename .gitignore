@@ -7,3 +7,7 @@
 
 SuperCollider/config.scd
 data/.DS_Store
+data/SM_50.csv
+data/SM_70.csv
+data/SM_90.csv
+*.csv
