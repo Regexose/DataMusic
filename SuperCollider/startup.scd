@@ -16,7 +16,7 @@ Server.killAll;
 Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
-Server.default.options.numOutputBusChannels_(16);
+Server.default.options.numOutputBusChannels_(16);y
 Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
 

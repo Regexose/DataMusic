@@ -234,16 +234,21 @@
 
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffUser = {
-    |act, dictName |
+    |act, dictName, midikeys |
     var rout, dictVar;
     case
     {dictName == "midi"}{dictVar = ~midi}
     {dictName == "patFuncs"}{dictVar = ~patFuncs}
     {dictName == "live"}{dictVar = ~live}
     {true}{nil};
+    midikeys.postln;
     if (act == 1,
         {
-            MIDIdef.noteOn(\onoffUserOn, {
+        midikeys.do({
+            |key|
+            var defOn = ("on" ++ key ).asSymbol;
+            var defOff = ("off" ++ key ).asSymbol;
+            MIDIdef.noteOn(mdef, {
                 |vel, num|
                 if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
                 if (dictVar.keys.includes(num.asSymbol),{
@@ -251,7 +256,7 @@
                 });
                 "on off % playing/restart routine %".format(dictName, num).postln;
             });
-            MIDIdef.noteOff(\onoffUserOff, {
+            MIDIdef.noteOff(defOff, {
                 |vel, num|
                 if (dictVar.keys.includes(num.asSymbol),{
                     rout.stop;
@@ -259,10 +264,13 @@
                     "% stopped routine %  released  %".format(dictName, num, ~activeSynths[num.asSymbol]).postln;
                 });
             });
-        },{
-            "freeing MIDIdefs".postln;
-            [\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
 
+
+        });
+        }
+      ,{
+            "freeing MIDIdefs".postln;
+           MIDIdef.freeAll;
         }
     )
 
