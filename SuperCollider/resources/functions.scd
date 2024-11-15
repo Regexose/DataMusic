@@ -201,7 +201,7 @@
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
     ~currentData.add(\globalKey -> \48);
 
-    //~keySelector.do({|n| n.valueAction = 1});
+    ~keySelector.do({|n| n.valueAction = 3});
     ~bufSelector.do({|n| n.valueAction = 13});
 
 };
@@ -233,7 +233,7 @@
 
 
 //restarts play if new MIDI key is pressed with User Sounds
-~onOffUser = { // oder auf holdNote..
+~holdNote = { // oder auf holdNote..
     |act, dictName |
     var dictVar;
     case
@@ -273,7 +273,7 @@
 
 };
 //restarts play if new MIDI key is pressed with User Sounds
-~onOffUserMouse = {
+~onOffButton = {
     |pressed, k, i, dictName|
     var rout, dictVar;
     case
@@ -295,7 +295,7 @@
 
 };
 //toggles between play and pause of the routine, remembers last position
-~pausUserMouse = {
+~pausButton = {
     |btn, rout, num|
     [btn, rout, num].postln;
     if (btn==1, {
@@ -336,7 +336,7 @@
 
 
 //always plays the complete data array with User Sounds
-~oneShotUser = {
+~oneShot = {
     |act|
     var rout;
     if (act == 1,

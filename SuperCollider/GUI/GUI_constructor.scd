@@ -22,9 +22,8 @@ GUI mit verschiedenen SubWindows
         .states_([
              [(k.asString ++ "__OFF"), Color.black], [(k.asString ++ "__ON"), Color.red],
         ])
-        .action_({|btn| btn.value.postln; ~onOffUserMouse.(btn.value, k,  i, name)})
-  /*      .mouseDownAction_({arg btn; "mouse boxes % ".format(btn.value).postln; ~onOffUserMouse.(true, k, name)})
-        .mouseUpAction_({arg btn; "mouse boxes %".format(btn.value).postln; ~onOffUserMouse.(false, k, name)})*/
+        .action_({|btn| btn.value.postln; ~onOffButton.(btn.value, k,  i, name)})
+
 
     });
 
@@ -37,10 +36,11 @@ GUI mit verschiedenen SubWindows
         ])
         .background_(Color.rand)
         //.mouseDownAction_({arg btn; "mouse down".postln; ~pausUserMouse.(btn.value, ~routines[k], k)})
-        .mouseUpAction_({arg btn; "mouse pauses up".postln; ~pausUserMouse.(btn.value, ~routines[k], k)})
+        .mouseUpAction_({arg btn; "mouse pauses up".postln; ~pausButton.(btn.value, ~routines[k], k)})
         .valueAction_(1)
 
     });
+
 
     keyLabels = midikeys.collect({
         |k,i|
@@ -52,11 +52,10 @@ GUI mit verschiedenen SubWindows
     });
     ~keySelector = midikeys.collect({
         |k,i|
+        [k,i].postln;
         PopUpMenu.new()
-
         .items_(datakeys.asArray)
         .allowsReselection_(True)
-        .valueAction_(1)
         .action_({arg pm; ~selectorAction.(pm)})
         .name_(k)
 
