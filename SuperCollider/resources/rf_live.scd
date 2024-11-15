@@ -14,12 +14,12 @@
         normalized = data.normalize(mn, mx);
         buf = ~grainBuffer;
         s.sync;
-        "pre Syn".postln;
+        "pre Syn \48".postln;
         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
+            //"original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
 
             syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [24.0, 18.0, 12.5]));
             ~t.beatDur.wait;
@@ -39,17 +39,16 @@
         midikey = \50;
         data = ~currentData[midikey][\data].asArray;
         ~currentData.globalKey = midikey;
-        //compressed = data.select({|item, i| i%reduce == 0});
         # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
         normalized = data.normalize(mn, mx);
         buf = ~liveBuffer;
         s.sync;
-        "pre Syn".postln;
+        "pre Syn \50".postln;
         syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \ffreq, 4000, \out, ~voc.inbus, \outdry, ~dryBus]);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
-            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
+            //"original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
 
             syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
             ~t.beatDur.wait;
@@ -67,7 +66,7 @@
         //reduce = ~currentData[\50][\reduce];
         midikey = \51;
         data = ~currentData[midikey][\data].asArray;
-        "pre Syn".postln;
+        "pre Syn \51".postln;
         ~currentData.globalKey = midikey;
         //# mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
@@ -114,6 +113,7 @@
         # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
         buf = ~liveBuffer;
         s.sync;
+        "Pre Syn \52".postln;
         syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \lg, 0.5,  \out, ~voc.inbus]);
         ~activeSynths.put(midikey, syn);
         ref50.do({
@@ -123,8 +123,8 @@
             var day, hour;
             day =  ~currentData[midikey][\in] + i /(60*24);
             hour = (~currentData[midikey][\in] + i /60) % 24;
-            if (i%60==0,
-                {"\t++++\t+++\noriginal data %  ref % \nat day: %  hour: %\ndFactor: %".format(d.trunc(0.01), r, day.trunc(0.01), hour, dFactor.trunc(0.01)).postln;});
+          /*  if (i%60==0,
+                {"\t++++\t+++\noriginal data %  ref % \nat day: %  hour: %\ndFactor: %".format(d.trunc(0.01), r, day.trunc(0.01), hour, dFactor.trunc(0.01)).postln;});*/
             syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve(mn, 60, 0.01, 0.5), \rate, dFactor, \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor * 25 * rrand(0.9, 1.1), \index, min(10, r), \fmAmp, r.lincurve( mn, 60, 0.01, 0.25), \modfreq, d/r);
 
             0.025.wait;
@@ -145,6 +145,7 @@
         buf = ~grainBuffer;
         buf.zero;
         s.sync;
+        "pre Syn \53".postln;
         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.1, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         data.do({

@@ -2,7 +2,7 @@
     s.bind {
         // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
         ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  2);
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
         ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
         ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
         ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
@@ -233,36 +233,41 @@
 
 
 //restarts play if new MIDI key is pressed with User Sounds
-~onOffUser = {
+~onOffUser = { // oder auf holdNote..
     |act, dictName |
-    var rout, dictVar;
+    var dictVar;
     case
-    {dictName == "midi"}{dictVar = ~midi}
+    {dictName == "midi"}{dictVar = ~midi; ~activeRoutines.put(dictName.asSymbol, ())}
     {dictName == "patFuncs"}{dictVar = ~patFuncs}
-    {dictName == "live"}{dictVar = ~live}
+    {dictName == "live"}{dictVar = ~live;  ~activeRoutines.put(dictName.asSymbol, ())}
     {true}{nil};
+    dictName = dictName.asSymbol;
     if (act == 1,
         {
-            MIDIdef.noteOn(\onoffUserOn, {
+            MIDIdef.noteOn(\holdNoteOn, {
                 |vel, num|
+                var rout;
                 if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
                 if (dictVar.keys.includes(num.asSymbol),{
-                    rout = Routine(dictVar[num.asSymbol]).play
+                    ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
+                    " ~activeRoutines % ".format(~activeRoutines).postln;
+                  ~activeRoutines[dictName][num.asSymbol].play;
                 });
                 "on off % playing/restart routine %".format(dictName, num).postln;
             });
-            MIDIdef.noteOff(\onoffUserOff, {
+            MIDIdef.noteOff(\holdNoteOff, {
                 |vel, num|
+                var rout = ~activeRoutines[dictName][num.asSymbol];
                 if (dictVar.keys.includes(num.asSymbol),{
                     rout.stop;
                     ~activeSynths[num.asSymbol].free;
                     "% stopped routine %  released  %".format(dictName, num, ~activeSynths[num.asSymbol]).postln;
                 });
             });
-        },{
+        }
+      ,{
             "freeing MIDIdefs".postln;
-            [\onoffUserOn, \onoffUserOff].do{|n| MIDIdef(n).free};
-
+           MIDIdef.freeAll;
         }
     )
 

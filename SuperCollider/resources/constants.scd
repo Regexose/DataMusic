@@ -12,11 +12,12 @@
 ~currentSample = Dictionary.new;
 ~vowelDict = Dictionary.new;
 ~vowelIndex = 0;
-~dataImages = ();
+//~dataImages = ();
 ~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
 ~currentData = ();
+~activeRoutines = ();
 
 ~dataGroups = (
     \cmsm : (//Cchicken manure mit WHC 50, 70, 90%

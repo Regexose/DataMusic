@@ -1,5 +1,7 @@
 Window.closeAll;
 s.defaultGroup
+
+
 ~voc.outbus.scope
 (
 w = Window.new("I catch keystrokes");
@@ -101,5 +103,4 @@ PeakMonitor(~master)
 
 Instr.at([\busfx, \singleDelay]).listArgs
 ~mixer = nil
-
-
+~activeRoutines.live

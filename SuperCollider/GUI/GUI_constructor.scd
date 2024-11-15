@@ -91,18 +91,18 @@ GUI mit verschiedenen SubWindows
 
     modcase = case
     {mode=="midi"}{
-        toggles = funcs.values.asArray.collect({
-            |func, i|
-            var names = midikeys.asArray;
+        //dies schaltet nur die Mididefs an oder aus
+        toggles = funcs.keys.asArray.collect({
+            |f, i|
+            var keys = midikeys.asArray;
             Button.new(bounds: Rect(40, 20))
             .states_([
-                [(names[i] ++ "__ON"), Color.red], [(names[i] ++ "__OFF"), Color.black
+                [(f.asString ++ "__ON"), Color.red], [(f.asString ++ "__OFF"), Color.black
                 ],
             ])
-            .mouseDownAction_({|btn| "switch %  to %".format( names[i], btn.value).postln; func.(btn.value, name)})
+            .mouseDownAction_({|btn| "switch %  to %".format( f, btn.value).postln; funcs[f].(btn.value, name)})
             .focusColor_(Color.blue)
-            .valueAction_(1)
-            .autoRememberPosition(\select, \w)
+            .valueAction_(1);
 
             //.action_({|btn| ; func.(btn.value) })
         })
