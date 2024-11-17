@@ -171,7 +171,71 @@
 
     },
 
-    \55: {
+    \55 : {// für Vowel hard choose
+        var midikey = \55, syn, data, reduce, buf, mn, mx;
+        #mn, mx = [0.02, 0.2];
+        reduce= ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        data = data.normalize(mn, mx);
+        buf = ~currentSample[\base].normalize;
+        syn = Synth(\vowelklank, [\buf, buf, \ffreq, 4000, \amp, 0.2, \rls, 1.0, \out, ~voc.inbus, \outdry, ~dryBus]);
+        s.sync;
+        ~activeSynths.put(midikey, syn);
+        data.do({
+            |d, i|
+            // welche Werte werden für Vowels benutzt?
+            var key = d.linlin(mn, mx, 1, 24).asInteger;
+            syn.set(\vow, key, \freqScale, d.linlin(mn, mx, 0.1, 1.0));
+
+            d.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
+        });
+        syn.release(2);
+
+    },
+
+   \57 : {// für Vowel Synthesis
+        var syn, buf, data, mean, reduce, range, mn, mx,  midikey=\57;
+        reduce= ~currentData[midikey][\reduce];
+        #mn, mx = [30, 70];
+        data = ~currentData[midikey][\data].asArray.normalize(mn, mx);
+         ~currentData.globalKey = midikey;
+
+        mean = data.mean;
+        range = mean / 30;
+        buf = ~currentSample[\base].normalize;
+        syn = Synth(\oddeven, [\buf, buf, \vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~voc.inbus, \outdry, ~dryBus]);
+        s.sync;
+        ~activeSynths.put(midikey, syn);
+        data.do({
+            |d, i|
+            // Vowels werden mit key geändert
+            var c, key = d.linlin(1, 100, 0, 20).asInteger;
+           //"key % d %  i % ".format(key, d, i).postln;
+            syn.set(\baseFreq, d.linlin(mn, mx, 800, 820), \ampFreq, d.linlin(mn, mx, 0.4, 5.5));
+            c = case
+            {(d >= (mean - range)) && (d<= (data.mean + range))}{
+                syn.set(\vow, [0, 1, 2, 3, 4].choose, \bright, d.linlin(mn, mx, 0.1, 0.4), \envScale, d.linlin(mn, mx, 0.1, 0.4));
+            }
+            {d < (mean -range)}{
+                syn.set(\vow, (5..9).choose,\bright, d.linlin(mn, mx, 0.5, 1.00), \envScale, d.linlin(mn, mx, 0.41, 1.0));
+            }
+            {(d > (mean + range))}{
+                syn.set(\vow, (10..14).choose, \bright, d.linlin(mn, mx, 1.01, 2.5), \envScale, d.linlin(mn, mx, 1.01, 1.9))
+            }
+            {true}{"no case".postln};
+           0.06.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
+        });
+        syn.release(2);
+
+    },
+
+);
+
+~midi2 = (
+      \55: {
         // vowel trig
         var midikey= \55, data, reduce, buf1, buf2, buf3, syn1, mean, range, speed, mn, mx;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
@@ -218,74 +282,14 @@
 
     },
 
-    \57 : {// für Vowel hard choose
-        var midikey = \57, syn, data, reduce, buf, mn, mx;
-        #mn, mx = [0.02, 0.2];
-        reduce= ~currentData[midikey][\reduce];
-        data = ~currentData[midikey][\data].asArray;
-        ~currentData.globalKey = midikey;
-        data = data.normalize(mn, mx);
-        buf = ~currentSample[\base].normalize;
-        syn = Synth(\vowelklank, [\buf, buf, \ffreq, 4000, \amp, 0.2, \rls, 1.0, \out, ~voc.inbus, \outdry, ~dryBus]);
-        s.sync;
-        ~activeSynths.put(midikey, syn);
-        data.do({
-            |d, i|
-            // welche Werte werden für Vowels benutzt?
-            var key = d.linlin(mn, mx, 1, 24).asInteger;
-            syn.set(\vow, key, \freqScale, d.linlin(mn, mx, 0.1, 1.0));
-
-            d.wait;
-            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
-        });
-        syn.release(2);
-
-    },
-
-   \58 : {// für Vowel Synthesis
-        var syn, data, mean, reduce, range, mn, mx,  midikey=\58;
-        reduce= ~currentData[midikey][\reduce];
-        #mn, mx = [30, 70];
-        data = ~currentData[midikey][\data].asArray.normalize(mn, mx);
-         ~currentData.globalKey = midikey;
-
-        mean = data.mean;
-        range = mean / 30;
-        syn = Synth(\oddeven, [\vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~voc.inbus, \outdry, ~dryBus]);
-        s.sync;
-        ~activeSynths.put(\58, syn);
-        data.do({
-            |d, i|
-            // Vowels werden mit key geändert
-            var c, key = d.linlin(1, 100, 0, 20).asInteger;
-           //"key % d %  i % ".format(key, d, i).postln;
-            syn.set(\baseFreq, d.linlin(mn, mx, 800, 820), \ampFreq, d.linlin(mn, mx, 0.4, 5.5));
-            c = case
-            {(d >= (mean - range)) && (d<= (data.mean + range))}{
-                syn.set(\vow, [0, 1, 2, 3, 4].choose, \bright, d.linlin(mn, mx, 0.1, 0.4), \envScale, d.linlin(mn, mx, 0.1, 0.4));
-            }
-            {d < (mean -range)}{
-                syn.set(\vow, (5..9).choose,\bright, d.linlin(mn, mx, 0.5, 1.00), \envScale, d.linlin(mn, mx, 0.41, 1.0));
-            }
-            {(d > (mean + range))}{
-                syn.set(\vow, (10..14).choose, \bright, d.linlin(mn, mx, 1.01, 2.5), \envScale, d.linlin(mn, mx, 1.01, 1.9))
-            }
-            {true}{"no case".postln};
-           0.06.wait;
-            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
-        });
-        syn.release(2);
-
-    },
-
-    \60 : {
+    \58 : {
         //MikrobenAktivität && Temperatur
-        var syn, data, compressed, normalized, reduce, lastPos, mn, mx, avg, borders;
-        reduce= ~currentData[\60][\reduce];
+        var midikey=\58, syn, data, compressed, normalized, reduce, lastPos, mn, mx, avg, borders;
+        reduce= ~currentData[midikey][\reduce];
         //# in, out = [~currentData.dataIn, ~currentData.dataOut];
-        data = ~currentData[\60][\data].asArray;
-         ~currentData.globalKey = \60;
-        lastPos =  ~currentData[\60][\position];
+        data = ~currentData[midikey][\data].asArray;
+         ~currentData.globalKey = midikey;
+        lastPos =  ~currentData[midikey][\position];
         //compressed = data.select({|item, i| i%reduce == 0});
         #mn, mx = [0, 40];
         normalized = data.normalize(mn, mx);
@@ -294,7 +298,7 @@
         /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
         wait(0.02);*/
         syn = Synth(\crisps, ~synthArgs.nematode);
-        ~activeSynths.put(\60, syn);
+        ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
             var c;
@@ -317,16 +321,16 @@
 
         });
         syn.release(2);
-        ~currentData[\60][\position] = 0;
+        ~currentData[midikey][\position] = 0;
     },
 
-    \62 : {
+    \60 : {
         // C-N Akkord
-        var syn, data, compressed, normalized, reduce, oldSize, lastPos, mn, mx;
-        reduce= ~currentData[\62][\reduce];
-        data = ~currentData[\62][\data].asArray;
-        ~currentData.globalKey = \62;
-        lastPos =  ~currentData[\62][\position];
+        var syn, midikey=\60, data, compressed, normalized, reduce, oldSize, lastPos, mn, mx;
+        reduce= ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        lastPos =  ~currentData[midikey][\position];
         //compressed = data.select({|item, i| i%reduce == 0});
           oldSize = data.size; //logic for pause/resume
         #mn, mx = [-25.0, 25.0];
@@ -342,14 +346,12 @@
             "original data  % at %".format(d, i).postln;
             syn.setn(\mods, Array.fill(3,  {|n| d * (n+1)}),
                 \freq, [53, 49, 51].midicps * [[0.8, 1.2], [0.5, 1.9], [0.95, 1.05] ].collect({|r| {d.linlin(mn, mx, r[0], r[1])}}));
-            ~currentData[\62][\position] = i + lastPos;
+            ~currentData[midikey][\position] = i + lastPos;
             0.1.wait;
             defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
 
         });
         syn.release(2);
-        ~currentData[\62][\position] = 0;
+        ~currentData[midikey][\position] = 0;
     },
-
-
 );

@@ -3,7 +3,7 @@
 SynthDef(\bpfstack, {
     |vow=0, buf=0|
     // für flexible Vokale: https://scsynth.org/t/dictionary-keys-as-synthdef-arguments/5886/4
-    var sig, sig2, env, ptr, array,  vowel, baseIndex, freqs, widths, dBs;
+    var sig, dry, env, ptr, array,  vowel, baseIndex, freqs, widths, dBs;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
   /*  "vow = % baseIndex = % ".format(vow, baseIndex).postln;
     "vowel Array  %".format(~vowelArray[15 + (0..4)]).postln;*/
@@ -16,14 +16,15 @@ SynthDef(\bpfstack, {
     sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel, \freqMods.kr(0.5), \ampMods.kr(0.5),  \widthMods.kr(1));
     sig = sig * \amp.kr(0.4) * \fade.kr(1); // * env;
     sig = RLPF.ar(sig, \ffreq.kr(4000));
-    sig2 = BufRd.ar(1, buf, ptr); // * env;
+    dry = BufRd.ar(1, buf, ptr); // * env;
+    sig = (sig * (1.0 - \drywet.kr(0))) + (dry * \drywet.kr(0));
     Out.ar(\out.kr(0), sig!2);
-    Out.ar(\outdry.kr(0), sig2);
+    Out.ar(\outdry.kr(0), dry);
 }).add;
 
 SynthDef(\vowelklank, {
 	|vow=1, freqScale=0.1, decayScale=0.1, buf=0, gate=1|
-    var sig, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
+    var sig, dry, ptr, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
@@ -41,10 +42,13 @@ SynthDef(\vowelklank, {
 	], exc, freqscale: freqScale,  decayscale: decayScale);
 
     sig = RLPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));
-	sig = Pan2.ar(sig, \pan.kr(0));
-	sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
+	sig = Pan2.ar(sig, \pan.kr(0)) * env;
+    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
+    dry = BufRd.ar(1, buf, ptr);
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+	sig = sig * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
-    Out.ar(\outdry.kr(2), exc);
+    //Out.ar(\outdry.kr(2), exc);
 }).add;
 
 SynthDef(\voweltrig, {
@@ -74,17 +78,15 @@ SynthDef(\voweltrig, {
 }).add;
 
 SynthDef(\oddeven, {
-    |baseFreq = 100, vowelIndex|
-	var numFreqs = 19;
-	//var startFilterOrder = 0.1;
-	var startFilterOrders = NamedControl.kr(\startFilterOrders, {exprand(0.1, 3.3)}!5);
-	//var stopFilterOrders = [0.8, 0.65, 0.5, 0.35, 0.1];
-	var stopFilterOrders = NamedControl.kr(\stopFilterOrders, [2.0, 4.0, 0.25, 0.5, 3.25]);
-	var sig, baseIndex, vowel, selectfreqs, selectamps, selectwidths, freqs, evenFreqs, oddFreqs, amps, evenAmps, oddAmps, orders;
-	var evenAmpMod = SinOsc.kr(\ampFreq.kr(1)).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
-	var oddAmpMod = SinOsc.kr(freq: 1, phase: pi).exprange(\modRange1.kr(0.04), \modRange2.kr(0.6)).sqrt;
-    //var ampEnv = Env.perc(\atk.kr( 0.01),\rls.kr( 0.2), curve: \crv.kr(0)).kr(doneAction: 2);
-
+    |buf=0, baseFreq = 100, vowelIndex, modRange1=0.04, modRange2=0.6|
+    var numFreqs = 19;
+    var startFilterOrders = NamedControl.kr(\startFilterOrders, {exprand(0.1, 3.3)}!5);
+    var stopFilterOrders = NamedControl.kr(\stopFilterOrders, [2.0, 4.0, 0.25, 0.5, 3.25]);
+    var sig, exc, baseIndex, vowel, selectfreqs, selectamps, selectwidths, freqs, evenFreqs, oddFreqs, amps, evenAmps, oddAmps, orders;
+    var evenAmpMod = SinOsc.kr(\ampFreq.kr(1)).exprange(modRange1, modRange2).sqrt;
+    var oddAmpMod = SinOsc.kr(freq: 1, phase: pi).exprange(modRange1, modRange2).sqrt;
+    var dry, ptr;
+    var env = EnvGen.kr( Env.asr(\atk.kr( 0.01), 1, \rls.kr( 0.7), \crv.kr(0)), \gate.kr(1), doneAction:2);
 
     baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
     selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray);
@@ -92,25 +94,26 @@ SynthDef(\oddeven, {
     selectamps = Select.kr(baseIndex + (10..14), ~vowelArray);
     vowel = Vowel.basicNew(selectfreqs, selectamps, selectwidths).brightenExp(\bright.kr(1));
 
-	evenFreqs = ((1, 3 .. numFreqs) * baseFreq);
-	oddFreqs = ((2, 4 .. numFreqs) * baseFreq);
+    evenFreqs = ((1, 3 .. numFreqs) * baseFreq);
+    oddFreqs = ((2, 4 .. numFreqs) * baseFreq);
 
-	// there are 5 formants in each vowel, ergo 5 filter orders may be provided
-	orders = stopFilterOrders.collect{|stop, i|
+    // there are 5 formants in each vowel, ergo 5 filter orders may be provided
+    orders = stopFilterOrders.collect{|stop, i|
         //"Env % start: % , stop: %  dur: %".format(i, startFilterOrders[i], stopFilterOrders[i],  (2 * i )).postln;
         stop * EnvGen.kr(Env([startFilterOrders[i]/stop, 1.0] , (2 * i), curve: 3), timeScale: \envScale.kr(1));
-
-	};
-
-	evenAmps = vowel.ampAt(evenFreqs, orders ) * evenAmpMod;
+    };
+    evenAmps = vowel.ampAt(evenFreqs, orders ) * evenAmpMod;
     oddAmps = vowel.ampAt(oddFreqs, orders) * oddAmpMod;
+    freqs = (evenFreqs ++ oddFreqs);
+    amps = evenAmps ++ oddAmps;
+    amps = amps.normalizeSum; // tame amplitudes
+     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
+    sig = DynKlank.ar(`[freqs, amps, nil], exc, \freqScale.kr(0.1) );
 
-	freqs = (evenFreqs ++ oddFreqs);
-	amps = evenAmps ++ oddAmps;
-
-	amps = amps.normalizeSum; // tame amplitudes
-
-    sig = DynKlang.ar(`[freqs, amps, nil], \freqScale.kr(0.1) ) * \amp.kr(0.1) ;
+    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
+    dry = BufRd.ar(1, buf, ptr);
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig * \amp.kr(0.2) * \fade.kr(0.4) * env;
     Out.ar(\out.kr(0), sig!2);
 }).add;
 
@@ -222,7 +225,7 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 // Granular Synth
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
-	var sig, fm, env, mic, pos, ptr, buf=\buf.kr(0);
+	var sig, dry, fm, env, mic, pos, ptr, buf=\buf.kr(0);
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	mic = SoundIn.ar(0, \in.kr(0));
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
@@ -247,17 +250,19 @@ SynthDef(\tgrains_live, {
     fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
     sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
     sig = Splay.ar([sig, fm]);
-	sig = sig * env * \amp.kr(1);
+	sig = sig * env * \amp.kr(1) * \fade.kr(1);
+    dry = BufRd.ar(1, buf, ptr) * env ;
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
 	Out.ar(\out.kr(0), sig);
 
 }).add;
 
 SynthDef(\tgrains, {
-	var sig, fm, ptr, env, buf;
+	var sig, dry, fm, ptr, env, buf;
     buf = \buf.kr(0);
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-   // sig2 = BufRd.ar(1, buf, ptr) * env ;
+    dry = BufRd.ar(1, buf, ptr) * env ;
 	sig = TGrains2.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
@@ -276,8 +281,9 @@ SynthDef(\tgrains, {
     );
     fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
     sig = Splay.ar([sig, fm]);
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
-	sig = sig * env * \amp.kr(0.4);
+    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25) * env;
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+	sig = sig  * \amp.kr(0.4) * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -285,7 +291,7 @@ SynthDef(\tgrains, {
 // Scrubbing GrainSynth von Tgrains2 helpfile
 SynthDef(\grainScrub, {
     |buf=0|
-    var sig, sig2, tr, trSpec, dur, clk, posSpec, pos, pan, env;
+    var sig, dry, tr, trSpec, dur, clk, posSpec, pos, pan, env;
     trSpec =  [8, 60, \lin].asSpec;
     posSpec = [0, BufDur.kr(buf), \lin].asSpec;
     pos = posSpec.map(\pos.kr(0));
@@ -306,17 +312,18 @@ SynthDef(\grainScrub, {
         att: dur * 0.3,
         dec: dur * 0.5);
     env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    sig = sig * \amp.kr(0.3) * \fade.kr(1) * env;
-    sig = RLPF.ar(sig, \ffreq.kr(1500), \rq.kr(0.9));
-    sig2 = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5) * env;
+    sig = RLPF.ar(sig, \ffreq.kr(1500), \rq.kr(0.9)) * env;
+    dry = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig * \amp.kr(0.3) * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
-    Out.ar(\outdry.kr(3), sig2);
+    //Out.ar(\outdry.kr(3), sig2);
 }).add;
 
 SynthDef(\livegran, {
     |buf=0, durRand=1, rateRand=1, panRand=0, dens=40, ptrBus=0, ptrSampleDelay=20000,
     ptrRandSamples= 3000, minPtrDelay=1000, maxGrainDur, grainEnv = (-1)|
-    var sig, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay;
+    var sig, dry, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay;
 
     env = EnvGen.kr(Env.asr(\atk.kr(1), 1, \rls.kr(1)), \gate.kr(1), doneAction:2);
     densCtrl = Select.ar(\sync.kr(1), [Dust.ar(dens), Impulse.ar(dens)]);
@@ -343,16 +350,19 @@ SynthDef(\livegran, {
     );
     sig = RLPF.ar( sig, \ffreq.kr(4000), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.5);
+    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
+    dry = BufRd.ar(1, buf, ptr);
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     Out.ar(\out.kr(0), sig);
 }).add;
 
 SynthDef(\br, {
 	arg buf=0, rate=1, start=0, end;
-	var sig, sig2, ptr, ptr2, env;
+	var sig, dry, ptr, ptr2, env;
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
 	ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate * \harm.kr(0).midiratio, start, end);
 	ptr2 = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    sig2 = BufRd.ar(1, buf, ptr2) * env;
+    dry = BufRd.ar(1, buf, ptr2) * env;
 	sig = 2.collect({
 		var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
 		lag = lag * s.sampleRate;
@@ -360,23 +370,25 @@ SynthDef(\br, {
 	}).sum ;
 	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
 	Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(0), sig2);
+	Out.ar(\outdry.kr(0), dry);
 }).add;
 
 SynthDef(\brsaw, {
 	arg buf=0, rate=1, start=0, end;
-	var sig, sig2, ptr, ptr2, env;
+	var sig, dry, ptr, ptr2, env;
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     // garantiert die Originalgeschwindigkeit, \freq ist speedcontrol
     ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
-    sig2 = BufRd.ar(1, buf, ptr) * env;
+    dry = BufRd.ar(1, buf, ptr) * env;
 	sig = BufRd.ar(1, buf, ptr );
 	sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
-    sig = Pan2.ar(sig, \pan.kr(0));
-	sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
+    sig = Pan2.ar(sig, \pan.kr(0)) * env;
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(0), sig2);
+	Out.ar(\outdry.kr(0), dry);
 }).add;
 
 

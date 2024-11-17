@@ -48,43 +48,6 @@ MIDIIn.connectAll;
 
 );
 
-
-//Aktivieren von Fadern für die Lautstärke Regelung der midikeys
-~live.keys.asArray.sort.do({
-    |ch, i|
-    var slider, knobs, slideName, knobName, offset=89;
-    slideName = ("slide" ++ ch).asSymbol;
-    knobName = ("knob" ++ ch).asSymbol;
-    //"chan   %    and i   %  ".format(ch, i).postln;
-    slider = MIDIdef.cc(slideName, {
-        arg ...args;
-        args[..2].postln;
-        if (i < 8, {
-            "set % to %".format(ch.asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
-            ~activeSynths[ch.asSymbol].set(\fade, args[0].linlin(0, 127, 0.0, 1.0)) ;
-        })
-    },
-    i,
-    1
-    );
-    knobs = MIDIdef.cc(knobName, {
-        arg ...args;
-        args[..2].postln;
-        if (i < 8, {
-            "set % to %".format("dry", args[0].linlin(0, 127, 0.0, 1.0)).postln;
-            //~activeSynths[ch.asSymbol].set(\fade2, args[0].linlin(0, 127, 0.0, 1.0)) ;
-            ~dry.set(\fade, args[0].linlin(0, 127, 0.0, 1.0)) ;
-
-        })
-    },
-    i+offset,
-    1
-    );
-
-});
-
-
-
 PathName(~samplesPath).entries.do({
     arg subfolder;
     var sampleDict=(), sample;

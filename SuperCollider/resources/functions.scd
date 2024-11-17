@@ -50,6 +50,32 @@
     data;
 };
 
+// Allgemeine Funktion zum Zuweisen von Slidern und Knobs
+~makeCC = {
+    |funcDict|
+    funcDict.keys.asArray.sort.do({
+        |key, idx|
+        (\fade: 0, \pan: 57, \drywet: 89, \delay: 97).keysValuesDo({
+            |cName, off|
+            var control, defName;
+            defName = (cName.asString ++ "_" + key).asSymbol;
+            control = MIDIdef.cc(defName, {
+                arg ...args;
+                args[..2].postln;
+                if (idx <= 8, {
+                    "set % to %".format((cName ++ key).asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+                    ~activeSynths[key.asSymbol].set(cName, args[0].linlin(0, 127, 0.0, 1.0)) ;
+                })
+            },
+            idx + off,
+            1
+            );
+        })
+    });
+};
+
+
+
 ~makeWaveTable = {
     |size=4096, external, name|
     var sig, wt, buf;
@@ -232,8 +258,8 @@
 };
 
 
-//restarts play if new MIDI key is pressed with User Sounds
-~onOffUser = { // oder auf holdNote..
+//restarts play while MIDI key is pressed
+~holdNote = { // oder auf holdNote..
     |act, dictName |
     var dictVar;
     case
@@ -241,9 +267,11 @@
     {dictName == "patFuncs"}{dictVar = ~patFuncs}
     {dictName == "live"}{dictVar = ~live;  ~activeRoutines.put(dictName.asSymbol, ())}
     {true}{nil};
+
     dictName = dictName.asSymbol;
     if (act == 1,
         {
+            ~makeCC.(dictVar);
             MIDIdef.noteOn(\holdNoteOn, {
                 |vel, num|
                 var rout;
@@ -336,7 +364,7 @@
 
 
 //always plays the complete data array with User Sounds
-~oneShotUser = {
+~oneShot = {
     |act|
     var rout;
     if (act == 1,
