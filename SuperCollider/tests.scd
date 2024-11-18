@@ -1,8 +1,17 @@
 Window.closeAll;
 s.defaultGroup
 
+~sends.ch1_snd_dela.level
+~ch1.outbus
+~voc.postSends[2].level
+~fx.delay.gui
+~fx.delay.synth.run(false)
+~fx.delay.synth.run(true)
+~delay.inbus
+SynthDescLib.at(\livegran).controlDict
 
-~voc.outbus.scope
+
+
 (
 w = Window.new("I catch keystrokes");
 w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;

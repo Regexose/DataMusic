@@ -317,7 +317,6 @@ SynthDef(\grainScrub, {
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig * \amp.kr(0.3) * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
-    //Out.ar(\outdry.kr(3), sig2);
 }).add;
 
 SynthDef(\livegran, {
@@ -348,12 +347,13 @@ SynthDef(\livegran, {
         panCtrl,
         grainEnv
     );
-    sig = RLPF.ar( sig, \ffreq.kr(4000), \rq.kr(0.5));
-    sig = sig * env * \amp.kr(0.5);
+    sig = RLPF.ar( sig, \ffreq.kr(4000), \rq.kr(0.5)) * env ;
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr);
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig * \amp.kr(0.5) * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
+    Out.ar(\outfx.kr(0), sig * \send.kr(0));
 }).add;
 
 SynthDef(\br, {
@@ -477,10 +477,10 @@ Instr(#[\busfx, \companderd], { arg bus, numChannels, thresh, slopeBelow, slopeA
  	#[0.1, 10, \exponential, 0, 1]]
  );
 
-Instr(#[\busfx, \singleDelay], { arg bus, numChan, delayClass, maxTime, time, mul, add;
-	delayClass.ar(In.ar(bus, numChan), maxTime, time, mul, add)
-}, [\audiobus, ObjectSpec(1), ObjectSpec(DelayL), #[0.25, 20], #[0.0001, 20]]
-);
+Instr(#[\busfx, \singleDelay], { arg bus, numChan, maxTime, time, decay, mul, add;
+   CombL.ar(In.ar(bus, numChan), maxTime, time, decay, mul, add)
+}, [\audiobus, ObjectSpec(1),  #[0.1, 20], #[0.0001, 20], #[0.0001, 20], #[0.0001, 2.0]]);
+
 
 //more a delay than reverb
 Instr(#[\busfx, \rvb_allpass], { arg bus, numChan, maxDelay, preDelay, decay,

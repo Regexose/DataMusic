@@ -25,11 +25,11 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 );
 
 Window.closeAll;
-~midiSelectors = ~buildSelectors.("midi", midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+/*~midiSelectors = ~buildSelectors.("midi", midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");*/
 
-/*~liveSelectors = ~buildSelectors.("live", livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+~liveSelectors = ~buildSelectors.("live", livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
 
-~patSelectors = ~buildSelectors.("patFuncs", patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");*/
+~patSelectors = ~buildSelectors.("patFuncs", patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
 
 ~dataView = ~buildDataView.(\soilmoisture1, 10);
 CmdPeriod.add({ [~selectors, ~dataView].close});

@@ -6,12 +6,16 @@
         ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
         ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
         ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
+        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus:  ~master);
+        ~ch6 = MixerChannel(\ch6, s, 2, 2, outbus:  ~master);
+        ~ch7 = MixerChannel(\ch7, s, 2, 2, outbus:  ~master);
+        ~ch8 = MixerChannel(\ch8, s, 2, 2, outbus:  ~master);
         ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  ~master);
         ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
         ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
         ~grainGrp = MixerChannel(\grain, s, 2, 2, outbus: ~master);
         ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
-        ~chorus = MixerChannel(\chrs, s, 2, 2, outbus: ~master);
+        ~delay = MixerChannel(\delay, s, 2, 2, outbus: ~master);
         ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
     };
 };
@@ -55,7 +59,7 @@
     |funcDict|
     funcDict.keys.asArray.sort.do({
         |key, idx|
-        (\fade: 0, \pan: 57, \drywet: 89, \delay: 97).keysValuesDo({
+        (\fade: 0, \pan: 57, \drywet: 89).keysValuesDo({
             |cName, off|
             var control, defName;
             defName = (cName.asString ++ "_" + key).asSymbol;
@@ -70,8 +74,28 @@
             idx + off,
             1
             );
-        })
+        });
     });
+
+    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8].do({
+        |ch, idx|
+        (\send: 97, \pan: 57).keysValuesDo({
+            |cName, off|
+            var control, defName, sendName;
+            defName = ( cName ++ "_" ++ ch.name).asSymbol;
+            sendName = (ch.name ++ "_snd_dela").asSymbol;
+            "defname % sendname % ".format(defName, sendName).postln;
+            control = MIDIdef.cc(defName, {
+                arg ...args;
+                args[..2].postln;
+                "set send of % to %".format(ch.name.asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+                ~sends[sendName].level = args[0].linlin(0, 127, 0.0, 1.0);
+            },
+            idx + off,
+            1
+            )
+        });
+    })
 };
 
 
@@ -181,7 +205,7 @@
     \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
     //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
     \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
-    \chor : ~chorus.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus])),
+    \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\delay])),
     \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
     \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
     \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
