@@ -48,7 +48,6 @@ SynthDef(\vowelklank, {
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
 	sig = sig * \amp.kr(0.2) * \fade.kr(0.4);
 	Out.ar(\out.kr(0), sig);
-    //Out.ar(\outdry.kr(2), exc);
 }).add;
 
 SynthDef(\voweltrig, {
@@ -381,14 +380,13 @@ SynthDef(\brsaw, {
 	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     // garantiert die Originalgeschwindigkeit, \freq ist speedcontrol
     ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
-    dry = BufRd.ar(1, buf, ptr) * env;
 	sig = BufRd.ar(1, buf, ptr );
 	sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
     sig = Pan2.ar(sig, \pan.kr(0)) * env;
+    dry = BufRd.ar(1, buf, ptr) * env;
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig * \amp.kr(0.3) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
-	Out.ar(\outdry.kr(0), dry);
 }).add;
 
 

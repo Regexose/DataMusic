@@ -20,6 +20,90 @@
     };
 };
 
+~fxOnOff = {
+    |on|
+    if (on==true, {
+            ~fx = (
+    \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
+    //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
+    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus2])),
+    \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\simple_delay])),
+    \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
+    \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch4_cmp : ~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch5_cmp : ~ch5.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch6_cmp : ~ch6.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch7_cmp : ~ch7.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \ch8_cmp : ~ch8.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
+    \voc_cmp : ~voc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
+    \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
+    \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
+)
+    }, {
+        ~fx.keys.do({
+            |k|
+            ~toggleFx.(k, true)
+        })
+    })
+
+
+};
+
+~toggleFx = {
+    |key, on|
+    if (on, {~fx[key].synth.run(false)}, {~fx[key].synth.run(true);})
+};
+
+// Allgemeine Funktion zum Zuweisen von Slidern und Knobs
+~makeCC = {
+    |funcDict, chanDict|
+    "chandict %".format(chanDict).postln;
+    funcDict.keys.asArray.sort.do({
+        |key, idx|
+        (\fade: 0, \pan: 57, \drywet: 89).keysValuesDo({
+            |cName, off|
+            var control, defName;
+            defName = (cName.asString ++ "_" + key).asSymbol;
+            control = MIDIdef.cc(defName, {
+                arg ...args;
+                args[..2].postln;
+                if (idx <= 8, {
+                    "set % to %".format((cName ++ key).asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+                    ~activeSynths[key.asSymbol].set(cName, args[0].linlin(0, 127, 0.0, 1.0)) ;
+                })
+            },
+            idx + off,
+            1
+            );
+        });
+    });
+
+    chanDict.keys.asArray.sort.do({
+        |key, idx|
+        var chan, send;
+        chan = chanDict[key][0];
+        send = chanDict[key][1];
+        (\send: 97, \pan: 57).keysValuesDo({
+            |cName, offset|
+            var control, defName, sendName;
+            defName = ( cName ++ "_" ++ key).asSymbol;
+            sendName = (key ++ send).asSymbol;
+            "defname % sendname % ".format(defName, sendName).postln;
+            control = MIDIdef.cc(defName, {
+                arg ...args;
+                args[..2].postln;
+                "set send of % to %".format(key, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+                ~sends[sendName].level = args[0].linlin(0, 127, 0.0, 1.0);
+            },
+            idx + offset,
+            1
+            )
+        });
+    })
+};
+
 ~createData = {
     |dataPath, fileName|
     var data, csvFile, flopped, headers;
@@ -54,49 +138,6 @@
     data;
 };
 
-// Allgemeine Funktion zum Zuweisen von Slidern und Knobs
-~makeCC = {
-    |funcDict|
-    funcDict.keys.asArray.sort.do({
-        |key, idx|
-        (\fade: 0, \pan: 57, \drywet: 89).keysValuesDo({
-            |cName, off|
-            var control, defName;
-            defName = (cName.asString ++ "_" + key).asSymbol;
-            control = MIDIdef.cc(defName, {
-                arg ...args;
-                args[..2].postln;
-                if (idx <= 8, {
-                    "set % to %".format((cName ++ key).asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
-                    ~activeSynths[key.asSymbol].set(cName, args[0].linlin(0, 127, 0.0, 1.0)) ;
-                })
-            },
-            idx + off,
-            1
-            );
-        });
-    });
-
-    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8].do({
-        |ch, idx|
-        (\send: 97, \pan: 57).keysValuesDo({
-            |cName, offset|
-            var control, defName, sendName;
-            defName = ( cName ++ "_" ++ ch.name).asSymbol;
-            sendName = (ch.name ++ "_snd_dela").asSymbol;
-            "defname % sendname % ".format(defName, sendName).postln;
-            control = MIDIdef.cc(defName, {
-                arg ...args;
-                args[..2].postln;
-                "set send of % to %".format(ch.name.asString, args[0].linlin(0, 127, 0.0, 1.0)).postln;
-                ~sends[sendName].level = args[0].linlin(0, 127, 0.0, 1.0);
-            },
-            idx + offset,
-            1
-            )
-        });
-    })
-};
 
 
 
@@ -198,36 +239,8 @@
     ~cursor.refresh;
 };
 
-~fxOnOff = {
-    |on|
-    if (on==true, {
-            ~fx = (
-    \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
-    //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
-    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus2])),
-    \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\simple_delay])),
-    \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
-    \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch4_cmp : ~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch5_cmp : ~ch5.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch6_cmp : ~ch6.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch7_cmp : ~ch7.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch8_cmp : ~ch8.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \voc_cmp : ~voc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-    \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
-    \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
-)
-    }, {
-        ~fx.keys.do({
-            |k|
-            ~toggleFx.(k, true)
-        })
-    })
 
 
-};
 
 //initialize currentData and currentSample
 ~initCurrent = {
@@ -261,10 +274,6 @@
 
 
 
-~toggleFx = {
-    |key, on|
-    if (on, {~fx[key].synth.run(false)}, {~fx[key].synth.run(true);})
-};
 
 
 
@@ -288,17 +297,17 @@
 //restarts play while MIDI key is pressed
 ~holdNote = { // oder auf holdNote..
     |act, dictName |
-    var dictVar;
+    var dictVar, dictChan;
     case
-    {dictName == "midi"}{dictVar = ~midi; ~activeRoutines.put(dictName.asSymbol, ())}
-    {dictName == "patFuncs"}{dictVar = ~patFuncs}
-    {dictName == "live"}{dictVar = ~live;  ~activeRoutines.put(dictName.asSymbol, ())}
+    {dictName == "midi"}{dictVar = ~midi; dictChan = ~midiChannels; ~activeRoutines.put(dictName.asSymbol, ())}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs; dictChan = ~patternChannels;}
+    {dictName == "live"}{dictVar = ~live; dictChan = ~liveChannels; ~activeRoutines.put(dictName.asSymbol, ())}
     {true}{nil};
 
     dictName = dictName.asSymbol;
     if (act == 1,
         {
-            ~makeCC.(dictVar);
+            ~makeCC.(dictVar, dictChan);
             MIDIdef.noteOn(\holdNoteOn, {
                 |vel, num|
                 var rout;

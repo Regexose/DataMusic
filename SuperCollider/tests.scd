@@ -2,9 +2,9 @@ Window.closeAll;
 s.defaultGroup
 
 ~sends.ch1_snd_dela.level
-~ch1.outbus
+~ch1.inbus
 ~voc.postSends[2].level
-~fx.ring.gui
+~fx.delay.gui
 ~fx.delay.synth.run(false)
 ~fx.delay.synth.run(true)
 ~reverb.inbus
@@ -13,7 +13,7 @@ SynthDescLib.at(\livegran).controlDict
 ~board = MixingBoard("3 chan", nil, ~ch1, ~delay, ~master);
 ~board.postSettings
 PeakMonitor(~delay)
-Quarks.gui
+
 
 (
 w = Window.new("I catch keystrokes");

@@ -73,7 +73,7 @@
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
         buf = ~grainBuffer;
         s.sync;
-        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch3.inbus, \outfx, ~ringmod.inbus], ~grainGrp);
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch3.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
@@ -134,10 +134,10 @@
         syn.release(2);
     },
 
-    \53 : {
+    \55 : {
         /* Live filter frequency manipulation \ffreq
         */
-        var midikey=\53, data, reduce, buf, mic, ptr, rec, syn, mn, mx;
+        var midikey=\55, data, reduce, buf, mic, ptr, rec, syn, mn, mx;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
         #mn, mx = [150, 5000];
@@ -159,5 +159,12 @@
         syn.release(2);
 
     },
-)
+);
 
+~liveChannels = ( //hier werden die sendNames für die Postsendregler festgelegt für ~makeCC
+    \ch1: [~ch1, "_snd_dela"],
+    \ch2: [~ch2, "_snd_dela"],
+    \ch3: [~ch3, "_snd_ring"],
+    \ch4: [~ch4, "_snd_vrb1"],
+    \ch5: [~ch5, "_snd_dela"],
+);

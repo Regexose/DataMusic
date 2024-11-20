@@ -11,7 +11,7 @@
         data = data.normalize(80, 5000);
         buf = ~currentSample[\base].normalize;
         s.sync;
-        syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \rq, 0.44, \out, ~ch1.inbus, \outdry, ~dryBus]);
+        syn = Synth(\brsaw, [\amp, 0.45, \buf, buf, \rq, 0.44, \out, ~ch1.inbus]);
         ~activeSynths.put(\48, syn);
         data.do({
             |d, i|
@@ -23,14 +23,14 @@
         syn.release(2);
 
     },
-  \49 :{
+  \50 :{
         /*
         SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
         Sonifiziert wird das fortschreitende Level von N_release, verfügbarer Stickstoff im Lauf der Zeit
         attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
         release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
         */
-        var midikey=\49, data, ref50, buf, syn, mn, mx;
+        var midikey=\50, data, ref50, buf, syn, mn, mx;
         /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
         wait(0.02);*/
         data = ~currentData[midikey][\data].asArray;
@@ -39,7 +39,7 @@
         # mn, mx = [0.01, 70.0]; // Bodenfeuchte WHC Water Holding Capacity
         buf = ~buffersByName[\nitro][\base];
         s.sync;
-        syn = Synth(\tgrains, [\buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \out, ~voc.inbus]);
+        syn = Synth(\tgrains, [\buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.3, \out, ~ch2.inbus]);
         ~activeSynths.put(midikey, syn);
         ref50.do({
             |r, i|
@@ -54,20 +54,20 @@
         syn.release(2);
     },
 
-    \50 : {
+    \52 : {
         /* Nitrifikation
         */
         var data, buf, syn, mn, mx;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
-        data = ~currentData[\50][\data].asArray;
+        data = ~currentData[\52][\data].asArray;
         #mn, mx = [80, 5000];
-        ~currentData.globalKey = \50; // für handling des RangeSliders
+        ~currentData.globalKey = \52; // für handling des RangeSliders
         data = data.normalize(mn, mx);
         buf = ~currentSample[\base].normalize;
         s.sync;
-        syn = Synth(\vowelklank, [\amp, 0.15, \buf, buf, \vow, 5, \rq, 0.24, \out, ~voc.inbus, \outdry, ~dryBus]);
-        ~activeSynths.put(\50, syn);
+        syn = Synth(\vowelklank, [\amp, 0.15, \buf, buf, \vow, 5, \rq, 0.24, \out, ~ch3.inbus]);
+        ~activeSynths.put(\52, syn);
         data.do({
             |d, i|
             "original data  %  at   %".format( d.trunc(0.01), i).postln;
@@ -81,15 +81,13 @@
     },
 
 
-    \52: {
+    \53: {
         // 3 mean options
-        var data, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range, mn, mx;
+        var data, midikey=\53, normalized, compressed, reduce, buf1, buf2, buf3, syn, sec, mean, range, mn, mx;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
-        //reduce = ~currentData[\52][\reduce];
-        data = ~currentData[\52][\data].asArray;
-          ~currentData.globalKey = \52;
-        //compressed = data.select({|item, i| i%reduce == 0});
+        data = ~currentData[midikey][\data].asArray;
+          ~currentData.globalKey = midikey;
         #mn, mx = [36.0, 60.0];
         normalized = data.normalize(mn, mx);
         mean = normalized.mean;
@@ -99,9 +97,9 @@
         buf3 = ~currentSample[\relax].normalize;
         s.sync;
         sec = buf1.numFrames/s.sampleRate * 50;
-        syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.5, \dens, 10, \lg, 0.7, \pos, sec * 20, \outdry, ~dryBus]);
+        syn = Synth(\tgrains, [\amp, 0.4, \grainAmp, 0.5, \dens, 10, \lg, 0.7, \pos, sec * 20, \out, ~ch4.inbus]);
         s.sync;
-        ~activeSynths.put(\52, syn);
+        ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
             var c;
@@ -124,15 +122,15 @@
         syn.release(2);
     },
 
-    \53: {
+    \55: {
         // 3 mean options ohne pitch
         // versuchen, die buffer in quasi-Realtime zu loopen (ist das nicht einfach PlayBuf?)
-        var data, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, mn, mx;
+        var data, midikey=\55, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, mn, mx;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
-        reduce = ~currentData[\53][\reduce];
-        data = ~currentData[\53][\data].asArray;
-        ~currentData.globalKey = \53;
+        reduce = ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
         //compressed = data.select({|item, i| i%reduce == 0});
         #mn, mx = [300, 3000];
         normalized = data.normalize(mn, mx);
@@ -142,9 +140,9 @@
         buf2 = ~currentSample[\tension].normalize;
         buf3 = ~currentSample[\relax].normalize;
         s.sync;
-        syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn1 = Synth(\grainScrub, [\buf, buf2, \amp, 0.4, \ffreq, 3000, \tr, 0.8, \out, ~ch5.inbus]);
         s.sync;
-        ~activeSynths.put(\53, syn1);
+        ~activeSynths.put(midikey, syn1);
         normalized.do({
             |d, i|
             var c;
@@ -171,15 +169,15 @@
 
     },
 
-    \55 : {// für Vowel hard choose
-        var midikey = \55, syn, data, reduce, buf, mn, mx;
+    \57 : {// für Vowel hard choose
+        var midikey = \57, syn, data, reduce, buf, mn, mx;
         #mn, mx = [0.02, 0.2];
         reduce= ~currentData[midikey][\reduce];
         data = ~currentData[midikey][\data].asArray;
         ~currentData.globalKey = midikey;
         data = data.normalize(mn, mx);
         buf = ~currentSample[\base].normalize;
-        syn = Synth(\vowelklank, [\buf, buf, \ffreq, 4000, \amp, 0.2, \rls, 1.0, \out, ~voc.inbus, \outdry, ~dryBus]);
+            syn = Synth(\vowelklank, [\buf, buf, \ffreq, 4000, \amp, 0.2, \rls, 1.0, \out, ~ch6.inbus]);
         s.sync;
         ~activeSynths.put(midikey, syn);
         data.do({
@@ -195,8 +193,8 @@
 
     },
 
-   \57 : {// für Vowel Synthesis
-        var syn, buf, data, mean, reduce, range, mn, mx,  midikey=\57;
+   \59 : {// für Vowel Synthesis
+        var syn, buf, data, mean, reduce, range, mn, mx,  midikey=\59;
         reduce= ~currentData[midikey][\reduce];
         #mn, mx = [30, 70];
         data = ~currentData[midikey][\data].asArray.normalize(mn, mx);
@@ -205,7 +203,7 @@
         mean = data.mean;
         range = mean / 30;
         buf = ~currentSample[\base].normalize;
-        syn = Synth(\oddeven, [\buf, buf, \vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\oddeven, [\buf, buf, \vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~ch7.inbus]);
         s.sync;
         ~activeSynths.put(midikey, syn);
         data.do({
@@ -234,6 +232,18 @@
 
 );
 
+~midiChannels = (
+        //hier werden die sendNames für die Postsendregler festgelegt für ~makeCC
+    \ch1: [~ch1, "_snd_dela"],
+    \ch2: [~ch2, "_snd_dela"],
+    \ch3: [~ch3, "_snd_ring"],
+    \ch4: [~ch4, "_snd_vrb1"],
+    \ch5: [~ch5, "_snd_dela"],
+    \ch6: [~ch6, "_snd_dela"],
+    \ch7: [~ch7, "_snd_dela"],
+    \ch8: [~ch8, "_snd_dela"],
+    );
+/*
 ~midi2 = (
       \55: {
         // vowel trig
@@ -355,3 +365,4 @@
         ~currentData[midikey][\position] = 0;
     },
 );
+    */
