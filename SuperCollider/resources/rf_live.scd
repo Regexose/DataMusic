@@ -14,7 +14,7 @@
         normalized = data.normalize(mn, mx);
         buf = ~grainBuffer;
         s.sync;
-        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus, \outfx, ~delay.inbus, \send, 0.0], ~grainGrp);
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
         "post Syn % out %".format(midikey, syn.get(\out)).postln;
 
         ~activeSynths.put(midikey, syn);
@@ -45,7 +45,7 @@
         buf = ~grainBuffer;
         s.sync;
         "pre Syn %".format(midikey).postln;
-         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch2.inbus, \outfx, ~delay.inbus], ~grainGrp);
+         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch2.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|

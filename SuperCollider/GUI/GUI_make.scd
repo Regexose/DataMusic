@@ -17,6 +17,9 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 
 	// COLORS
 	\window_color: Color.fromHexString("#6F6866"),
+    \midi_bg: Color.fromHexString("#a2e876"),
+    \live_bg: Color.fromHexString("#e39332"),
+    \pattern_bg: Color.fromHexString("#51c9a9"),
 	\top_level_frame_color: Color.fromHexString("#CDEDFD"),
 	\header_frame_color: Color.fromHexString("#A9F8FB"),
 	\bank_frame_color: Color.fromHexString("#B6DCFE"),
@@ -25,11 +28,11 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 );
 
 Window.closeAll;
-/*~midiSelectors = ~buildSelectors.("midi", midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");*/
+/*~midiSelectors = ~buildSelectors.("midi", ~style.midi_bg, 0,  midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");*/
 
-~liveSelectors = ~buildSelectors.("live", livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+~liveSelectors = ~buildSelectors.("live", ~style.live_bg, 1, livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
 
-~patSelectors = ~buildSelectors.("patFuncs", patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
+~patSelectors = ~buildSelectors.("patFuncs", ~style.pattern_bg, 2, patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
 
 ~dataView = ~buildDataView.(\soilmoisture1, 10);
 CmdPeriod.add({ [~selectors, ~dataView].close});

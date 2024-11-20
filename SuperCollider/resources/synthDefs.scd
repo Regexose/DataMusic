@@ -447,7 +447,7 @@ Instr(#[\busfx, \ring1], { arg bus, numChan, freq, mod_amp, xfade;
 	sig = In.ar(bus, numChan);
 	new = sig * SinOsc.ar(freq, 0, mod_amp);
 	XFade2.ar(sig, new, xfade * 2 - 1)
-}, [\audiobus, ObjectSpec(2), \freq, \amp, \amp]
+}, [\audiobus, ObjectSpec(2), \freq, #[0.01, 2.0], \amp]
 );
 
 Instr(#[\busfx, \chorus], { arg bus, numChan, predelay, speed, depth, ph_diff, xfade;
@@ -467,6 +467,7 @@ Instr(#[\busfx, \chorus], { arg bus, numChan, predelay, speed, depth, ph_diff, x
 );
 
 
+
 Instr(#[\busfx, \companderd], { arg bus, numChannels, thresh, slopeBelow, slopeAbove,
  	clampTime, relaxTime, postGain;
  	var sig;
@@ -478,8 +479,8 @@ Instr(#[\busfx, \companderd], { arg bus, numChannels, thresh, slopeBelow, slopeA
  );
 
 Instr(#[\busfx, \singleDelay], { arg bus, numChan, maxTime, time, decay, mul, add;
-   CombL.ar(In.ar(bus, numChan), maxTime, time, decay, mul, add)
-}, [\audiobus, ObjectSpec(1),  #[0.1, 20], #[0.0001, 20], #[0.0001, 20], #[0.0001, 2.0]]);
+    CombL.ar(In.ar(bus, numChan), maxTime, time, decay, mul, add)
+}, [\audiobus, ObjectSpec(1),  #[0.1, 20], #[0.0001, 20], #[0.0001, 20], #[0.0001, 2.0], #[0.0001, 4.0]]);
 
 
 //more a delay than reverb
