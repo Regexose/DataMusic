@@ -1,8 +1,20 @@
 Window.closeAll;
 s.defaultGroup
 
+~sends.ch1_snd_dela.level
+~ch1.inbus
+~voc.postSends[2].level
+~fx.delay.gui
+~fx.delay.synth.run(false)
+~fx.delay.synth.run(true)
+~reverb.inbus
+SynthDescLib.at(\livegran).controlDict
 
-~voc.outbus.scope
+~board = MixingBoard("3 chan", nil, ~ch1, ~delay, ~master);
+~board.postSettings
+PeakMonitor(~delay)
+
+
 (
 w = Window.new("I catch keystrokes");
 w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;

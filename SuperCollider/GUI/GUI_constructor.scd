@@ -8,12 +8,13 @@ GUI mit verschiedenen SubWindows
 (
 
 ~buildSelectors = {
-    |name, midikeys, keynames, buffers, datakeys, funcs, mode|
+    |name, winbg,  yfactor, midikeys, keynames, buffers, datakeys, funcs, mode|
     var win, boxes, pauses, keyLabels, bufLabels, res, modcase, toggles, fx, toggleLabels, layout, lay=();
 
-    win = Window.new(name, Rect(150, 30, 800, 400))
-    .autoRememberPosition(\select, \w)
+    win = Window.new(name, Rect(10, 10 + (yfactor *400), 800, 400))
+    //.autoRememberPosition(\select, \w)
     .alwaysOnTop_(true)
+    .background_(winbg)
     .front;
 
     boxes = midikeys.collect({

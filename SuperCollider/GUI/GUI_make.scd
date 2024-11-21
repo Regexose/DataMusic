@@ -1,7 +1,9 @@
 (
 var mkImg, midikeys= ~midi.keys.asArray.sort,
+
 keynames = ["br_ffreq", "SM_nitri", "nitrifikation", "3 mean samples pitch", "3 mean grainScrub", "voweltrig", "vowel hard choose", "vowel Steepness", "MikrobenAktivität", "C/N Akkord"],
 trigFuncs = (\holdNote: ~holdNote, \oneShot: ~oneShot),
+
 patternkeys = ~patFuncs.keys.asArray.sort,
 patternNames = ~patFuncs.keys.asArray.sort.collect({|n| n.asString}),
 patFuncs = (\startPattern: ~startPattern, \stopPattern: ~stopPattern),
@@ -17,6 +19,9 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 
 	// COLORS
 	\window_color: Color.fromHexString("#6F6866"),
+    \midi_bg: Color.fromHexString("#a2e876"),
+    \live_bg: Color.fromHexString("#e39332"),
+    \pattern_bg: Color.fromHexString("#51c9a9"),
 	\top_level_frame_color: Color.fromHexString("#CDEDFD"),
 	\header_frame_color: Color.fromHexString("#A9F8FB"),
 	\bank_frame_color: Color.fromHexString("#B6DCFE"),
@@ -25,13 +30,14 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 );
 
 Window.closeAll;
-~midiSelectors = ~buildSelectors.("midi", midikeys, keynames, ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
-"midiSelectors".postln;
 
-~patSelectors = ~buildSelectors.("patFuncs", patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
-"patternSelectors".postln;
-~liveSelectors = ~buildSelectors.("live", livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), trigFuncs, "midi");
-"liveSelectors".postln;
+~midiSelectors = ~buildSelectors.("midi", ~style.midi_bg, 0,  midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+
+~liveSelectors = ~buildSelectors.("live", ~style.live_bg, 1, livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+
+~patSelectors = ~buildSelectors.("patFuncs", ~style.pattern_bg, 2, patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
+
+
 ~dataView = ~buildDataView.(\soilmoisture1, 10);
 CmdPeriod.add({ [~selectors, ~dataView].close});
 

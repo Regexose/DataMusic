@@ -14,8 +14,9 @@
         normalized = data.normalize(mn, mx);
         buf = ~grainBuffer;
         s.sync;
-        "pre Syn \48".postln;
         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
+        "post Syn % out %".format(midikey, syn.get(\out)).postln;
+
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
@@ -41,10 +42,10 @@
         ~currentData.globalKey = midikey;
         # mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
         normalized = data.normalize(mn, mx);
-        buf = ~liveBuffer;
+        buf = ~grainBuffer;
         s.sync;
-        "pre Syn \50".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \ffreq, 4000, \out, ~voc.inbus, \outdry, ~dryBus]);
+        "pre Syn %".format(midikey).postln;
+         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch2.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
@@ -57,14 +58,14 @@
         syn.release(2);
     },
 
-    \51 :{
+    \52 :{
         /* spielt liveSynth-Synth mit rate analog zu Temperatur Aktivität
         */
         var midikey, data, normalized, borders, compressed, reduce, buf, syn, mn, mx;
         /* s.record(~recordingPath ++ "/proto01.wav", duration: 60);
         wait(0.02);*/
         //reduce = ~currentData[\50][\reduce];
-        midikey = \51;
+        midikey = \52;
         data = ~currentData[midikey][\data].asArray;
         "pre Syn \51".postln;
         ~currentData.globalKey = midikey;
@@ -72,7 +73,7 @@
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
         buf = ~grainBuffer;
         s.sync;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \amp, 0.45, \buf, buf, \dens, 2, \grainDur, 1.4, \grainAmp, 0.9, \ffreq, 4000, \out, ~voc.inbus, \outdry, ~dryBus]);
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch3.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
@@ -96,7 +97,7 @@
         syn.release(2);
     },
 
-    \52 :{
+    \53 :{
         /*
         gleich wie 52 aber mit Live Stimme (tgrains_live)
         SoilMoisture 50, 70 und 90 dienen als Referenz (SMref) zur Manipulation von harmonics und fmmod
@@ -104,7 +105,7 @@
         attack: die ersten 4 Wochen, steile Kurve in SMref Effekt auf Pitch / harmonics
         release : nach 4 Wochen, fast gerade Linie. Effekt of FM Mod
         */
-        var midikey=\52, data, ref50, buf, syn, mn, mx;
+        var midikey=\53, data, ref50, buf, syn, mn, mx;
         /*    s.record(~recordingPath ++ "/live52.wav", duration: 120);
         wait(0.02);*/
         data = ~currentData[midikey][\data].asArray;
@@ -114,7 +115,7 @@
         buf = ~liveBuffer;
         s.sync;
         "Pre Syn \52".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \lg, 0.5,  \out, ~voc.inbus]);
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \lg, 0.5,  \out, ~ch4.inbus]);
         ~activeSynths.put(midikey, syn);
         ref50.do({
             |r, i|
@@ -133,10 +134,10 @@
         syn.release(2);
     },
 
-    \53 : {
+    \55 : {
         /* Live filter frequency manipulation \ffreq
         */
-        var midikey=\53, data, reduce, buf, mic, ptr, rec, syn, mn, mx;
+        var midikey=\55, data, reduce, buf, mic, ptr, rec, syn, mn, mx;
         /* s.record(~recordingPath ++ "/gunter_soilmoist.wav", duration: 60);
         wait(0.02);*/
         #mn, mx = [150, 5000];
@@ -146,7 +147,7 @@
         buf.zero;
         s.sync;
         "pre Syn \53".postln;
-        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.1, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch1.inbus], ~grainGrp);
+        syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.1, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch5.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
@@ -158,5 +159,12 @@
         syn.release(2);
 
     },
-)
+);
 
+~liveChannels = ( //hier werden die sendNames für die Postsendregler festgelegt für ~makeCC
+    \ch1: [~ch1, "_snd_dela"],
+    \ch2: [~ch2, "_snd_dela"],
+    \ch3: [~ch3, "_snd_ring"],
+    \ch4: [~ch4, "_snd_vrb1"],
+    \ch5: [~ch5, "_snd_dela"],
+);

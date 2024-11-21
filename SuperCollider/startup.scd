@@ -33,7 +33,7 @@ s.waitForBoot({
     ~micBus = Bus.audio(s, 1);
     ~ptrBus = Bus.audio(s, 1);
     ~dryBus = Bus.audio(s,2);
-    ~wetBus = Bus.audio(s,2);
+    ~wetBus = Bus.audio(s, 2);
     /// load SynthDefs, Constants, Functions
     //"busses \n".postln;
     (~resourcePath ++ "constants.scd").load;
@@ -65,11 +65,11 @@ s.waitForBoot({
     // Send Objekte machen
     s.sync;
     ~sends = ~sends ? ();
-    [~ch1, ~ch2, ~ch3, ~ch4, ~voc, ~perc, ~bass].do{
+    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8].do{
         |ch, i|
         var sendName;
         //postf("channel %\t i %\n", ch, i);
-        [~reverb, ~ringmod, ~chorus].do {
+        [~reverb, ~ringmod, ~delay].do {
             |fx|
             //postf("fx name %\n", fx.asString);
             sendName = ch.name.asString ++ "_snd_" ++ fx.asString[13..16];
@@ -89,4 +89,4 @@ s.queryAllNodes;
 ~recordUser.("boris", "relax");
 )
 
-MIDIFunc.trace(true)
+MIDIFunc.trace(false)
