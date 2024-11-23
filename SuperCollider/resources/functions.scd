@@ -213,7 +213,7 @@
     |username, typename|
     var rec, filePath, file, progress=0;
     //make Gui for record progress
-    rec = Synth(\recOne, [\buf, ~userSound]);
+    rec = Synth(\rec, [\buf, ~userSound, \ptrIn, ~ptrBus, \micIn, ~micBus]);
     o = OSCdef(\listener, { |msg|
         {progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
             "record done".postln;
@@ -305,7 +305,7 @@
             ~makeCC.(dictVar, dictChan);
             MIDIdef.noteOn(\holdNoteOn, {
                 |vel, num|
-                var rout;
+                var rout = ~activeRoutines[dictName][num.asSymbol] ;
                 if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
                 if (dictVar.keys.includes(num.asSymbol),{
                     ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
@@ -336,7 +336,7 @@
 //always plays the complete data array with User Sounds
 ~oneShot = {
     /*Bei NoteOn wird das One Shot entweder an oder ausgeschaltet*/
-     |act, dictName |
+    |act, dictName |
     var dictVar, dictChan;
     case
     {dictName == "midi"}{dictVar = ~midi; dictChan = ~midiChannels; ~activeRoutines.put(dictName.asSymbol, ())}
@@ -349,17 +349,21 @@
             ~makeCC.(dictVar, dictChan);
             MIDIdef.noteOn(\oneShotOn, {
                 |vel, num|
-          /*      if ((rout.notNil || rout.isPlaying), {
+                var rout = ~activeRoutines[dictName][num.asSymbol];
+                if ( rout.isPlaying, {
                     rout.stop;
-                    "stopping rout: %".format(num).postln;
+                    "stopping rout: % rout exists? %".format(num, rout.class).postln;
                     ~activeSynths[num.asSymbol].free;
-                });*/
-                 if (dictVar.keys.includes(num.asSymbol),{
-                    ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
-                    " ~activeRoutines % ".format(~activeRoutines).postln;
-                  ~activeRoutines[dictName][num.asSymbol].play;
+                },{
+                    if (dictVar.keys.includes(num.asSymbol),{
+                        ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
+                        " ~activeRoutines % ".format(~activeRoutines).postln;
+                        ~activeRoutines[dictName][num.asSymbol].play;
+                    });
+                    "on off % playing/restart routine %".format(dictName, num).postln;
+
                 });
-                "on off % playing/restart routine %".format(dictName, num).postln;
+
 
             });
             MIDIdef.noteOff(\oneShotOff, {

@@ -248,10 +248,11 @@ SynthDef(\tgrains_live, {
     );
     fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
     sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
-    sig = Splay.ar([sig, fm]);
-	sig = sig * env * \amp.kr(1) * \fade.kr(1);
-    dry = BufRd.ar(1, buf, ptr) * env ;
+    sig = Splay.ar([sig, fm]) * env;
+    //readPtr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
+    dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    sig = sig  * \amp.kr(0.4) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 
 }).add;
@@ -261,7 +262,7 @@ SynthDef(\tgrains, {
     buf = \buf.kr(0);
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    dry = BufRd.ar(1, buf, ptr) * env ;
+    dry = BufRd.ar(1, buf, ptr)  * env ;
 	sig = TGrains2.ar(
 		numChannels: 2,
 		trigger: Dust.kr(\dens.kr(12)),
@@ -389,17 +390,6 @@ SynthDef(\brsaw, {
 	Out.ar(\out.kr(0), sig);
 }).add;
 
-
-// record stuff with mic until buffer is full
-SynthDef(\recOne, {
-	|len=4|
-	var input, ptr, buf= \buf.kr(0);
-	input = SoundIn.ar(\in.kr(0));
-	ptr = Line.ar(0, BufFrames.kr(buf), BufDur.kr(buf));
-	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
-	BufWr.ar(input, buf, ptr);
-}).add;
-
 // Live granulation https://www.youtube.com/watch?v=MnD8stNB5tE&list=PLPYzvS8A_rTaNDweXe6PX4CXSGq4iEWYC&index=27
 // ab 8:00
 
@@ -414,6 +404,17 @@ SynthDef(\pointer, { // füllt den GrainBuffer
     var sig;
     sig = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
     Out.ar(out, sig);
+}).add;
+
+// record into grainbuffer
+SynthDef(\rec, {
+	|len=4, ptrIn=0, micIn=0, buf=0|
+	var ptr, sig;
+	ptr = In.ar(ptrIn, 1);
+	sig = In.ar(micIn, 1);
+	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
+	BufWr.ar(sig, buf, ptr);
+	//RecordBuf.ar(input, \buf.kr(0), recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
 }).add;
 
 
