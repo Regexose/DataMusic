@@ -66,11 +66,11 @@
         data = data.normalize(mn, mx);
         buf = ~currentSample[\base].normalize;
         s.sync;
-        syn = Synth(\vowelklank, [\amp, 0.15, \buf, buf, \vow, 5, \rq, 0.24, \out, ~ch3.inbus]);
+        syn = Synth(\vowelklank, [\amp, 0.1, \buf, buf, \vow, 5, \rq, 0.24, \out, ~ch3.inbus]);
         ~activeSynths.put(\52, syn);
         data.do({
             |d, i|
-            "original data  %  at   %".format( d.trunc(0.01), i).postln;
+            //"original data  %  at   %".format( d.trunc(0.01), i).postln;
             //syn.set(\ffreq, d,  \freqScale, d.linlin(mn, mx, 0.1, 1.0));
             syn.set(\ffreq, d);
             0.05.wait;
@@ -244,6 +244,7 @@
     \ch8: [~ch8, "_snd_dela"],
     );
 /*
+// wann kommen die zum einsatz?
 ~midi2 = (
       \55: {
         // vowel trig

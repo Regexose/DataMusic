@@ -2,7 +2,7 @@
 var mkImg, midikeys= ~midi.keys.asArray.sort,
 
 keynames = ["br_ffreq", "SM_nitri", "nitrifikation", "3 mean samples pitch", "3 mean grainScrub", "voweltrig", "vowel hard choose", "vowel Steepness", "MikrobenAktivität", "C/N Akkord"],
-trigFuncs = (\holdNote: ~holdNote, \oneShot: ~oneShot),
+midiPlayFuncs = (\holdNote: ~holdNote, \oneShot: ~oneShot),
 
 patternkeys = ~patFuncs.keys.asArray.sort,
 patternNames = ~patFuncs.keys.asArray.sort.collect({|n| n.asString}),
