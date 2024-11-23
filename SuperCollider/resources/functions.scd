@@ -26,7 +26,7 @@
             ~fx = (
     \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
     //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
-    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \chorus], ~patches[\chorus2])),
+    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
     \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\simple_delay])),
     \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
     \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
@@ -94,7 +94,7 @@
             control = MIDIdef.cc(defName, {
                 arg ...args;
                 args[..2].postln;
-                "set send of % to %".format(key, args[0].linlin(0, 127, 0.0, 1.0)).postln;
+                "set send of % to %".format(sendName, args[0].linlin(0, 127, 0.0, 1.0)).postln;
                 ~sends[sendName].level = args[0].linlin(0, 127, 0.0, 1.0);
             },
             idx + offset,
@@ -137,9 +137,6 @@
 
     data;
 };
-
-
-
 
 ~makeWaveTable = {
     |size=4096, external, name|
@@ -268,7 +265,7 @@
     ~currentData.add(\globalKey -> \48);
 
     ~keySelector.do({|n| n.valueAction = 3});
-    ~bufSelector.do({|n| n.valueAction = 13});
+    ~bufSelector.do({|n| n.valueAction = 8});
 
 };
 

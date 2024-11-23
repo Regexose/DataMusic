@@ -409,23 +409,13 @@ SynthDef(\routing, {
 	Out.ar(\out.kr(0), sig);
 }).add;
 
-SynthDef(\pointer, {
+SynthDef(\pointer, { // füllt den GrainBuffer
     |out=0, buf=0|
     var sig;
     sig = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
     Out.ar(out, sig);
 }).add;
 
-// record stuff with mic
-SynthDef(\rec, {
-	|len=4, ptrIn=0, micIn=0, buf=0|
-	var ptr, sig;
-	ptr = In.ar(ptrIn, 1);
-	sig = In.ar(micIn, 1);
-	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
-	BufWr.ar(sig, buf, ptr);
-	//RecordBuf.ar(input, \buf.kr(0), recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
-}).add;
 
 //playback
 SynthDef(\playback, {
@@ -441,12 +431,22 @@ SynthDef(\playback, {
 //Spec.specs.asSortedArray.do(_.postcs)
 
 Instr(#[\busfx, \ring1], { arg bus, numChan, freq, mod_amp, xfade;
+    var sig, new;
+    sig = In.ar(bus, numChan);
+    new = sig * LFPar.ar(freq, 0, mod_amp);
+    XFade2.ar(sig, new, xfade * 2 - 1)
+}, [\audiobus, ObjectSpec(2), [0.1, 2500, \exponential], [0.01, 6.0, \exponential],  \amp]
+);
+
+/*Instr(#[\busfx, \ring1], { arg bus, numChan, freq, mod_amp, thres, slope_b, slope_a,  mul, xfade;
 	var sig, new;
 	sig = In.ar(bus, numChan);
 	new = sig * SinOsc.ar(freq, 0, mod_amp);
+    //new = Compander.ar(new, new, thres, slope_b, slope_a, 0.01 , 0.2, mul);
+    new = Compander.ar(new, new, thres, mod_amp, 0.3, 0.3, 0.4, mul);
 	XFade2.ar(sig, new, xfade * 2 - 1)
-}, [\audiobus, ObjectSpec(2), \freq, #[0.01, 2.0], \amp]
-);
+}, [\audiobus, ObjectSpec(2), [0.1, 2500, \exponential], [0.01, 4.0], \thres, [0.1, 20.0],  [0.01, 1.0], [0.1, 7.0], \amp]
+);*/
 
 Instr(#[\busfx, \chorus], { arg bus, numChan, predelay, speed, depth, ph_diff, xfade;
 	var in, sig;
