@@ -47,8 +47,6 @@
             ~toggleFx.(k, true)
         })
     })
-
-
 };
 
 ~toggleFx = {
@@ -215,7 +213,7 @@
     |username, typename|
     var rec, filePath, file, progress=0;
     //make Gui for record progress
-    rec = Synth(\recOne, [\buf, ~userSound]);
+    rec = Synth(\rec, [\buf, ~userSound, \ptrIn, ~ptrBus, \micIn, ~micBus]);
     o = OSCdef(\listener, { |msg|
         {progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
             "record done".postln;
@@ -301,14 +299,13 @@
     {dictName == "patFuncs"}{dictVar = ~patFuncs; dictChan = ~patternChannels;}
     {dictName == "live"}{dictVar = ~live; dictChan = ~liveChannels; ~activeRoutines.put(dictName.asSymbol, ())}
     {true}{nil};
-
     dictName = dictName.asSymbol;
     if (act == 1,
         {
             ~makeCC.(dictVar, dictChan);
             MIDIdef.noteOn(\holdNoteOn, {
                 |vel, num|
-                var rout;
+                var rout = ~activeRoutines[dictName][num.asSymbol] ;
                 if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
                 if (dictVar.keys.includes(num.asSymbol),{
                     ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
@@ -334,6 +331,56 @@
     )
 
 };
+
+
+//always plays the complete data array with User Sounds
+~oneShot = {
+    /*Bei NoteOn wird das One Shot entweder an oder ausgeschaltet*/
+    |act, dictName |
+    var dictVar, dictChan;
+    case
+    {dictName == "midi"}{dictVar = ~midi; dictChan = ~midiChannels; ~activeRoutines.put(dictName.asSymbol, ())}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs; dictChan = ~patternChannels;}
+    {dictName == "live"}{dictVar = ~live; dictChan = ~liveChannels; ~activeRoutines.put(dictName.asSymbol, ())}
+    {true}{nil};
+    dictName = dictName.asSymbol;
+    if (act == 1,
+        {
+            ~makeCC.(dictVar, dictChan);
+            MIDIdef.noteOn(\oneShotOn, {
+                |vel, num|
+                var rout = ~activeRoutines[dictName][num.asSymbol];
+                if ( rout.isPlaying, {
+                    rout.stop;
+                    "stopping rout: % rout exists? %".format(num, rout.class).postln;
+                    ~activeSynths[num.asSymbol].free;
+                },{
+                    if (dictVar.keys.includes(num.asSymbol),{
+                        ~activeRoutines[dictName].put(num.asSymbol, Routine(dictVar[num.asSymbol]));
+                        " ~activeRoutines % ".format(~activeRoutines).postln;
+                        ~activeRoutines[dictName][num.asSymbol].play;
+                    });
+                    "on off % playing/restart routine %".format(dictName, num).postln;
+
+                });
+
+
+            });
+            MIDIdef.noteOff(\oneShotOff, {
+                |vel, num|
+                "oneShot  NoteOff %".format(num.asSymbol).postln;
+
+            });
+        },{
+
+            "freeing MIDIdefs and routine".postln;
+            [\oneShotOn, \oneShotOff].do{|n| MIDIdef(n).free};
+        }
+    )
+};
+
+
+
 //restarts play if new MIDI key is pressed with User Sounds
 ~onOffButton = {
     |pressed, k, i, dictName|
@@ -397,35 +444,5 @@
 
 
 
-//always plays the complete data array with User Sounds
-~oneShot = {
-    |act|
-    var rout;
-    if (act == 1,
-        {
-            MIDIdef.noteOn(\osUserOn, {
-                |vel, num|
-                if ((rout.notNil || rout.isPlaying), {
-                    rout.stop;
-                    "stopping rout: %".format(num).postln;
-                    ~activeSynths[num.asSymbol].free;
-                });
 
-            });
-            MIDIdef.noteOff(\osUserOff, {
-                |vel, num|
-                if (~rf.keys.includes(num.asSymbol),{
-                    rout = Routine(~rf[num.asSymbol]).play
-                });
-                "playing oneShot %".format(num.asSymbol).postln;
-
-            });
-        },{
-
-            "freeing MIDIdefs amd routine".postln;
-            rout.stop;
-            [\osUserOn, \osUserOff].do{|n| MIDIdef(n).free};
-        }
-    )
-};
 

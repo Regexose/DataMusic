@@ -78,7 +78,7 @@
         data.do({
             |d, i|
             var c;
-            "original data %  at %".format(d, i).postln;
+            //"original data %  at %".format(d, i).postln;
             c = case
             {d > borders[3][1]} {syn.set(\rate, d.linexp(0, 50, 2.1, 3.5))}
             {(d > borders[3][0]) && (d <= borders[3][1])}
@@ -115,7 +115,7 @@
         buf = ~liveBuffer;
         s.sync;
         "Pre Syn \52".postln;
-        syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.5, \lg, 0.5,  \out, ~ch4.inbus]);
+        syn = Synth(\tgrains_live, [\in, ~soundIn, \buf, buf, \grainDur, 1.0, \grainAmp, 0.001, \ffreq, 4000, \amp, 0.35, \lg, 0.5,  \out, ~ch4.inbus]);
         ~activeSynths.put(midikey, syn);
         ref50.do({
             |r, i|
@@ -165,6 +165,6 @@
     \ch1: [~ch1, "_snd_dela"],
     \ch2: [~ch2, "_snd_dela"],
     \ch3: [~ch3, "_snd_ring"],
-    \ch4: [~ch4, "_snd_vrb1"],
+    \ch4: [~ch4, "_snd_dela"],
     \ch5: [~ch5, "_snd_dela"],
 );
