@@ -231,7 +231,6 @@
     },
 
 );
-
 ~midiChannels = (
         //hier werden die sendNames für die Postsendregler festgelegt für ~makeCC
     \ch1: [~ch1, "_snd_dela"],
@@ -243,6 +242,7 @@
     \ch7: [~ch7, "_snd_dela"],
     \ch8: [~ch8, "_snd_dela"],
     );
+
 /*
 // wann kommen die zum einsatz?
 ~midi2 = (

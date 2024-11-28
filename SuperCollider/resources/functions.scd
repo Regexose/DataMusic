@@ -392,13 +392,13 @@
     {true}{nil};
     rout = ~routines[dictName.asSymbol][i];
     if (pressed==1, {
-       "reset rout %".format(i).postln;  rout.reset;
+       "reset rout % %".format(rout, k).postln;  rout.reset;
         rout.play;
         "% playing/restart routine % % ".format(dictName, i, rout.isPlaying).postln;
     },{
         "stopping routine %  % releasing %".format(i, ~activeSynths[k.asSymbol]).postln;
        rout.stop;
-         ~activeSynths[k.asSymbol].free;
+         ~activeSynths[k.asSymbol].release(2);
             "stopped routine %  released Synth %".format(~activeSynths[k.asSymbol]).postln;
         });
 

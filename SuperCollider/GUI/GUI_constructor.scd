@@ -23,7 +23,7 @@ GUI mit verschiedenen SubWindows
         .states_([
              [(k.asString ++ "__OFF"), Color.black], [(k.asString ++ "__ON"), Color.red],
         ])
-        .action_({|btn| btn.value.postln; ~onOffButton.(btn.value, k,  i, name)})
+        .action_({|btn|  ~onOffButton.(btn.value, k,  i, name)})
 
 
     });
@@ -53,7 +53,6 @@ GUI mit verschiedenen SubWindows
     });
     ~keySelector = midikeys.collect({
         |k,i|
-        [k,i].postln;
         PopUpMenu.new()
         .items_(datakeys.asArray)
         .allowsReselection_(True)
@@ -64,7 +63,6 @@ GUI mit verschiedenen SubWindows
     res = midikeys.collect({
         |k,i|
        PopUpMenu.new()
-        .autoRememberPosition(\select, \w)
         .allowsReselection_(True)
         .items_([2, 5, 8, 10,20] )
         .valueAction_(1)
@@ -82,7 +80,6 @@ GUI mit verschiedenen SubWindows
     ~bufSelector = [\base, \tension, \relax].collect({
         |k, i|
         PopUpMenu.new()
-       // .autoRememberPosition(\select, \w)
         .items_(buffers)
         .allowsReselection_(True)
         .action_({arg pm; ~bufferSelectorAction.(pm)})
@@ -114,12 +111,10 @@ GUI mit verschiedenen SubWindows
             .states_([
                 [(name ++ "__stop"), Color.red], [(name ++ "__start"), Color.green]
             ])
-            .mouseDownAction_({|btn| "switch %  to %".format( name, btn.value).postln; ~startPattern.(btn.value, name)})
+            //.mouseDownAction_({|btn| "switch % to %".format( name, btn.value).postln; ~onOffButton.(btn.value, name, i, "patFuncs")})
             .focusColor_(Color.blue)
             .valueAction_(1)
-            .autoRememberPosition(\select, \w)
-
-            //.action_({|btn| ; func.(btn.value) })
+            .action_({|btn| "switch % to %".format( name, btn.value).postln; ~startPattern.(btn.value, name)})
         }) ++ [
             Button.new(bounds:Rect(40,20))
             .states_([

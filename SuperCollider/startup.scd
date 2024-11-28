@@ -64,7 +64,7 @@ s.waitForBoot({
     // Send Objekte machen
     s.sync;
     ~sends = ~sends ? ();
-    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8].do{
+    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8, ~perc, ~voc].do{
         |ch, i|
         var sendName;
         //postf("channel %\t i %\n", ch, i);
