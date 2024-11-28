@@ -23,23 +23,23 @@ GUI mit verschiedenen SubWindows
         .states_([
              [(k.asString ++ "__OFF"), Color.black], [(k.asString ++ "__ON"), Color.red],
         ])
-        .action_({|btn|  ~onOffButton.(btn.value, k,  i, name)})
+        .action_({|btn| ~onOffButton.(btn.value, k,  i, name)})
 
 
     });
 
     pauses = midikeys.collect({
         |k,i|
-        Button.new(bounds: Rect(40, 20))
+        [k, i, name].postln;
 
+        Button.new(bounds: Rect(40, 20))
         .states_([
             [(k.asString ++ "__PAUS"), Color.blue], [(k.asString ++ "__RESUME"), Color.green],
         ])
         .background_(Color.rand)
         //.mouseDownAction_({arg btn; "mouse down".postln; ~pausUserMouse.(btn.value, ~routines[k], k)})
-        .mouseUpAction_({arg btn; "mouse pauses up".postln; ~pausButton.(btn.value, ~routines[k], k)})
-        .valueAction_(1)
-
+        .mouseUpAction_({arg btn; ~pausButton.(btn.value, ~routines[name.asSymbol][i], k, name)})
+        .valueAction_(0)
     });
 
 

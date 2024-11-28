@@ -15,7 +15,7 @@ SynthDescLib.at(\livegran).controlDict
 ~board.postSettings
 PeakMonitor(~delay)
 ~routines[\patFunc][0]
-
+~currentData.dark[\in]
 (
 w = Window.new("I catch keystrokes");
 w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;

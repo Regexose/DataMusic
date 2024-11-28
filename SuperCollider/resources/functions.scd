@@ -405,10 +405,16 @@
 };
 //toggles between play and pause of the routine, remembers last position
 ~pausButton = {
-    |btn, rout, num|
+    |btn, rout, num, dictName|
+    var dictVar;
+     case
+    {dictName == "midi"}{dictVar = ~midi}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs}
+    {dictName == "live"}{dictVar = ~live}
+    {true}{nil};
     [btn, rout, num].postln;
     if (btn==1, {
-       "resume rout at %".format(~currentData[num][\position]). postln;  rout.reset;
+       "resume rout at %".format(~currentData[num][\position]).postln;  rout.reset;
         rout.play;
         //"playing/restart routine %".format(num.asSymbol).postln;
         "playing/restart routine".postln;

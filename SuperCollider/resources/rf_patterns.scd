@@ -86,7 +86,7 @@
             syn.set( \freqScale, d, \ffreq, d * 2000);
             ~currentData[\voc1][\position] = i+lastPos;
              ~t.beatDur.wait;
-           /* defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};*/
+          /* defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};*/
         });
         syn.free;
            ~currentData[\voc1][\position] = 0;
@@ -111,8 +111,8 @@
             //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
             syn.set( \amp, d, \freq, 24.midicps * d);
             ~currentData[key][\position] = i+lastPos;
-             (~t.beatDur* 1).wait;
-           /* defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};*/
+             (~t.beatDur* 0.1).wait;
+            defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
         });
         syn.release(2);
            ~currentData[key][\position] = 0;
