@@ -26,27 +26,27 @@ SynthDef(\vowelklank, {
 	|vow=1, freqScale=0.1, decayScale=0.1, buf=0, gate=1|
     var sig, dry, ptr, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
-    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray).varlag(0.2);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
-    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
-    vowel = Vowel.basicNew(freqs, dBs, widths);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.1);
+    //vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(1)!5;
 	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
     //exc = WhiteNoise.ar(0.5);
 	sig = DynKlank.ar(
 		`[
-			freqs,
+            freqs,
 			dBs.dbamp.normalizeSum,
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
 
-    sig = RLPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));
+    sig = RHPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));// um die tiefen Resonanzen etwas zu zähmen
 	sig = Pan2.ar(sig, \pan.kr(0)) * env;
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr);
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-	sig = sig * \amp.kr(0.2) * \fade.kr(0.4);
+	sig = sig * \amp.kr(0.2) * \fade.kr(1.0);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -88,9 +88,9 @@ SynthDef(\oddeven, {
     var env = EnvGen.kr( Env.asr(\atk.kr( 0.01), 1, \rls.kr( 0.7), \crv.kr(0)), \gate.kr(1), doneAction:2);
 
     baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
-    selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray).varlag(0.15);
     selectwidths = Select.kr(baseIndex + (5..9), ~vowelArray);
-    selectamps = Select.kr(baseIndex + (10..14), ~vowelArray);
+    selectamps = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.15);
     vowel = Vowel.basicNew(selectfreqs, selectamps, selectwidths).brightenExp(\bright.kr(1));
 
     evenFreqs = ((1, 3 .. numFreqs) * baseFreq);
@@ -106,13 +106,13 @@ SynthDef(\oddeven, {
     freqs = (evenFreqs ++ oddFreqs);
     amps = evenAmps ++ oddAmps;
     amps = amps.normalizeSum; // tame amplitudes
-     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
-    sig = DynKlank.ar(`[freqs, amps, nil], exc, \freqScale.kr(0.1) );
-
+    exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
+    sig = DynKlank.ar(`[freqs, amps, nil], exc, \freqScale.kr(0.1) ) * env;
+    sig = RHPF.ar(sig, \ffreq.kr(1000), \rq.kr(0.5)); // um die tiefen Resonanzen etwas zu zähmen
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    dry = BufRd.ar(1, buf, ptr);
+    dry = BufRd.ar(1, buf, ptr) * env;
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.2) * \fade.kr(0.4) * env;
+    sig = sig * \amp.kr(0.2) * \fade.kr(0.4) ;
     Out.ar(\out.kr(0), sig!2);
 }).add;
 
@@ -122,7 +122,7 @@ SynthDef(\dynklank, {
 	var freqs = NamedControl.kr(\freqs, 900 !3) ;
     var amps = NamedControl.kr(\amps, [0.2, 0.1, 0.4]);
 	var rings = NamedControl.kr(\rings, 2 !3) ;
-	var sig, exc, env;
+	var sig, dry, exc, env;
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(0.5), 0.01, \dec.kr(0.9));
     freqs = freqs + SinOsc.kr([0.2,0.1,0.05]).bipolar(-10, 10);
@@ -132,9 +132,11 @@ SynthDef(\dynklank, {
 			amps,
 			rings
 	], exc, freqscale: freqScale,  decayscale: decayScale);
-    sig = BPF.ar(sig, \ffreq.kr(1800), \rq.kr(0.5));
-	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0.01));
-	sig = sig * env * \amp.kr(0.2) * \fade.kr(1);
+    sig = RLPF.ar(sig, \ffreq.kr(1800), \rq.kr(0.5));
+	sig = Pan2.ar(sig, \pan.kr(0), \pLag.kr(0.01)) * env;
+    dry = exc * env;
+    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+	sig = sig  * \amp.kr(0.2) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -216,9 +218,10 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
         ampmod = Dust.kr(50).bipolar(0.03);
         SinOscFB.ar(freqs * fmod, \feedb.kr(pi/4), amps + ampmod);
     }).sum;
-	sig = BPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
 	env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
-	Out.ar(out, Splay.ar(sig) * env * \fade.kr(1));
+	sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5)) * env;
+    sig = Splay.ar(sig) * \fade.kr(1) * \amp.kr(0.4);
+	Out.ar(out, sig );
 }).add;
 
 // Granular Synth

@@ -392,23 +392,29 @@
     {true}{nil};
     rout = ~routines[dictName.asSymbol][i];
     if (pressed==1, {
-       "reset rout %".format(i).postln;  rout.reset;
+       "reset rout % %".format(rout, k).postln;  rout.reset;
         rout.play;
         "% playing/restart routine % % ".format(dictName, i, rout.isPlaying).postln;
     },{
         "stopping routine %  % releasing %".format(i, ~activeSynths[k.asSymbol]).postln;
        rout.stop;
-         ~activeSynths[k.asSymbol].free;
+         ~activeSynths[k.asSymbol].release(2);
             "stopped routine %  released Synth %".format(~activeSynths[k.asSymbol]).postln;
         });
 
 };
 //toggles between play and pause of the routine, remembers last position
 ~pausButton = {
-    |btn, rout, num|
+    |btn, rout, num, dictName|
+    var dictVar;
+     case
+    {dictName == "midi"}{dictVar = ~midi}
+    {dictName == "patFuncs"}{dictVar = ~patFuncs}
+    {dictName == "live"}{dictVar = ~live}
+    {true}{nil};
     [btn, rout, num].postln;
     if (btn==1, {
-       "resume rout at %".format(~currentData[num][\position]). postln;  rout.reset;
+       "resume rout at %".format(~currentData[num][\position]).postln;  rout.reset;
         rout.play;
         //"playing/restart routine %".format(num.asSymbol).postln;
         "playing/restart routine".postln;

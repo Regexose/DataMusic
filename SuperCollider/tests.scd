@@ -14,8 +14,8 @@ SynthDescLib.at(\livegran).controlDict
 ~board = MixingBoard("3 chan", nil, ~ch1, ~delay, ~master);
 ~board.postSettings
 PeakMonitor(~delay)
-
-
+~routines[\patFunc][0]
+~currentData.dark[\in]
 (
 w = Window.new("I catch keystrokes");
 w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
