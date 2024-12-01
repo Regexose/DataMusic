@@ -119,9 +119,9 @@ SynthDef(\oddeven, {
 
 SynthDef(\dynklank, {
 	| freqScale=0.1, decayScale=0.1|
-	var freqs = NamedControl.kr(\freqs, 900 !3) ;
+	var freqs = NamedControl.kr(\freqs, exprand(800, 1220)!3) ;
     var amps = NamedControl.kr(\amps, [0.2, 0.1, 0.4]);
-	var rings = NamedControl.kr(\rings, 2 !3) ;
+	var rings = NamedControl.kr(\rings, exprand(0.3, 1.2)!3) ;
 	var sig, dry, exc, env;
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(0.5), 0.01, \dec.kr(0.9));

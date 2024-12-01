@@ -30,8 +30,6 @@ GUI mit verschiedenen SubWindows
 
     pauses = midikeys.collect({
         |k,i|
-        [k, i, name].postln;
-
         Button.new(bounds: Rect(40, 20))
         .states_([
             [(k.asString ++ "__PAUS"), Color.blue], [(k.asString ++ "__RESUME"), Color.green],
@@ -109,11 +107,11 @@ GUI mit verschiedenen SubWindows
             |name, i|
             Button.new(bounds: Rect(40, 20))
             .states_([
-                [(name ++ "__stop"), Color.red], [(name ++ "__start"), Color.green]
+                [(name ++ "__start"), Color.red], [(name ++ "__stop"), Color.green]
             ])
-            //.mouseDownAction_({|btn| "switch % to %".format( name, btn.value).postln; ~onOffButton.(btn.value, name, i, "patFuncs")})
+
             .focusColor_(Color.blue)
-            .valueAction_(1)
+            .valueAction_(0)
             .action_({|btn| "switch % to %".format( name, btn.value).postln; ~startPattern.(btn.value, name)})
         }) ++ [
             Button.new(bounds:Rect(40,20))
