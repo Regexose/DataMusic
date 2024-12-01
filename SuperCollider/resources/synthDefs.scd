@@ -26,17 +26,17 @@ SynthDef(\vowelklank, {
 	|vow=1, freqScale=0.1, decayScale=0.1, buf=0, gate=1|
     var sig, dry, ptr, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
-    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray).varlag(0.2);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
-    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
-    vowel = Vowel.basicNew(freqs, dBs, widths);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.1);
+    //vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(1)!5;
 	env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf)));
     //exc = WhiteNoise.ar(0.5);
 	sig = DynKlank.ar(
 		`[
-			freqs,
+            freqs,
 			dBs.dbamp.normalizeSum,
 			phases
 	], exc, freqscale: freqScale,  decayscale: decayScale);
@@ -88,9 +88,9 @@ SynthDef(\oddeven, {
     var env = EnvGen.kr( Env.asr(\atk.kr( 0.01), 1, \rls.kr( 0.7), \crv.kr(0)), \gate.kr(1), doneAction:2);
 
     baseIndex = vowelIndex * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
-    selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray);
+    selectfreqs = Select.kr(baseIndex + (0..4), ~vowelArray).varlag(0.15);
     selectwidths = Select.kr(baseIndex + (5..9), ~vowelArray);
-    selectamps = Select.kr(baseIndex + (10..14), ~vowelArray);
+    selectamps = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.15);
     vowel = Vowel.basicNew(selectfreqs, selectamps, selectwidths).brightenExp(\bright.kr(1));
 
     evenFreqs = ((1, 3 .. numFreqs) * baseFreq);

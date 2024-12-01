@@ -45,7 +45,7 @@
             |r, i|
             var d = data[i]; // Nitrifikation
             var dFactor = d.linlin(mn, mx, 0.0, 1.5); // Annahme: bei 90 % WHC ist der Faktor 1.5 Um diesen Faktor wird der prognostizierte Wert erniedrigt oder erhöht
-            "original data %  ref % at %  dFactor %".format(d.trunc(0.01), r, i, dFactor).postln;
+            //"original data %  ref % at %  dFactor %".format(d.trunc(0.01), r, i, dFactor).postln;
             syn.set(\dens, max(0.2, (r * dFactor)), \grainAmp, r.lincurve( mn, 60, 0.01, 0.5), \rate, dFactor,  \harm, d.linlin(0, 70, -5, 5), \fmdens, max(0.2, (r * dFactor)), \carfreq, r * dFactor *50, \fmAmp, r.lincurve( mn, 60, 0.01, 0.5));
 
             0.025.wait;
@@ -123,8 +123,7 @@
     },
 
     \55: {
-        // 3 mean options ohne pitch
-        // versuchen, die buffer in quasi-Realtime zu loopen (ist das nicht einfach PlayBuf?)
+        // 3 mean grainscrub
         var data, midikey=\55, normalized, compressed, reduce, buf1, buf2, buf3, syn1, mean, range, mn, mx;
         /*  s.record(~recordingPath ++ "/ana_52_humid.wav", duration: 45);
         wait(0.02);*/
@@ -203,24 +202,24 @@
         mean = data.mean;
         range = mean / 30;
         buf = ~currentSample[\base].normalize;
-        syn = Synth(\oddeven, [\buf, buf, \vowelIndex, 1, \amp, 0.5, \ffreq, 4000, \modRange2, 10, \out, ~ch7.inbus]);
+        syn = Synth(\oddeven, [\buf, buf, \vowelIndex, 1, \amp, 0.23, \ffreq, 1200, \modRange2, 4, \out, ~ch7.inbus]);
         s.sync;
         ~activeSynths.put(midikey, syn);
         data.do({
             |d, i|
             // Vowels werden mit key geändert
-            var c, key = d.linlin(1, 100, 0, 20).asInteger;
+            var key = d.linlin(1, 100, 0, 20).asInteger;
            //"key % d %  i % ".format(key, d, i).postln;
-            syn.set(\baseFreq, d.linlin(mn, mx, 800, 820), \ampFreq, d.linlin(mn, mx, 0.4, 5.5));
-            c = case
+            syn.set(\baseFreq, d.linlin(mn, mx, 100, 820), \ampFreq, d.linlin(mn, mx, 0.4, 5.5));
+            case
             {(d >= (mean - range)) && (d<= (data.mean + range))}{
-                syn.set(\vow, [0, 1, 2, 3, 4].choose, \bright, d.linlin(mn, mx, 0.1, 0.4), \envScale, d.linlin(mn, mx, 0.1, 0.4));
+                syn.set(\vowelIndex, [0, 1, 2, 3, 4].choose, \bright, d.linlin(mn, mx, 0.1, 0.4), \envScale, d.linlin(mn, mx, 0.1, 0.2));
             }
             {d < (mean -range)}{
-                syn.set(\vow, (5..9).choose,\bright, d.linlin(mn, mx, 0.5, 1.00), \envScale, d.linlin(mn, mx, 0.41, 1.0));
+                syn.set(\vowelIndex, (5..9).choose, \bright, d.linlin(mn, mx, 0.5, 1.00), \envScale, d.linlin(mn, mx, 0.2, 0.4));
             }
             {(d > (mean + range))}{
-                syn.set(\vow, (10..14).choose, \bright, d.linlin(mn, mx, 1.01, 2.5), \envScale, d.linlin(mn, mx, 1.01, 1.9))
+                syn.set(\vowelIndex, (10..14).choose, \bright, d.linlin(mn, mx, 1.01, 2.5), \envScale, d.linlin(mn, mx, 0.4, 0.6))
             }
             {true}{"no case".postln};
            0.06.wait;
@@ -228,6 +227,36 @@
         });
         syn.release(2);
 
+    },
+
+    \60 : {
+        // C-N Akkord
+        var syn, midikey=\60, data,normalized, reduce, oldSize, lastPos, mn, mx;
+        reduce= ~currentData[midikey][\reduce];
+        data = ~currentData[midikey][\data].asArray;
+        ~currentData.globalKey = midikey;
+        lastPos =  ~currentData[midikey][\position];
+        oldSize = data.size; //logic for pause/resume
+        #mn, mx = [-25.0, 25.0];
+        if (~currentData[\globalPos] == 0, {normalized = data.normalize(mn, mx)[lastPos..oldSize-1]},{normalized = data.normalize(mn, mx)[~currentData[\globalPos]..oldSize-1]});
+
+
+        /*s.record("/Volumes/Macintosh HD 2/projekte/DataMusic/DataMusic/recordings/temperatur_bass.wav", duration: 40);
+        wait(0.02);*/
+        syn = Synth(\arrayarg, [\amp, 0.1, \freq, [65, 71, 73].midicps -24, \mods, [2.0, -12.0, -3.0], \lg, 0.4, \rq, 0.2, \phsMod, 0.5, \out, ~ch1.inbus]);
+        ~activeSynths.put(\62, syn);
+        data.do({
+            |d, i|
+            //"original data  % at %".format(d, i).postln;
+            syn.setn(\mods, Array.fill(3,  {|n| d * (n+1)}),
+                \freq, [53, 49, 51].midicps * [[0.8, 1.2], [0.5, 1.9], [0.95, 1.05] ].collect({|r| {d.linlin(mn, mx, r[0], r[1])}}));
+            ~currentData[midikey][\position] = i + lastPos;
+            0.1.wait;
+            defer{~posX = i.linlin(0, data.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh;};
+
+        });
+        syn.release(2);
+        ~currentData[midikey][\position] = 0;
     },
 
 );
@@ -243,7 +272,7 @@
     \ch8: [~ch8, "_snd_dela"],
     );
 
-/*
+
 // wann kommen die zum einsatz?
 ~midi2 = (
       \55: {
@@ -337,12 +366,11 @@
 
     \60 : {
         // C-N Akkord
-        var syn, midikey=\60, data, compressed, normalized, reduce, oldSize, lastPos, mn, mx;
+        var syn, midikey=\60, data,normalized, reduce, oldSize, lastPos, mn, mx;
         reduce= ~currentData[midikey][\reduce];
         data = ~currentData[midikey][\data].asArray;
         ~currentData.globalKey = midikey;
         lastPos =  ~currentData[midikey][\position];
-        //compressed = data.select({|item, i| i%reduce == 0});
           oldSize = data.size; //logic for pause/resume
         #mn, mx = [-25.0, 25.0];
         if (~currentData[\globalPos] == 0, {normalized = data.normalize(mn, mx)[lastPos..oldSize-1]},{normalized = data.normalize(mn, mx)[~currentData[\globalPos]..oldSize-1]});
@@ -366,4 +394,4 @@
         ~currentData[midikey][\position] = 0;
     },
 );
-    */
+
