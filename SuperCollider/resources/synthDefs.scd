@@ -119,13 +119,13 @@ SynthDef(\oddeven, {
 
 SynthDef(\dynklank, {
 	| freqScale=0.1, decayScale=0.1|
-	var freqs = NamedControl.kr(\freqs, exprand(800, 1220)!3) ;
-    var amps = NamedControl.kr(\amps, [0.2, 0.1, 0.4]);
-	var rings = NamedControl.kr(\rings, exprand(0.3, 1.2)!3) ;
+	var freqs = NamedControl.kr(\freqs, [250, 300, 380] ) ;
+    var amps = NamedControl.kr(\amps, Array.fill(3, {exprand(0.8, 1.0)}));
+	var rings = NamedControl.kr(\rings, exprand(0.1, 0.2)!3) ;
 	var sig, dry, exc, env;
 	env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     exc = PinkNoise.ar(\punch.kr(0.1)) * Decay2.kr(Impulse.kr(0.5), 0.01, \dec.kr(0.9));
-    freqs = freqs + SinOsc.kr([0.2,0.1,0.05]).bipolar(-10, 10);
+    //freqs = freqs * SinOsc.ar(0.5).range(0.2, 0.9).poll;
 	sig = DynKlank.ar(
 		`[
 			freqs ,

@@ -111,7 +111,7 @@
             //"original data  %   normalized data   %  at   %".format(compressed[i].trunc(0.0001), d, i + lastPos).postln;
             syn.set( \amp, d, \freq, 24.midicps * d);
             ~currentData[key][\position] = i+lastPos;
-             (~t.beatDur* 0.1).wait;
+             (~t.beatDur* 1).wait;
             defer{~posX = (i+lastPos).linlin(0, normalized.size-1, 0, ~dataSlider.bounds.width); ~cursor.refresh};
         });
         syn.release(2);

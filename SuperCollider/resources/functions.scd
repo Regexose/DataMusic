@@ -1,15 +1,28 @@
 ~makeNodes = {
+
     s.bind {
         // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
         ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
-        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
-        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
-        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
-        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus:  ~master);
-        ~ch6 = MixerChannel(\ch6, s, 2, 2, outbus:  ~master);
-        ~ch7 = MixerChannel(\ch7, s, 2, 2, outbus:  ~master);
-        ~ch8 = MixerChannel(\ch8, s, 2, 2, outbus:  ~master);
+        if (~audioOut == "BlackHole 16ch", {
+         ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus: 0);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  2);
+        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  4);
+        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  6);
+        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus:  8);
+        ~ch6 = MixerChannel(\ch6, s, 2, 2, outbus:  10);
+        ~ch7 = MixerChannel(\ch7, s, 2, 2, outbus:  12);
+        ~ch8 = MixerChannel(\ch8, s, 2, 2, outbus:  14);
+        }, {
+        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:~master);
+        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus: ~master);
+        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus: ~master);
+        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus: ~master);
+        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus: ~master);
+         ~ch6 = MixerChannel(\ch6, s, 2, 2, outbus: ~master);
+        ~ch7 = MixerChannel(\ch7, s, 2, 2, outbus: ~master);
+        ~ch8 = MixerChannel(\ch8, s, 2, 2, outbus: ~master);
+        });
+
         ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  ~master);
         ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
         ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
