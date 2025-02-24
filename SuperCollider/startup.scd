@@ -39,11 +39,16 @@ s.waitForBoot({
 //"constants.scd \n".postln;
     (~resourcePath ++ "rf_midikeys.scd").load;
 //"midikeys.scd \n".postln;
+    (~resourcePath ++ "td_midikeys.scd").load;
+//"midikeys.scd \n".postln;
     (~resourcePath ++ "rf_patterns.scd").load;
 //"patterns.scd \n".postln;
     (~resourcePath ++ "rf_live.scd").load;
 //"live.scd \n".postln;
+
     (~resourcePath ++ "synthDefs.scd").load;
+   // "synthdefs \n".postln;
+      (~resourcePath ++ "osc.scd").load;
    // "synthdefs \n".postln;
     s.sync;
     (~resourcePath ++ "functions.scd").load;
@@ -58,8 +63,8 @@ s.waitForBoot({
     s.sync;
     (~resourcePath ++ "patterns.scd").load;
     //"patterns".postln;
-    thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
-    thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
+    //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
+    //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
     //"GUI".postln;
     // Send Objekte machen
     s.sync;

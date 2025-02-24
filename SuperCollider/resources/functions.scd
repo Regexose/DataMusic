@@ -261,7 +261,7 @@
     });
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
     ~currentData.add(\globalKey -> \48);
-
+    ~currentSample.add(\base -> ~buffersByCat[\base][2]);
     ~keySelector.do({|n| n.valueAction = 3});
     ~bufSelector.do({|n| n.valueAction = 8});
 

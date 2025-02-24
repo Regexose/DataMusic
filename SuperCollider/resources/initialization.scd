@@ -66,8 +66,8 @@ PathName(~samplesPath).entries.do({
         {true}{"no samplename".postln};
 
         //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;
-
     });
+
 });
 
 ~synthArgs = (
