@@ -9,6 +9,7 @@ reverb1: #[54.0, 1, 0.13823529411765, 0.5, 4.5 ],
 reverb2: #[54, 1, 1.0, 0.10113511224084, 6.8902549872972 ],
 allpass: #[29.0, 1, 2.6, 1.2, 4.5, 10, 0.1 ],
 simple_delay: #[52.0, 2, 0.2, 0.1, 2.0, 1.0, 0.5], //bus, numCh, delaybuffer, delaytime, decay, mul, add
+comb1: #[24.0, 2, 0.425, 0.2, 1.5294117647059, 0.66210294117647, 0.001], //bus, numCh, delaybuffer, delaytime, decay, mul, add
 slap_delay: #[2, 2, 2.1485294117647, 0.19617745098039, 2.8432230392157, 1.00005, 0.0001], //bus, numCh, delaybuffer, delaytime, decay, mul, add
 limiter:  # [ 8.0, 2, 0.90588235294118, 0.01, 0.88 ],
 //compander arguments: bus, numChannels, thresh, slopeBelow, slopeAbove, clampTime, relaxTime, postGain

@@ -28,22 +28,18 @@ s.waitForBoot({
     MIDIdef.freeAll;
     // s.dumpOSC(0);
     s.sync;
-    s.newBusAllocators;
-    ~soundIn = Bus.audio(s, 1);
-    ~micBus = Bus.audio(s, 1);
-    ~ptrBus = Bus.audio(s, 1);
-    ~dryBus = Bus.audio(s,2);
+
     /// load SynthDefs, Constants, Functions
     //"busses \n".postln;
     (~resourcePath ++ "constants.scd").load;
 //"constants.scd \n".postln;
-    (~resourcePath ++ "rf_midikeys.scd").load;
+   // (~resourcePath ++ "rf_midikeys.scd").load;
 //"midikeys.scd \n".postln;
     (~resourcePath ++ "td_midikeys.scd").load;
 //"midikeys.scd \n".postln;
-    (~resourcePath ++ "rf_patterns.scd").load;
+  //  (~resourcePath ++ "rf_patterns.scd").load;
 //"patterns.scd \n".postln;
-    (~resourcePath ++ "rf_live.scd").load;
+   // (~resourcePath ++ "rf_live.scd").load;
 //"live.scd \n".postln;
 
     (~resourcePath ++ "synthDefs.scd").load;
@@ -61,26 +57,13 @@ s.waitForBoot({
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
     (~resourcePath ++ "initialization.scd").load;
     s.sync;
-    (~resourcePath ++ "patterns.scd").load;
+    //(~resourcePath ++ "patterns.scd").load;
     //"patterns".postln;
     //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
     //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
     //"GUI".postln;
     // Send Objekte machen
-    s.sync;
-    ~sends = ~sends ? ();
-    [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8, ~perc, ~voc].do{
-        |ch, i|
-        var sendName;
-        //postf("channel %\t i %\n", ch, i);
-        [~reverb, ~ringmod, ~delay].do {
-            |fx|
-            //postf("fx name %\n", fx.asString);
-            sendName = ch.name.asString ++ "_snd_" ++ fx.asString[13..16];
-            ~sends.put(sendName.asSymbol, ch.newPostSend(fx, 0.01) ); // nicht an patch sondern an channel senden
-        }
-    };
-    //"sends".postln;
+
     s.sync;
     ~initCurrent.();
     "done".postln;

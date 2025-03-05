@@ -14,7 +14,7 @@
 ~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
-~currentData = ();
+~currentData = (\td:  (\sm1 : 0, \sm2 : 0, \temp1: 0, \temp2 : 0, \humid1: 0, \humid2 : 0));
 ~activeRoutines = ();
 
 ~dataGroups = (

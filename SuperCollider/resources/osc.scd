@@ -8,7 +8,7 @@ OSCdef(\TDnoteOn, {|msg, time, addr, recvPort|
     key = msg[1].asSymbol;
     ~activeRoutines.put(\td, ());
     funcDict = ~td;
-    "key %  funcDict %".format(key, funcDict).postln;
+    "key %  funcDict %".format(key, funcDict[key]).postln;
      ~activeRoutines[\td].put(key, Routine(funcDict[key]));
     rout = ~activeRoutines[\td][key];
     if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
@@ -32,7 +32,7 @@ OSCdef(\TDnoteOff, {|msg, time, addr, recvPort|
 
 OSCdef(\lfo1, {|msg, time, addr, recvPort|
     //msg.postln;
-    ~sm1 = msg[1];
+    ~currentData[\td][\sm1] = msg[1];
 },
     '/sm1'
 );

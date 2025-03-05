@@ -26,26 +26,20 @@ s.sync;
 ~vowelArray = ~vowelArray.flat;
 
 s.sync;
-//dieses Setup nimmt konstant material über den Mic Eingang auf und schreibt es in den grainBuffer
-~micGrp = Group.new;
-~ptrGrp = Group.after(~micGrp);
-~recGrp = Group.after(~ptrGrp);
-~grainGrp = Group.after(~recGrp);
-Synth(\routing, [in: 0, fade: 0.85, out: ~micBus], ~micGrp);
-Synth(\pointer, [\buf, ~grainBuffer, \out, ~ptrBus], ~ptrGrp);
-Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~grainBuffer], ~recGrp);
+
+
 
 
 MIDIClient.init;
 MIDIIn.connectAll;
 
 
-~routines = (
+/*~routines = (
     \live: ~live.keys.asArray.sort.collect({|k| Routine(~live[k])}),
     \midi: ~midi.keys.asArray.sort.collect({|k| Routine(~midi[k])}),
     \patFuncs: ~patFuncs.keys.asArray.sort.collect({|k| Routine(~patFuncs[k])})
 
-);
+);*/
 
 PathName(~samplesPath).entries.do({
     arg subfolder;
@@ -69,7 +63,7 @@ PathName(~samplesPath).entries.do({
     });
 
 });
-
+ /*
 ~synthArgs = (
     \bak: [\amp, 0.4, \punch, 0.08, \trg, 5, \dec, 0.071, \out, ~perc.inbus, \freq, [420, 810, 1010, 2800] *0.7, \levels, [0.2, 0.24, 0.14, 0.223] *2, \ring, [0.1, 0.06, 0.04, 0.023] * 25, \ffreq, exprand(300,350), \rq, 0.1],
     \pilz:  [\amp, 0.2, \punch, 0.04, \trg, 5, \dec, 0.071, \out, ~perc.inbus, \freq, [1220, 2510, 3010, 3800], \levels, [0.12, 0.14, 0.14, 0.223] *2, \ring, [0.1, 0.06, 0.04, 0.023] * 5, \ffreq, exprand(900,1150), \rq, 0.1],
@@ -94,3 +88,4 @@ PathName(~samplesPath).entries.do({
     \dark : [ \otLag, 4, \dampExp, 0.2, \otAmps, 0.5!8, \amp, 1.75, \freq, 24.midicps, \freqLag, 3.2, \feedb, pi *3/8, \rls, 2, \atk, 0.5, \out, ~ch4.inbus]
 
 );
+*/

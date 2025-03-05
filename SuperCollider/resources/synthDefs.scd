@@ -228,11 +228,11 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
 	var sig, dry, fm, env, mic, pos, ptr, buf=\buf.kr(0);
-	env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-	mic = SoundIn.ar(0, \in.kr(0));
+	//env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+	mic = SoundIn.ar(0, \in.kr(0)) * \gain.kr(0.3);
 	ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
 	BufWr.ar(mic, buf, ptr);
-	pos = (ptr/SampleRate.ir) -1;
+	pos = (ptr/s.sampleRate) -1;
 	pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
 	sig = TGrains.ar(
 		numChannels: 2,
@@ -243,18 +243,18 @@ SynthDef(\tgrains_live, {
 		dur: \grainDur.kr(1.5),
 		pan: 0,
 		amp: \grainAmp.kr(0.3),
-		interp: \ip.kr(4)
+		interp: 2
 	);
-	fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
+	/*fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
         \carfreq.kr(400), \modfreq.kr(10), \index.kr(1), //release Phase Nitrifikation
         \fmAmp.kr(0.5)
     );
-    fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.9), 0.25);
-    sig = Splay.ar([sig, fm]) * env;
-    //readPtr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
-    dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
-    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);*/
+    //sig = Splay.ar([sig, fm]) * env;
+    //sig = CombL.ar(sig, \maxdelTime.kr(0.2), \delTime.kr(0.1), \decayTime.kr(1.0));
+    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.4));
+    //dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
+    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig  * \amp.kr(0.4) * \fade.kr(1);
 	Out.ar(\out.kr(0), sig);
 
@@ -322,41 +322,30 @@ SynthDef(\grainScrub, {
     Out.ar(\out.kr(0), sig);
 }).add;
 
-SynthDef(\livegran, {
-    |buf=0, durRand=1, rateRand=1, panRand=0, dens=40, ptrBus=0, ptrSampleDelay=20000,
-    ptrRandSamples= 3000, minPtrDelay=1000, maxGrainDur, grainEnv = (-1)|
-    var sig, dry, env, densCtrl, durCtrl, rateCtrl, panCtrl, ptr, ptrRand, totalDelay;
-
-    env = EnvGen.kr(Env.asr(\atk.kr(1), 1, \rls.kr(1)), \gate.kr(1), doneAction:2);
-    densCtrl = Select.ar(\sync.kr(1), [Dust.ar(dens), Impulse.ar(dens)]);
-    durCtrl = \baseDur.kr(0.05) * LFNoise1.ar(100).exprange(1/durRand, durRand);
-    rateCtrl = \rate.kr(1) * LFNoise1.ar(100).exprange(1/rateRand, rateRand) * \harm.kr(0).midiratio;
-    panCtrl = \pan.kr(0) * LFNoise1.ar(100).bipolar(panRand);
+SynthDef(\grainBuf, {
+    |out=0, gate = 1, amp = 1, buf, ptrBus=0,
+    minPtrDelay=1000, ptrSampleDelay=10000, ptrRandSamples= 100,
+    dens=10 |
+    var env, sig, ptr, ptrRand, totalDelay;
     ptrRand = LFNoise1.ar(100).bipolar(ptrRandSamples); // zitter effekt
     totalDelay =  max(ptrSampleDelay - ptrRand, minPtrDelay);//gesamt Zahl Delay samples
-    ptr = In.ar(ptrBus, 1);
-    ptr = ptr - totalDelay; // pointer immer hinter dem ptrBus
-    ptr = ptr/BufFrames.kr(buf); //normalisierter Pointer
-    maxGrainDur = (totalDelay/rateCtrl) / SampleRate.ir; // Wie lang darf ein Grain sein, ohne über die Schreiblücke zu springen?
-    durCtrl = min(durCtrl, maxGrainDur);
-    sig = GrainBuf.ar(
-        2,
-        densCtrl,
-        durCtrl,
+    ptr =  ptr =  In.ar(ptrBus, 1) - totalDelay;
+    ptr = ptr/BufFrames.kr(buf);
+    env = EnvGen.kr(
+        Env([0, 1, 0], [1, 1], \sin, 1),
+        gate, doneAction: 2);
+   sig = GrainBuf.ar(2,
+        Impulse.kr(dens),
+        0.1,
         buf,
-        rateCtrl,
+        \rate.kr(1),
         ptr,
         2,
-        panCtrl,
-        grainEnv
-    );
-    sig = RLPF.ar( sig, \ffreq.kr(4000), \rq.kr(0.5)) * env ;
-    ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    dry = BufRd.ar(1, buf, ptr);
-    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.5) * \fade.kr(1);
-    Out.ar(\out.kr(0), sig);
-    Out.ar(\outfx.kr(0), sig * \send.kr(0));
+        \pan.kr(0),
+        -1);
+    sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.5));
+    sig = sig * env * amp;
+    Out.ar(out, sig);
 }).add;
 
 SynthDef(\br, {
@@ -376,6 +365,15 @@ SynthDef(\br, {
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
 	Out.ar(\out.kr(0), sig);
 	Out.ar(\outdry.kr(0), dry);
+}).add;
+
+// der grainbuffer wird mit einem mindestabstand gelesen
+
+
+SynthDef(\ptrTest, {
+    |ptrBus=0|
+    var ptr;
+    ptr = In.ar(ptrBus, 1).poll;
 }).add;
 
 SynthDef(\brsaw, {
@@ -398,7 +396,7 @@ SynthDef(\brsaw, {
 
 SynthDef(\routing, {
 	var sig = SoundIn.ar(\in.kr(0));
-	sig = sig * \fade.kr(0.0);
+	sig = sig * \fade.kr(0.75);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -417,7 +415,6 @@ SynthDef(\rec, {
 	sig = In.ar(micIn, 1);
 	SendReply.kr(Impulse.kr(100), '/cursor', ptr);
 	BufWr.ar(sig, buf, ptr);
-	//RecordBuf.ar(input, \buf.kr(0), recLevel: 1.0, preLevel: 0.5, run: \run.kr(1.0), loop: 0.0, doneAction:2)
 }).add;
 
 
@@ -430,6 +427,17 @@ SynthDef(\playback, {
 }).add;
 
 
+// FX Synths ohne MixerChannel
+SynthDef(\combdelay, {
+    |bus, maxDelTime=2, delTime=0.2, decayTime=0.4, mul=1, add=0 |
+    var input, delay, sig;
+    input = In.ar(bus, 2); // als SynthDef kann der Channelwert nicht dynamisch sein
+    delay = CombL.ar(input, maxDelTime, delTime, decayTime, mul, add);
+    sig = input.blend(delay, \blend.kr(0.5));
+    sig = sig * \amp.kr(1);
+    Out.ar(\out.kr(0), sig);
+}).add;
+
 // building Effect Instruments
 // http://www.dewdrop-world.net/sc3/tutorials/index.php?id=5
 //Spec.specs.asSortedArray.do(_.postcs)
@@ -441,16 +449,6 @@ Instr(#[\busfx, \ring1], { arg bus, numChan, freq, mod_amp, xfade;
     XFade2.ar(sig, new, xfade * 2 - 1)
 }, [\audiobus, ObjectSpec(2), [0.1, 2500, \exponential], [0.01, 6.0, \exponential],  \amp]
 );
-
-/*Instr(#[\busfx, \ring1], { arg bus, numChan, freq, mod_amp, thres, slope_b, slope_a,  mul, xfade;
-	var sig, new;
-	sig = In.ar(bus, numChan);
-	new = sig * SinOsc.ar(freq, 0, mod_amp);
-    //new = Compander.ar(new, new, thres, slope_b, slope_a, 0.01 , 0.2, mul);
-    new = Compander.ar(new, new, thres, mod_amp, 0.3, 0.3, 0.4, mul);
-	XFade2.ar(sig, new, xfade * 2 - 1)
-}, [\audiobus, ObjectSpec(2), [0.1, 2500, \exponential], [0.01, 4.0], \thres, [0.1, 20.0],  [0.01, 1.0], [0.1, 7.0], \amp]
-);*/
 
 Instr(#[\busfx, \chorus], { arg bus, numChan, predelay, speed, depth, ph_diff, xfade;
 	var in, sig;
@@ -498,6 +496,15 @@ Instr(#[\busfx, \rvb_allpass], { arg bus, numChan, maxDelay, preDelay, decay,
 }, [\audiobus, ObjectSpec(2), #[0.25, 2], #[0.4, 1.5, \exponential, 0, 0.05],
 	#[0.01, 10, \exponential, 0, 0.25], ObjectSpec(4), #[0.001, 1, \exponential, 0, 0.03]]
 );
+
+Instr(#[\busfx, \combdelay], {
+    |bus, numChan, maxDelTime=2, delTime=0.2, decayTime=0.4, mul=1, add=0 |
+    var input, sig;
+    input = In.ar(bus, numChan);
+    sig = CombL.ar(input, maxDelTime, delTime, decayTime, mul, add);
+}, [\audiobus, ObjectSpec(2), #[0.1, 4, \linear], #[0.001, 4, \linear], #[-4, 4, \linear], #[0.001, 1, \linear], #[0.001, 3, \linear]]
+);
+
 // specifications are ControlSpecs, which can be defined in a shortcut syntax using an array: [low value, high value, warp style, step size, default]
 Instr(#[\busfx, \vrb1], { arg bus, numChan, room, damp, mult;
 	var sig, new;
@@ -505,6 +512,7 @@ Instr(#[\busfx, \vrb1], { arg bus, numChan, room, damp, mult;
 	sig = FreeVerb.ar(sig, 1, room, damp, mult);
 }, [\audiobus, ObjectSpec(2), #[0.1, 1.0, \linear, 0, 0.85], #[0.1, 1.0, \exponential, 0, 0.5],  #[1, 10, \exponential, 0, 4.5]]
 );
+
 Instr(#[\busfx, \limiter], { arg bus, numChannels, level, lookAhead, gain;
 	Limiter.ar(In.ar(bus, numChannels), level, lookAhead) * gain;
 }, [\mybuf, ObjectSpec(2), #[0, 1, \linear, 0, 1], #[0.001, 0.2],

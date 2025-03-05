@@ -29,10 +29,26 @@ w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 };
 w.front;
 
-~grainBuffer.plot
-x = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \minPtrDelay,  1000, \out, 0], ~grainGrp);
-x.set(\ptrRandSamples, 100)
+
+
+
+
+x = Synth(\grainTest, [\buf, ~grainBuffer,  \ptrBus, ~ptrBus, \out, 0], ~grainGrp)
+x.set(\ffreq, 4000, \rq, 0.1, \out, ~fxBus)
 x.free
+)
+
+
+
+
+~grainBuffer.plot
+x = Synth(\grainTest, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 10, \rls, 4, \out, ~fxBus], ~grainGrp);
+x.set(\dens, 30, \dur, 0.08, \rate, 1.2, \ffreq, 4000, \ptrRandSamples, 200,)
+x.free
+
+y= Synth(\combdelay, [\bus, ~fxBus, \decayTime, 1, \blend,1, \out, 0], ~fxGrp);
+y.set(\maxDelTime, 5, \delTime, 0.05, \decayTime, 5)
+y.free
 
 ~currentData[\60][\reduce].size
 s.queryAllNodes
@@ -52,18 +68,33 @@ z = Routine({
 z.stop
 y.free;
 
-x = Synth(\tgrains, [\buf, ~liveBuffer, \grainDur, 0.1, \out, 0, \amp, 0.5])
-x.set(\ffreq, 3000, \dens, 12, \fmdens, 4, \numharm,3, \carfreq, 200, \modfreq, 1, \index, 2, \grainDur, 0.55, \grainAmp, 0.1, \ampmod, 1,  \amp, 0.1, \rate, 1, \harm, [0.0, -3.6])
+x = Synth(\tgrains, [\buf, ~grainBuffer, \grainDur, 0.1, \out, 0, \amp, 0.5])
+x.set(\ffreq, 3000, \dens, 32, \fmdens, 4, \numharm, 3, \carfreq, 200, \modfreq, 2, \index, 2, \grainDur, 0.55, \drywet, 1, \grainAmp, 0.2, \ampmod, 1,  \amp, 0.1, \rate, 0.3, \harm, [0.0, -3.6] *2
+)
 
-x = Synth(\crisps, [\freqs, 3500!3, \rings, 0.3!3, \amps, rrand(0.1, 0.3)!3, \out, ~perc.inbus]
+x = Synth(\crisps, [\freqs, 3500!3, \rings, 0.3!3, \amps, rrand(0.1, 0.3)!3, \out,0])
 x.setn(\freqScale, rrand(0.1, 0.5)!3, \decayScale, rrand(0.1, 0.5)!3, \dec, 6, \freqs, exprand(100, 1200)!3,  \rings, rrand(0.1, 0.9)!3, \amps, rrand(0.01, 0.9)!3,)
 x.isPlaying;
 x.free
-)
-~activeSynths[\52]
-~currentData[\51][\data].size
-~currentData[\51][\data].size
+//////////////////////////////
+//////////////////////////////
+// Touchdesigner Delay  Test
+x = Synth(\livegran, [\atk, 0.1, \select, 0, \ptrBus, ~ptrBus, \ptrSampleDelay, 2000, \amp, 0.75, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.05, \out, 0], ~grainGrp);
 
+x = Synth(\grainTest, [ \ptrBus, ~ptrBus, \ptrSampleDelay, 2000, \amp, 0.75, \buf, ~grainBuffer, \out, 0], ~grainGrp);
+x.set(\out, ~fxBus)
+x.set( \amp, 0.5)
+x.free
+)
+
+y = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 2, \out, 0], ~fxGrp );
+y.set(\delTime, 0.1, \decayTime, 2)
+y.free;
+
+z = Synth(\ptrTest, [\ptrBus, ~ptrBus])
+z.free
+~ptrBus.get({|val| val.postln} )
+~grainBuffer.plot
 ~data.keys
 ~fxOnOff.(true)
 ~fxOnOff.(false)

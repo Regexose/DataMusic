@@ -1,58 +1,25 @@
 ~makeNodes = {
+    s.newBusAllocators;
+    ~soundIn = Bus.audio(s, 1);
+    ~micBus = Bus.audio(s, 1);
+    ~ptrBus = Bus.audio(s, 1);
+    ~dryBus = Bus.audio(s, 2);
+    ~fxBus = Bus.audio(s, 2);
     s.bind {
-        // Mixer Channels, you have to install dewdrop_lib and ddwMixerChannel with Quarks.gui
-        ~master = MixerChannel(\master, s, 2, 2);
-        ~ch1 = MixerChannel(\ch1, s, 2, 2, outbus:  ~master);
-        ~ch2 = MixerChannel(\ch2, s, 2, 2, outbus:  ~master);
-        ~ch3 = MixerChannel(\ch3, s, 2, 2, outbus:  ~master);
-        ~ch4 = MixerChannel(\ch4, s, 2, 2, outbus:  ~master);
-        ~ch5 = MixerChannel(\ch5, s, 2, 2, outbus:  ~master);
-        ~ch6 = MixerChannel(\ch6, s, 2, 2, outbus:  ~master);
-        ~ch7 = MixerChannel(\ch7, s, 2, 2, outbus:  ~master);
-        ~ch8 = MixerChannel(\ch8, s, 2, 2, outbus:  ~master);
-        ~voc = MixerChannel(\voc, s, 2, 2,  outbus:  ~master);
-        ~perc = MixerChannel(\perc, s, 2, 2, outbus:  ~master);
-        ~bass = MixerChannel(\bass, s, 2, 2, outbus:  ~master);
-        ~grainGrp = MixerChannel(\grain, s, 2, 2, outbus: ~master);
-        ~ringmod = MixerChannel(\ring, s, 2, 2, outbus: ~master);
-        ~delay = MixerChannel(\delay, s, 2, 2, outbus: ~master);
-        ~reverb = MixerChannel(\vrb1, s, 2, 2, outbus: ~master);
+        //dieses Setup nimmt konstant material über den Mic Eingang auf und schreibt es in den grainBuffer
+        ~micGrp = Group.new;
+        ~ptrGrp = Group.after(~micGrp);
+        ~recGrp = Group.after(~ptrGrp);
+        ~grainGrp = Group.after(~recGrp);
+        Synth(\routing, [in: 0, fade: 0.85, out: ~micBus], ~micGrp);
+        Synth(\pointer, [\buf, ~grainBuffer, \out, ~ptrBus], ~ptrGrp);
+        Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~grainBuffer], ~recGrp);
+
+        ~sourceGrp = Group.after(~grainGrp);
+        ~fxGrp = Group.after(~sourceGrp);
     };
 };
 
-~fxOnOff = {
-    |on|
-    if (on==true, {
-            ~fx = (
-    \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
-    //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
-    \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
-    \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\simple_delay])),
-    \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
-    \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch3_cmp : ~ch3.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch4_cmp : ~ch4.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch5_cmp : ~ch5.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch6_cmp : ~ch6.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch7_cmp : ~ch7.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \ch8_cmp : ~ch8.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
-    \voc_cmp : ~voc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander])),
-    \perc_cmp : ~perc.playfx(FxPatch(#[\busfx, \companderd], ~patches[\companderd_beat])),
-    \bass_cmp : ~bass.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_bass]))
-)
-    }, {
-        ~fx.keys.do({
-            |k|
-            ~toggleFx.(k, true)
-        })
-    })
-};
-
-~toggleFx = {
-    |key, on|
-    if (on, {~fx[key].synth.run(false)}, {~fx[key].synth.run(true);})
-};
 
 // Allgemeine Funktion zum Zuweisen von Slidern und Knobs
 ~makeCC = {
@@ -240,7 +207,7 @@
 //initialize currentData and currentSample
 ~initCurrent = {
     var reduce = 10;
-    ~midi.keys.asArray.sort.do({
+   /* ~midi.keys.asArray.sort.do({
         |k, i|
         ~currentData.add(k.asSymbol ->
             Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \in -> 0, \out -> (~data.soilmoisture1.size-1), \position -> 0, \originalSize -> ~data.soilmoisture1.size)
@@ -259,11 +226,12 @@
             Dictionary.with(\reduce -> reduce, \data -> ~data.soilmoisture1.select({|item, i| i%reduce == 0}), \datakey -> \soilmoisture1, \in -> 0, \out -> (~data.soilmoisture1.size-1), \position -> 0, \originalSize -> ~data.soilmoisture1.size)
         );
     });
+    ~keySelector.do({|n| n.valueAction = 3});
+    ~bufSelector.do({|n| n.valueAction = 8});
+    */
     ~currentData.add(\globalPos -> 0);//For synchronous data playback
     ~currentData.add(\globalKey -> \48);
     ~currentSample.add(\base -> ~buffersByCat[\base][2]);
-    ~keySelector.do({|n| n.valueAction = 3});
-    ~bufSelector.do({|n| n.valueAction = 8});
 
 };
 
