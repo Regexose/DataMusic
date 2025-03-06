@@ -486,17 +486,12 @@ Instr(#[\busfx, \singleDelay], { arg bus, numChan, maxTime, time, decay, mul, ad
 
 
 //more a delay than reverb
-Instr(#[\busfx, \rvb_allpass], { arg bus, numChan, maxDelay, preDelay, decay,
-	numRefl, random;
+Instr(#[\busfx, \rvb_allpass], { arg bus, numChan, maxDelay=4, preDelay=0.02, decay=2.0;
 	var sig, new;
 	sig = In.ar(bus, numChan);
-	new = sig;
-	numRefl.do({
-		new = AllpassN.ar(new, maxDelay, Array.fill(numChan, { random.rand }) + preDelay, decay);
-	});
-	new;
-}, [\audiobus, ObjectSpec(2), #[0.25, 2], #[0.4, 1.5, \exponential, 0, 0.05],
-	#[0.01, 10, \exponential, 0, 0.25], ObjectSpec(4), #[0.001, 1, \exponential, 0, 0.03]]
+	new = AllpassN.ar(sig, maxDelay, preDelay, decay);
+}, [\audiobus, ObjectSpec(2), #[0.25, 6], #[0.01, 1.5, \exponential, 0, 0.05],
+	#[0.01, 10, \exponential, 0, 0.25]]
 );
 // specifications are ControlSpecs, which can be defined in a shortcut syntax using an array: [low value, high value, warp style, step size, default]
 Instr(#[\busfx, \vrb1], { arg bus, numChan, room, damp, mult;

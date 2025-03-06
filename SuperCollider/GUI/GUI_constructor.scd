@@ -9,7 +9,9 @@ GUI mit verschiedenen SubWindows
 
 ~buildSelectors = {
     |name, winbg, yfactor, midikeys, keynames, buffers, datakeys, funcs, mode|
-    var win, boxes, pauses, keyLabels, bufLabels, res, modcase, toggles, fx, toggleLabels, layout, lay=();
+    var win, boxes, pauses, keyLabels, bufLabels, res, modcase, toggles, fx, toggleLabels,
+    channels, layout, lay=();
+    channels =  [~ch1, ~ch2, ~ch3, ~ch4, ~ch5, ~ch6, ~ch7, ~ch8, ~perc, ~voc];
 
     win = Window.new(name, Rect(10, 10 + (yfactor *400), 800, 400))
     //.autoRememberPosition(\select, \w)
@@ -70,6 +72,22 @@ GUI mit verschiedenen SubWindows
         .name_(k)
     });
 
+     ~drywet = midikeys.collect({
+        |k, i|
+        Slider.new()
+        .orientation_(\horizontal)
+        .action_({|sl| ~wetdry.(k, sl.value)})
+
+    });
+
+     ~sends1 = midikeys.collect({
+        |k,i|
+        Slider.new()
+        .orientation_(\horizontal)
+        .action_({|sl| ~senddelay.(channels[i], sl.value)})
+
+    });
+
     bufLabels = [\base, \tension, \relax].collect({
         |l,i|
         StaticText.new()
@@ -85,6 +103,7 @@ GUI mit verschiedenen SubWindows
         .action_({arg pm; ~bufferSelectorAction.(pm)})
         .name_(k)
     });
+
 
     modcase = case
     {mode=="midi"}{
@@ -127,7 +146,7 @@ GUI mit verschiedenen SubWindows
     }
     {true}{"no modus".postln};
 
-    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res));
+    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res), HLayout(*~drywet), HLayout(*~sends1) );
     lay[\box] = HLayout(*boxes);
     lay[\paus] = HLayout(*pauses);
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
