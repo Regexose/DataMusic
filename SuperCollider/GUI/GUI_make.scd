@@ -35,7 +35,7 @@ Window.closeAll;
 
 ~liveSelectors = ~buildSelectors.("live", ~style.live_bg, 1, livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
 
-~patSelectors = ~buildSelectors.("patFuncs", ~style.pattern_bg, 2, patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");
+/*~patSelectors = ~buildSelectors.("patFuncs", ~style.pattern_bg, 2, patternkeys, patternNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), patFuncs, "pattern");*/
 
 
 ~dataView = ~buildDataView.(\soilmoisture1, 10);

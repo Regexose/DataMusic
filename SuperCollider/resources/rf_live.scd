@@ -45,11 +45,11 @@
         buf = ~grainBuffer;
         s.sync;
         "pre Syn %".format(midikey).postln;
-         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \out, ~ch2.inbus], ~grainGrp);
+         syn = Synth(\livegran, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \rq, 0.44, \dens, 40, \ptrSampleDelay, s.sampleRate/4, \ptrRandSamples, 0, \out, ~ch2.inbus], ~grainGrp);
         ~activeSynths.put(midikey, syn);
         normalized.do({
             |d, i|
-            //"original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
+            "original data  %   normalized data   %  at  %".format(d, normalized[i].trunc(0.01), i).postln;
 
             syn.set( \harm, d.linlin(mn, mx , [-12.0, -6.0, -0.5], [12.0, 6.0, 0.5]));
             ~t.beatDur.wait;
@@ -67,7 +67,7 @@
         //reduce = ~currentData[\50][\reduce];
         midikey = \52;
         data = ~currentData[midikey][\data].asArray;
-        "pre Syn \51".postln;
+        "pre Syn \52".postln;
         ~currentData.globalKey = midikey;
         //# mn, mx = [0.0, 100]; // Bodenfeuchte WHC Water Holding Capacity
         borders = [[0.0, 10.0 ], [10.0, 18.0], [18.0, 25.0], [25.0, 35.0]];
