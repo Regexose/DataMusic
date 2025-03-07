@@ -104,6 +104,13 @@ GUI mit verschiedenen SubWindows
         .name_(k)
     });
 
+    fx = Button.new(bounds:Rect(40,20))
+            .states_([
+                ["FX_ON", Color.green], ["FX_OFF", Color.red]
+            ])
+            .mouseDownAction_({|btn| "switch % ".format(btn.value).postln; ~fxOnOff.(btn.value.asBoolean)})
+            .valueAction_(1);
+
 
     modcase = case
     {mode=="midi"}{
@@ -146,7 +153,7 @@ GUI mit verschiedenen SubWindows
     }
     {true}{"no modus".postln};
 
-    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res), HLayout(*~drywet), HLayout(*~sends1) );
+    lay[\keys] = VLayout(HLayout(*keyLabels), HLayout(*~keySelector), HLayout(*res), HLayout(*~drywet), HLayout(*~sends1), fx);
     lay[\box] = HLayout(*boxes);
     lay[\paus] = HLayout(*pauses);
     lay[\stack1] = StackLayout(View().layout_(VLayout(lay[\keys], lay[\box], lay[\paus]))).mode_(\stackAll);
