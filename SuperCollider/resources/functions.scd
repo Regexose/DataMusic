@@ -27,7 +27,7 @@
     \rev: ~reverb.playfx(FxPatch(#[\busfx, \vrb1 ], ~patches[\reverb2])),
     //\allpass: ~reverb.playfx(FxPatch(#[\busfx, \rvb_allpass ], [29, 2])),
     \ring : ~ringmod.playfx(FxPatch(#[\busfx, \ring1], ~patches[\ring])),
-    \delay : ~delay.playfx(FxPatch(#[\busfx, \singleDelay], ~patches[\simple_delay])),
+    \delay : ~delay.playfx(FxPatch(#[\busfx, \rvb_allpass], ~patches[\allpass])),
     \mst_lim : ~master.playfx(FxPatch(#[\busfx, \limiter], ~patches[\limiter])),
     \ch1_cmp : ~ch1.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
     \ch2_cmp : ~ch2.playfx(FxPatch(#[\busfx, \companderd], ~patches[\compander_01])),
@@ -193,6 +193,20 @@
     buf = Buffer.read(s, filePath.fullPath);
     ~currentSample.add(key.asSymbol -> buf);
     "set buffer % with %".format(key, selected).postln;
+};
+
+~wetdry = {
+    |k, val|
+    "drywet %   val % ".format(k, val).postln;
+    ~activeSynths[k].set(\drywet, val);
+};
+
+~senddelay = {
+    |k, val|
+    var sendName = (k.name.asString ++ "_snd_dela").asSymbol;
+    "sends %   val % ".format(sendName, val).postln;
+    ~sends[sendName].level = val;
+    //~activeSynths[k].set(\drywet, val);
 };
 
 ~reduceAction = {

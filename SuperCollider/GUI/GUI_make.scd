@@ -31,7 +31,7 @@ liveNames = ["harm_index", "harmonized", "rate_temp", "SM_nitrifikatio", "live f
 
 Window.closeAll;
 
-~midiSelectors = ~buildSelectors.("midi", ~style.midi_bg, 0,  midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
+/*~midiSelectors = ~buildSelectors.("midi", ~style.midi_bg, 0,  midikeys, keynames,  ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");*/
 
 ~liveSelectors = ~buildSelectors.("live", ~style.live_bg, 1, livekeys, liveNames, ~buffersByName.keys.asArray, ~data.keys.remove(''), midiPlayFuncs, "midi");
 

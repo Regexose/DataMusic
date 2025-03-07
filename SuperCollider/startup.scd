@@ -78,6 +78,7 @@ s.waitForBoot({
     //"sends".postln;
     s.sync;
     ~initCurrent.();
+    ~fxOnOff.(true);
     "done".postln;
 })
 )
