@@ -2,9 +2,9 @@
 //~audioOut= "Scarlett 4i4 USB";
 //~audioOut = "MacBook Pro-Lautsprecher";
 //~audioOut = "Externe Kopfhöre";
-//~audioOut = "BlackHole 16ch";
+~audioOut = "BlackHole 16ch";
 //~audioOut = " HauptgerätRM";
-~audioOut = "Fireface 400 (BEF)";
+//~audioOut = "Fireface 400 (BEF)";
 ~audioIn = "Fireface 400 (BEF)";
 //~audioIn = "Scarlett 4i4 USB";
 //~audioInterface = "Fireface 400 (BEF)";

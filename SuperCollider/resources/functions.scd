@@ -1,19 +1,23 @@
 ~makeNodes = {
     s.newBusAllocators;
     ~soundIn = Bus.audio(s, 1);
+    ~userPtr = Bus.audio(s, 1);
     ~micBus = Bus.audio(s, 1);
     ~ptrBus = Bus.audio(s, 1);
     ~dryBus = Bus.audio(s, 2);
     ~fxBus = Bus.audio(s, 2);
     s.bind {
         //dieses Setup nimmt konstant material über den Mic Eingang auf und schreibt es in den grainBuffer
+        var fftSize, size;
+        size = 128;
+        fftSize = size * 2;
         ~micGrp = Group.new;
         ~ptrGrp = Group.after(~micGrp);
         ~recGrp = Group.after(~ptrGrp);
         ~grainGrp = Group.after(~recGrp);
         Synth(\routing, [in: 0, fade: 0.85, out: ~micBus], ~micGrp);
         Synth(\pointer, [\buf, ~grainBuffer, \out, ~ptrBus], ~ptrGrp);
-        Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~grainBuffer], ~recGrp);
+        Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~grainBuffer ], ~recGrp);
 
         ~sourceGrp = Group.after(~grainGrp);
         ~fxGrp = Group.after(~sourceGrp);
@@ -103,24 +107,6 @@
     data;
 };
 
-~makeWaveTable = {
-    |size=4096, external, name|
-    var sig, wt, buf;
-    external = external.sort.reverse.asArray;
-    external = external.normalize(external.last, external[0]/2);
-    external[0..15].postln;
-    r{
-        buf = Buffer.alloc(s, size*2);
-        s.sync;
-        buf.sine1(external[0..15], asWavetable:true);
-        //buf.plot;
-        s.sync;
-        ~buffersByName.add(name.asSymbol -> buf);
-        "made buffer  %".format(~buffersByName[name]).postln;
-
-    }.play(AppClock);
-};
-
 
 ~alignData = {
     |keyCurrent, refDataPointer|
@@ -178,12 +164,15 @@
 
 ~recordUser = {
     |username, typename|
-    var rec, filePath, file, progress=0;
+    var ptr, rec, filePath, file, progress=0;
     //make Gui for record progress
-    rec = Synth(\rec, [\buf, ~userSound, \ptrIn, ~ptrBus, \micIn, ~micBus]);
+    "recording % %".format(username, typename).postln;
+    rec = Synth(\userrec, [\buf, ~userSound, \ptrIn, ~userPtr, \micIn, 0]);
     o = OSCdef(\listener, { |msg|
-        {progress = msg[3]}.defer; if(msg[3] >= (~userSound.numFrames -100), {
+        if(msg[3] > (~userSound.numFrames-500), {
             "record done".postln;
+            msg.postln;
+            ptr.free;
             rec.free;
             File.mkdir(~samplesPath +/+ username);
             ~userSound.write(~samplesPath +/+ username +/+ typename ++ ".wav", "WAV", "int16");

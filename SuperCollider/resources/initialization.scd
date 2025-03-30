@@ -63,6 +63,8 @@ PathName(~samplesPath).entries.do({
     });
 
 });
+ ~activeRoutines.put(\td, ());
+
  /*
 ~synthArgs = (
     \bak: [\amp, 0.4, \punch, 0.08, \trg, 5, \dec, 0.071, \out, ~perc.inbus, \freq, [420, 810, 1010, 2800] *0.7, \levels, [0.2, 0.24, 0.14, 0.223] *2, \ring, [0.1, 0.06, 0.04, 0.023] * 25, \ffreq, exprand(300,350), \rq, 0.1],

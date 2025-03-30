@@ -14,7 +14,7 @@ Pbindef(\klic,
     \ffreq, 5000,
     \pan, 0,
     \pLag, 0.26,
-    \out, ~perc.inbus,
+    \out, 0,
 );
 
 
@@ -23,19 +23,19 @@ Pbindef(\klank,
     \freqs, Prand([2000!3, 900!3, 1500!3, 3500!3], inf),
     \rings, 0.001!3,
     \amps, Pfunc({Array.rand(3, 0.06, 0.74)}) * Pwhite(0.01, 0.03, inf),
-    \dur, Pwhite(0.01, 0.61, inf),
-    \amp, 0.1,
+    \dur, 1,
+    \amp, 0.3,
     \punch, Pwhite(0.1, 0.5, inf),
     \dec, Pkey(\punch) * 0.3,
     \freqScale, Pwhite(0.8, 1.5, inf),
     \decayScale, Pwhite(0.04, 0.1, inf),
     \atk, 0.02,
     \rls, 0.1,
-    \ffreq, Pwhite(100, 1200, inf),
+    \ffreq, Pwhite(900, 1200, inf),
     \rq, 0.9,
     \pan, Pwhite(-0.8, 0.8, inf),
     \pLag, Pwhite(0.1, 1.7, inf),
-    \out, ~perc.inbus,
+    \out, 0,
 );
 
 Pbindef(\snare,
@@ -46,7 +46,7 @@ Pbindef(\snare,
   \envsus, Pkey(\dur),
     \envlast, 1,
     \pan, Pwhite(-0.8, 0.8, inf),
-    \out, ~perc.inbus
+    \out, 0
 );
 
 Pbindef(\percvowel,
@@ -61,8 +61,7 @@ Pbindef(\percvowel,
     \widthMods, pi/16,
     \ffreq, Pseq((800, 1800 .. 5800),inf),
     \amp, 0.7,
-    \out, ~ch1.inbus,
-    \outdry, ~dryBus
+    \out, 0,
 );
 
 
@@ -76,7 +75,7 @@ Pbindef(\snarl,
     \modRange1, 0.01,
     \modRange2, 4.1,
     \freqScale, 1,
-    \out, ~ch2.inbus
+    \out, 0
 );
 
 
@@ -95,7 +94,7 @@ Pbindef(\arp2,
     \freqScale, 1.5,
     \fScale,  Pwhite(0.1, 1, inf),
     \ffreq, 4000,
-    \out, ~ch3.inbus,
+    \out, 0,
     \outdry, ~dryBus
 );
 
@@ -111,7 +110,7 @@ Pbindef(\arp3,
     \atk, 0.03,
     \rls, 0.2,
     \ffreq, Pwhite(1600, 4000, inf),
-    \out, ~ch3.inbus,
+    \out, 0,
     \outdry, ~dryBus
 );
 
@@ -128,7 +127,7 @@ Pbindef(\array01,
     \amp, 0.2,
     \ffreq, 4900,
     \rq, 0.1,
-    \out, ~ch2.inbus
+    \out, 0
 );
 
 
@@ -148,7 +147,7 @@ Pbindef(\arp1,
     \rls, 0.06,
     \amp, 0.05,
     \ffreq, Pkey(\freq) * Prand([3, 4, 5], inf),
-    \out, ~ch3.inbus,
+    \out, 0,
 );
 
 Pbindef(\quirkator,
@@ -164,7 +163,7 @@ Pbindef(\quirkator,
     \atk, Prand([0.01, 0.04, 0.08], inf), \rls, Prand([0.041, 0.15, 0.3], inf), \sustain, Pkey(\rls),
     \dur, Pseq([Pn(0.25, 45), Pn(0.125, 16)], inf),
     \ffreq, Pwhite(300, 3000, inf), \rq, Prand([0.1, 0.13, 0.5], inf),
-    \out, ~ch1.inbus
+    \out, 0
 );
 
 Pbindef(\dark,
@@ -177,7 +176,7 @@ Pbindef(\dark,
     \freqLag, 3.2, \feedb, pi *3/8,
     \dur, 4,
    \rls, 2, \atk, 0.5,
-    \out, ~ch1.inbus;
+    \out, 0;
 
 );
 
@@ -194,7 +193,7 @@ Pbindef(\voc2,
     \freqScale, Pseq([Pn(1, 15), 0.6], inf),
     \decayScale, 0.09,
     \rls, 1,
-    \out, ~voc.inbus,
+    \out,0,
     \outdry, ~dryBus
 );
 
@@ -209,7 +208,7 @@ Pbindef(\voc1,
     \decayScale, 0.11,
     \fScale, 1,
     \ffreq, 6600,
-    \out, ~voc.inbus,
+    \out,0,
     \outdry, ~dryBus
 
 );

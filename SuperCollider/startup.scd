@@ -57,23 +57,27 @@ s.waitForBoot({
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
     (~resourcePath ++ "initialization.scd").load;
     s.sync;
-    //(~resourcePath ++ "patterns.scd").load;
+    (~resourcePath ++ "patterns.scd").load;
     //"patterns".postln;
     //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
     //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
     //"GUI".postln;
     // Send Objekte machen
 
-    s.sync;
     ~initCurrent.();
+    s.sync;
+
+
     "done".postln;
+
 })
 )
 s.queryAllNodes;
 (
-~recordUser.("nitro","base");
+~recordUser.("nitro","tension");
 ~recordUser.("boris", "tension");
 ~recordUser.("boris", "relax");
+OSCdef(\listener).free
 )
 
 MIDIFunc.trace(false)

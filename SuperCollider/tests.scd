@@ -1,47 +1,13 @@
 Window.closeAll;
 s.defaultGroup
+s.queryAllNodes
 
-~sends.ch1_snd_dela.level
-~ch1.inbus
-~voc.postSends[2].level
-~fx.ring.gui
-
-~fx.delay.synth.run(false)
-~fx.delay.synth.run(true)
-~reverb.inbus
 SynthDescLib.at(\livegran).controlDict
-
-~board = MixingBoard("3 chan", nil, ~ch1, ~delay, ~master);
-~board.postSettings
-PeakMonitor(~delay)
 ~routines[\patFunc][0]
 ~currentData.dark[\in]
-(
-w = Window.new("I catch keystrokes");
-w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
-	var c
-	[char, keycode].postln;
-	c = case
-	{keycode == 18} {"active replacePlay".postln; ~replacePlay.()}
-	//{keycode == 19} {"empty replacePlay".postln; [\rplOn, \rplOff].do({|n| MIDIdef(n).free})}
-	{keycode == 19} {"empty replacePlay".postln; {~replacePlay = {}}}
-	{true}{};
-};
-w.front;
 
+~userSound.numFrames
 
-
-
-
-x = Synth(\grainTest, [\buf, ~grainBuffer,  \ptrBus, ~ptrBus, \out, 0], ~grainGrp)
-x.set(\ffreq, 4000, \rq, 0.1, \out, ~fxBus)
-x.free
-)
-
-
-
-
-~grainBuffer.plot
 x = Synth(\grainTest, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 10, \rls, 4, \out, ~fxBus], ~grainGrp);
 x.set(\dens, 30, \dur, 0.08, \rate, 1.2, \ffreq, 4000, \ptrRandSamples, 200,)
 x.free
@@ -81,13 +47,13 @@ x.free
 // Touchdesigner Delay  Test
 x = Synth(\livegran, [\atk, 0.1, \select, 0, \ptrBus, ~ptrBus, \ptrSampleDelay, 2000, \amp, 0.75, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.05, \out, 0], ~grainGrp);
 
-x = Synth(\grainTest, [ \ptrBus, ~ptrBus, \ptrSampleDelay, 2000, \amp, 0.75, \buf, ~grainBuffer, \out, 0], ~grainGrp);
+x = Synth(\grainBuf, [\ptrBus, ~ptrBus, \ptrSampleDelay, 800, \amp, 0.5, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.1, \out, ~fxBus], ~grainGrp);
 x.set(\out, ~fxBus)
 x.set( \amp, 0.5)
 x.free
 )
 
-y = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 2, \out, 0], ~fxGrp );
+y = Synth(\combdelay, [\bus, ~fxBus, \blend, 0.8, \maxDelTime, 2, \out, 0], ~fxGrp );
 y.set(\delTime, 0.1, \decayTime, 2)
 y.free;
 
@@ -99,6 +65,36 @@ z.free
 ~fxOnOff.(true)
 ~fxOnOff.(false)
 
+
+(
+x = Synth(\pvDelay, [
+    \inMix, 0.5,
+    \inbus, ~micBus,
+    \fftBuf, ~fftBuffer.bufnum,
+    \delayBuf, ~delTimeBuffer.bufnum,
+    \fbBuf, ~fbAmtBuffer.bufnum,
+    \out, 0,
+    \amp, 0.5]
+)
+)
+x.set(\inMix, 0.5)
+x.free
+
+(
+Pbindef(\spec,
+		\instrument, \pvDelay,
+		\inMix, 1,
+        \inbus, ~micBus,
+		\fftBuf, ~fftBuffer,
+		\delayBuf, ~delTimeBuffer,
+		\fbBuf, ~fbAmtBuffer,
+        \dur, 1.5,
+		\out, 0,
+		\amp, 0.5,
+).play;
+)
+Pbindef(\spec, \inMix, 0.7, \maxdel, 0.3)
+Pbindef(\spec).stop
 
 
 Pbindef.all.do(_.stop)

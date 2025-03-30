@@ -1,52 +1,132 @@
 ~td = (
     // on Off Play
     \48 : {
-        /* spielt brsaw-Synth mit filter frequency manipulation \ffreq
+        /* am besten mit Zischgeräuschen
         */
-        var key= \48, data, reduce, buf, syn;
+        var key= \48, data, reduce, buf, syn, mn, mx;
         //"play TD %  sm %".format(key, ~sm1).postln;
-        buf = ~grainBuffer;
+        buf = ~grainBuffer.normalize;
+        # mn, mx =[90, 125];
         s.sync;
-        syn = Synth(\grainBuf, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.44, \dens, 40, \drywet, 0.9, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \grainEnv,-1, \out, 0], ~sourceGrp);
+        syn = Synth(\grainBuf, [\amp, 0.7, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.14, \dens, 40,    \baseDur, 0.15,  \out, 0], ~sourceGrp);
         ~activeSynths.put(key, syn);
         loop{
             data = ~currentData.td[\sm1];
-            syn.set(\ffreq, data.linexp(0.3, 0.75, 500, 3000),
-                \harm, data.linlin(0.3, 0.6 , [-12.0, -6.0, -0.5], [24.0, 18.0, 12.5]));
-            0.05.wait};
-
-    },
-    \50 :{
-        var key= \50, data, buf, syn;
-        //"play TD %  sm %".format(key, ~sm1).postln;
-        buf = ~grainBuffer;
-        s.sync;
-        syn = Synth(\grainBuf, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.44, \dens, 40, \drywet, 0.9, \ptrSampleDelay, s.sampleRate/3, \ptrRandSamples, 0, \grainEnv,-1, \out, 0], ~sourceGrp);
-        ~activeSynths.put(key, syn);
-        loop{
-            data = ~currentData.td[\sm1];
-            syn.set(\ptrSampleDelay, data.linlin(0.0, 1, 15000, 500000),
-                \minPtrDelay, data.linlin(0.0, 1, 1000, 10000),
-                \dens, data.linlin(0, 1, 20, 100)
+            syn.set(\ffreq, data.linlin(mn, mx, 1000, 4000),
+                \rateRand, data.linlin(mn, mx , 1, 2.5),
+                \dens, data.linlin(mn, mx, 1, 20),
+                \baseDur, data.linlin(mn, mx, 1, 0.05),
             );
-            0.05.wait};
+            0.5.wait};
+
+    },
+    \50 :{// geht mit fast allen Sounds
+        var key= \50, data, buf, syn, mn, mx;
+        //Grains mit dezidierter ptrPos und pan
+        buf = ~grainBuffer;
+         # mn, mx =[90,125];
+        s.sync;
+        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 50, \minPtrDelay, 300, \out,2], ~grainGrp);
+        ~activeSynths.put(key, syn);
+        loop{
+            data = ~currentData.td[\sm1];
+            syn.set(\ptrSampleDelay, data.linlin(mn, mx, 305, 10000),
+                \pan, data.linlin(mn, mx, -1, 1),
+                \baseDur, data.linlin(mn, mx, 0.05, 0.5),
+            );
+            0.5.wait};
     },
 
-    \52 : {
-        var key= \52, data, syn, fx;
+    \52 :{
+        var key= \52, data, buf, syn, mn, mx;
+        //Grains mit dezidierter ptrPos und pan
+        //buf = ~buffersByName[\nitro][\tension];
+        buf = ~grainBuffer;
+         # mn, mx =[90,125];
+        s.sync;
+        syn = Synth(\grainScrub, [\amp, 0.3, \ptrBus, ~ptrBus, \buf, buf, \tr, 0.2, \out,4], ~grainGrp);
+        ~activeSynths.put(key, syn);
+        loop{
+            data = ~currentData.td[\sm2];
+            syn.set(
+                \pan, data.linlin(mn, mx, -1, 1),
+                \pos, data.linlin(95, 120, 0.0, buf.numFrames / s.sampleRate),
+                \tr, data.linlin(mn, mx, 0.05, 5),
+                //\harm, data.linlin(mn, mx, 0,8)
+            );
+            0.5.wait};
+    },
+
+    \53 : {
+        var key= \53, data, syn, fx, mn, mx;
         //"play TD %  sm %".format(key, ~sm1).postln;
-        syn = Synth(\grainBuf, [\ptrBus, ~ptrBus, \ptrSampleDelay, 3000, \amp, 0.5, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.1, \out, ~fxBus], ~grainGrp);
-        //syn = Synth(\brsaw, [\amp, 0.5, \buf, ~grainBuffer, \out, ~fxBus], ~grainGrp);
-        fx = Synth(\combdelay, [\bus, ~fxBus, \decayTime, 3, \blend, 0.8, \out, 0], ~fxGrp);
+        # mn, mx =[90, 125];
+        syn = Synth(\grainBuf, [\ptrBus, ~ptrBus, \ptrSampleDelay, 800, \amp, 0.9, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.1, \out, ~dryBus, \outfx, ~fxBus, \send, 1], ~grainGrp);
+        fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 4, \decayTime, 3, \blend, 1, \out, 6], ~fxGrp);
         ~activeSynths.put(key, [syn, fx]);
         loop{
             data = ~currentData.td[\sm1];
             //"data % \t ffreq % \t deltime %".format(data, data.linlin(0, 1, 1500, 3500), data.linlin(0, 1, 0.02, 0.8) ).postln;
-            syn.set(\harm, data);//data.linlin(0, 1, 1500, 3500));
-            fx.set(\delTime, data.linlin(0, 1, 0.005, 0.5));
+            //syn.set(\ffreq, data.linlin(mn, mx, 1500, 3500));//);
+            //fx.set(\delTime, data.linlin(0, 1, 0.005, 0.5));
+            fx.set(\delTime, data.lincurve(mn, mx, 0.02, 0.1, -3),
+                \decayTime, data.linlin(mn, mx, 4, 0.2)
+            );
+            0.5.wait};
+    },
+
+        \55 :{
+        var key= \55, data, buf, syn, mn, mx;
+        //"play TD %  sm %".format(key, ~sm1).postln;
+        buf = ~grainBuffer;
+        # mn, mx =[90, 125];
+        s.sync;
+        syn = Synth(\grainBuf, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.44, \dens, 40, \drywet, 0.9, \minPtrDelay, 500, \ptrSampleDelay, 800, \rateRand, 1.2, \out, 6], ~grainGrp);
+        ~activeSynths.put(key, syn);
+        loop{
+            data = ~currentData.td[\temp];
+            //data.postln;
+            syn.set(\ptrRandSamples, data.linlin(mn, mx, 10, 500),
+                \ptrNoise, data.linlin(mn, mx, 3, 20),
+                \rateNoise, data.linlin(mn, mx, 3, 20),
+                //\durRand, data.linlin(0.1, 1.0, 1, 3),
+                \rate, data.linlin(mn, mx, 0.5, 3),
+            );
+            0.05.wait};
+    },
+
+    \57 : {
+        var key= \57, data, syn, fx, mn, mx;
+        //"play TD %  sm %".format(key, ~sm1).postln;
+        # mn, mx =[90, 125];
+        syn = Synth(\grainBuf, [\ptrBus, ~ptrBus, \ptrSampleDelay, 800, \amp, 0.4, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.1, \out, ~dryBus, \outfx, ~fxBus, \send, 1], ~grainGrp);
+        fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 8], ~fxGrp);
+        ~activeSynths.put(key, [syn, fx]);
+        loop{
+            data = ~currentData.td[\temp];
+            //"data % \t ffreq % \t deltime %".format(data, data.linlin(0, 1, 1500, 3500), data.linlin(0, 1, 0.02, 0.8) ).postln;
+            syn.set(\ffreq, data.linlin(mn, mx, 600, 3500));//);
+            //fx.set(\delTime, data.linlin(0, 1, 0.005, 0.5));
+            fx.set(\delTime, data.linlin(mn, mx, 0.02, 0.1),
+                \decayTime, data.linlin(mn, mx, 1, 0.2)
+            );
+            0.05.wait};
+    },
+
+    \59 : {
+        var key= \59, data, syn, fx, mn, mx;
+        //"play TD %  sm %".format(key, ~sm1).postln;
+         # mn, mx =[90, 125];
+        syn = Synth(\vowelklank, [\ptrBus, ~ptrBus,  \amp, 0.07, \drywet, 1, \buf, ~grainBuffer, \out, 10], ~grainGrp);
+        ~activeSynths.put(key, syn);
+        loop{
+            data = ~currentData.td[\gust];
+            //data.postln;
+            syn.set(\freqScale, data, \vow, data.linlin(mn, mx, 0, 15).asInteger);
             0.05.wait};
     },
 );
+
 /*
 ~midiChannels = (
         //hier werden die sendNames für die Postsendregler festgelegt für ~makeCC
