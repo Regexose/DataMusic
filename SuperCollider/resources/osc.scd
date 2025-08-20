@@ -3,36 +3,35 @@ Hier werden die Oscdefs zur Kommunikation mit Touchdesigner geladen
 */
 
 
-OSCdef(\TDnoteOn, {|msg, time, addr, recvPort|
+OSCdef(\TDOnKeyhold, {|msg, time, addr, recvPort|
     var key, buf, syn,  rout, funcDict;
     key = msg[1].asSymbol;
     funcDict = ~td;
-    "key %  funcDict %".format(key, funcDict[key]).postln;
+    "receiving  NoteOn from TD Onkeyhold:key %  funcDict %".format(key, funcDict[key]).postln;
      ~activeRoutines[\td].put(key, Routine(funcDict[key]));
     rout = ~activeRoutines[\td][key];
     if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
     //"~activeRoutines % ".format(~activeRoutines).postln;
     rout.play;
 },
-'/noteOn'
+'/OnKeyhold'
 );
 
-OSCdef(\TDnoteOff, {|msg, time, addr, recvPort|
+OSCdef(\TDOffKeyhold, {|msg, time, addr, recvPort|
     var key, funcDict, rout;
     key = msg[1].asSymbol;
     rout = ~activeRoutines[\td][key];
     rout.stop;
     //~activeRoutines[\td].removeAt(key);
-    ~activeSynths[key].free;
-    "stopped rout %  activesynths % routines %".format(key, ~activeSynths, ~activeRoutines).postln;
-
-
+    ~activeSynths[key].do({|x| x.set(\gate, 0);});
+    "stopped rout %  activesynths % routine active= %".format(key, ~activeSynths, rout.isActive).postln;
 },
-'/noteOff'
+'/OffKeyhold'
 );
 
+
 OSCdef(\resetAll, {|msg, time, addr, recvPort|
-    //msg[1].postln;
+    msg[1].postln;
     ~activeRoutines[\td].keys.do({|k| ~activeRoutines[\td].removeAt(k) })
 },
     '/reset'
@@ -40,34 +39,34 @@ OSCdef(\resetAll, {|msg, time, addr, recvPort|
 
 
 OSCdef(\sm1, {|msg, time, addr, recvPort|
-    //msg[1].postln;
-    ~currentData[\td][\sm1] = msg[1];
+    "receiving sm1 %".format(msg[1]).postln;
+    ~currentData[\td][\sm1] = msg[1].asInteger;
 },
     '/sm1'
 );
-OSCdef(\sm2, {|msg, time, addr, recvPort|
+OSCdef(\trock01, {|msg, time, addr, recvPort|
    //msg[1].postln;
-    ~currentData[\td][\sm2] = msg[1];
+    ~currentData[\td][\trock01] = msg[1];
 },
-    '/sm2'
+    '/trock01'
 );
-OSCdef(\sm3, {|msg, time, addr, recvPort|
-   // msg[1].postln;
-    ~currentData[\td][\sm3] = msg[1];
+OSCdef(\trock02, {|msg, time, addr, recvPort|
+    //msg[1].postln;
+    ~currentData[\td][\trock02] = msg[1].asInteger;
 },
-    '/sm3'
-);
-
-OSCdef(\temp, {|msg, time, addr, recvPort|
-    //msg.postln;
-    ~currentData[\td][\temp] = msg[1];
-},
-    '/temp'
+    '/trock02'
 );
 
-OSCdef(\wind, {|msg, time, addr, recvPort|
-    //msg.postln;
-    ~currentData[\td][\gust] = msg[1];
+OSCdef(\temp1, {|msg, time, addr, recvPort|
+    //msg[1].postln;
+    ~currentData[\td][\temp_winter] = msg[1].asFloat;
 },
-    '/gust'
+    '/temp_winter'
+);
+
+OSCdef(\drone, {|msg, time, addr, recvPort|
+     //"receiving drone %".format(msg[1]).postln;
+    ~currentData[\td][\drone] = msg[1];
+},
+    '/drone'
 );

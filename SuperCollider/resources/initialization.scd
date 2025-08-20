@@ -2,6 +2,8 @@
 ~sm50 = ~createData.(~dataPath, "SM_50.csv");
 ~sm70 = ~createData.(~dataPath, "SM_70.csv");
 ~sm90 = ~createData.(~dataPath, "SM_90.csv");
+~mbsdata = (\panbus: 0);
+
 s.sync;
 
 //  vowelArrays machen um, in der SynthDef die Werte abrufen zu können

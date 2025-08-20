@@ -78,7 +78,7 @@ SynthDef(\voweltrig, {
 }).add;
 
 SynthDef(\oddeven, {
-    |buf=0, baseFreq = 100, vowelIndex, modRange1=0.04, modRange2=0.6|
+    |buf=0, baseFreq = 100, vowelIndex=0, modRange1=0.04, modRange2=0.6|
     var numFreqs = 19;
     var startFilterOrders = NamedControl.kr(\startFilterOrders, {exprand(0.1, 3.3)}!5);
     var stopFilterOrders = NamedControl.kr(\stopFilterOrders, [2.0, 4.0, 0.25, 0.5, 3.25]);
@@ -192,18 +192,18 @@ SynthDef(\snare, {
 }).add;
 
 
-SynthDef(\arrayarg, { |out, amp = 0.1, gate = 1|
+SynthDef(\arrayarg, { |out=0, amp = 0.1, gate = 1|
     var freqs = NamedControl.kr(\freq, [200, 400]);
-    var mods = NamedControl.kr(\mods, [ 0, 0]);
+    var mods = NamedControl.kr(\mods, [ 0, 0, 0]);
     var env,sines, sines2, sig, lagF, lagM;
     env = Linen.kr(gate,\atk.kr(0.1), 1, \rls.kr(1), 2) ;
     lagF = ExpRand(\flg1.kr(0.2), \flg2.kr(0.4));
     lagM = ExpRand(\mlg1.kr(0.2), \mlg2.kr(0.4));
     sines = SinOsc.ar(freqs.varlag(lagF) + mods.varlag(lagM), SinOsc.kr(\phsMod.kr(0.2))).sum;
     sines = Splay.ar(sines, 1) ;
-    sines =  RLPF.ar(sines, \ffreq.kr(200), \rq.kr(0.5));
+    sines =  RLPF.ar(sines, \ffreq.kr(1000), \rq.kr(0.5));
     sig = sines * env * amp;
-    Out.ar(out, sig );
+    Out.ar(out, sig);
 }).add;
 
 SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
@@ -228,35 +228,36 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
 // Granular Synth
 //https://www.youtube.com/watch?v=C9SeVpiyGmI&t=607s  30:00
 SynthDef(\tgrains_live, {
-    var sig, dry, fm, env, mic, pos, ptr, buf=\buf.kr(0);
-    //env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    mic = SoundIn.ar(0, \in.kr(0)) * \gain.kr(0.3);
-    ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
-    BufWr.ar(mic, buf, ptr);
+    |ptrBus=0, ptrDelay=3000|
+    var sig, dry, fm, env, mic, pos, ptr, buf=\buf.kr(0), rate;
+    env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    ptr =  In.ar(ptrBus, 1) - ptrDelay;
+    ptr = ptr/BufFrames.kr(buf);
     pos = (ptr/s.sampleRate) -1;
     pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
+    rate =  \rate.kr(1) * \harm.kr([0, 0]).midiratio;
     sig = TGrains.ar(
         numChannels: 2,
         trigger: Impulse.kr(\dens.kr(40)),
         bufnum: buf,
-        rate: \rate.kr(1) * \harm.kr([0, 0]).midiratio,
+        rate: rate.varlag(\lg.kr(0.3)),
         centerPos: pos, // Sekunden
         dur: \grainDur.kr(1.5),
         pan: 0,
         amp: \grainAmp.kr(0.3),
         interp: 2
     );
-    /*fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.0))), \fmDur.kr(0.5),
-    \carfreq.kr(400), \modfreq.kr(10), \index.kr(1), //release Phase Nitrifikation
+    fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.3))), \fmDur.kr(0.5),
+    \carfreq.kr(400), \modfreq.kr(2), \index.kr(1), //release Phase Nitrifikation
     \fmAmp.kr(0.5)
     );
-    fm = BPF.ar(fm, \fmffreq.kr(2000), 0.5);*/
+    fm = BPF.ar(fm, \fmffreq.kr(1500), 0.5);
     //sig = Splay.ar([sig, fm]) * env;
     //sig = CombL.ar(sig, \maxdelTime.kr(0.2), \delTime.kr(0.1), \decayTime.kr(1.0));
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.4));
+    sig = RLPF.ar(sig, \ffreq.kr(2000).varlag(\lg.kr(0.3)), \rq.kr(0.4));
     //dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig  * \amp.kr(0.4) * \fade.kr(1);
+    sig = sig  * \amp.kr(0.4) * \fade.kr(1) * env;
     Out.ar(\out.kr(0), sig);
 
 }).add;
@@ -320,7 +321,7 @@ SynthDef(\grainScrub, {
     sig = RLPF.ar(sig, \ffreq.kr(5500), \rq.kr(0.9)) * env;
     //dry = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.3);
+    sig = sig * \amp.kr(0.3) * env;
     Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -329,7 +330,7 @@ SynthDef(\grainScrub, {
 
 SynthDef(\grainBuf, {
     |out=0, gate = 1, amp = 1, buf, ptrBus=0,  dens=10,
-    minPtrDelay=1000, ptrSampleDelay=1000, ptrRandSamples= 100, ptrNoise=100,
+    minPtrDelay=1000, ptrSampleDelay=1000, ptrRandSamples= 10, ptrNoise=100,
     durNoise=1, durRand=1, baseDur=0.05, rate=1, rateRand=1, rateNoise=100|
     var env, sig, ptr, ptrRand, totalDelay, durCtrl, maxGrainDur, rateCtrl;
     durCtrl = baseDur * LFNoise1.ar(durNoise).exprange(durRand.reciprocal, durRand);
@@ -341,7 +342,7 @@ SynthDef(\grainBuf, {
     maxGrainDur = (totalDelay / rateCtrl) / SampleRate.ir;
     durCtrl = min(durCtrl, maxGrainDur);
     env = EnvGen.kr(
-        Env([0, 1, 0], [1, 1], \sin, 1),
+        Env([0, 1, 0], [\atk.kr(0.1), \rls.kr(1)], \sin, 1),
         gate, doneAction: 2);
     sig = GrainBuf.ar(2,
         Dust.kr(dens),
@@ -352,7 +353,7 @@ SynthDef(\grainBuf, {
         2,
         \pan.kr(0),
         -1);
-    sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.5));
+    sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0.2)), \rq.kr(0.5));
     sig = sig * env * amp;
     Out.ar(out, sig);
     Out.ar(\outfx.kr(0), sig * \send.kr(0));
@@ -361,33 +362,33 @@ SynthDef(\grainBuf, {
 // statt einer random position für den Pointer will ich dezidierte Positionen ptrOffset
 SynthDef(\grainBuf2, {
     |out=0, gate = 1, amp = 1, buf, ptrBus=0,  dens=10,
-    minPtrDelay=1000, ptrSampleDelay=1000, ptrRandSamples= 100, ptrMod=100,
-    durNoise=1, durRand=1, baseDur=0.05, rate=1, rateRand=1, rateNoise=100|
+    minPtrDelay=1000, ptrSampleDelay=400, ptrMod=100,
+    durRand=1, baseDur=0.05, rate=1, rateRand=1|
     var env, sig, ptr, ptrOffset, totalDelay, durCtrl, maxGrainDur, rateCtrl;
     durCtrl = baseDur * durRand;
-    rateCtrl = rate * rateRand;
+    rateCtrl = rate * rateRand ;
     ///ptrOffset = LFTri.ar(ptrMod).bipolar(ptrRandSamples); // zitter effekt
     totalDelay =  max( ptrSampleDelay, minPtrDelay);
     ptr =  In.ar(ptrBus, 1) - totalDelay;
     ptr = ptr/BufFrames.kr(buf) + TRand.kr(0, 0.01, Impulse.kr(dens));
     maxGrainDur = (totalDelay / rateCtrl) / SampleRate.ir;
-    durCtrl = min(durCtrl, maxGrainDur);
+    //durCtrl = min(durCtrl, maxGrainDur);
     env = EnvGen.kr(
-        Env([0, 1, 0], [1, 1], \sin, 1),
+        Env([0, 1, 0], [\atk.kr(0.05), \rls.kr(1)], \sin, 1),
         gate, doneAction: 2);
     sig = GrainBuf.ar(2,
-      Dust.kr(dens),
+       Dust.ar(dens),
         durCtrl,
         buf,
-        rateCtrl,
+        rateCtrl * \harm.kr(0).midiratio,
         ptr,
         2,
         \pan.kr(0),
         -1);
-    sig = RLPF.ar(sig, \ffreq.kr(4000), \rq.kr(0.5));
+    sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0.2)), \rq.kr(0.5));
     sig = sig * env * amp;
     Out.ar(out, sig);
-    Out.ar(\outfx.kr(0), sig * \send.kr(0));
+    Out.ar(\outfx.kr(3), sig * \send.kr(0));
 }).add;
 
 SynthDef(\br, {
@@ -470,21 +471,13 @@ SynthDef(\playback, {
 // FX Synths ohne MixerChannel
 SynthDef(\combdelay, {
     |bus, maxDelTime=2, delTime=0.2, decayTime=0.4, mul=1, add=0 |
-    var input, delay, sig;
+    var input, delay, sig, env;
+    env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     input = In.ar(bus, 2); // als SynthDef kann der Channelwert nicht dynamisch sein
     delay = CombL.ar(input, maxDelTime, delTime, decayTime, mul, add);
     sig = input.blend(delay, \blend.kr(0.5));
-    sig = sig * \amp.kr(1);
+    sig = sig * \amp.kr(1) * env;
     Out.ar(\out.kr(0), sig);
 }).add;
 
-SynthDef(\pvDelay, { arg inbus=0, inMix = 0.0, out=0, fftBuf=0, delayBuf=0, fbBuf=0, maxdel=0.3;
-    var in, chain;
-    in = (Impulse.ar(0.33) * (1.0 - inMix)) + (In.ar(inbus, 1) * inMix);
-    chain = FFT(fftBuf, in, 0.25);
-    chain = PV_BinDelay(chain, maxdel, delayBuf, fbBuf, 0.25);
-    Out.ar(out,
-        in + IFFT(chain) * -24.dbamp// inverse FFT
-    );
-}).add;
 

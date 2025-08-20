@@ -8,6 +8,7 @@ SynthDescLib.at(\livegran).controlDict
 
 ~userSound.numFrames
 
+
 x = Synth(\grainTest, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 10, \rls, 4, \out, ~fxBus], ~grainGrp);
 x.set(\dens, 30, \dur, 0.08, \rate, 1.2, \ffreq, 4000, \ptrRandSamples, 200,)
 x.free
@@ -96,15 +97,16 @@ Pbindef(\spec,
 Pbindef(\spec, \inMix, 0.7, \maxdel, 0.3)
 Pbindef(\spec).stop
 
-
+x = Synth(\array_1b)
+x.set(\)
 Pbindef.all.do(_.stop)
 Pbindef.all.do({|k| k.key.postln})
 
 Pbindef(\klank).play(~t, quant:4)
-Pbindef(\klank, \dec, 3, \dur, 1.2, \rls, 2)
+Pbindef(\klank, \dec, 3, \dur, 2.2, \rls, 2)
 Pbindef(\quirkator, \atk, Prand([0.01, 0.04, 0.08], inf), \rls, 0.1, \sustain, 0.1, \otAmps, Pfunc({rrand(0.01, 0.1)}!4),     \otFreqs, Pfunc({rrand(0.081, 1.6)}!4), \feedb, pi * 1/8, \freqLag, 0.9, \dampExp, 0.02, \otLag, 0.3, \ampA, Prand([0.4, 0.6, 0.77], inf), \ffreq, Pwhite(300, 3000, inf)).play
 Pbindef(\quirkator).stop
-Pbindef(\dark).play
+Pbindef(\dark).stop
 Pbindef(\dark).isPlaying
 
 
