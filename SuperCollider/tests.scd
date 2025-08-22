@@ -8,9 +8,8 @@ SynthDescLib.at(\livegran).controlDict
 
 ~userSound.numFrames
 
-
-x = Synth(\grainTest, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, ~grainBuffer, \dens, 10, \rls, 4, \out, ~fxBus], ~grainGrp);
-x.set(\dens, 30, \dur, 0.08, \rate, 1.2, \ffreq, 4000, \ptrRandSamples, 200,)
+x = Synth(\voweltrig, [\amp, 0.5, \buf, ~buffersByName[\boris][\tension], \rls, 4, \out, 0], ~grainGrp);
+x.set(\vow, 3, \dec, 0.1, \ffreq, 1200, \trg, 30, \freqScale, 0.9, \decayScale, 0.1, \att, 0.04)
 x.free
 
 y= Synth(\combdelay, [\bus, ~fxBus, \decayTime, 1, \blend,1, \out, 0], ~fxGrp);

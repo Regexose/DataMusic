@@ -146,7 +146,7 @@ SynthDef(\crisps, {
     var freqArray = NamedControl.kr(\freq, [80, 120, 350, 1010]);
     var ampArray = NamedControl.kr(\levels, [0.5, 0.24, 0.14, 0.423]);
     var ringArray = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
-    //env = Env.perc(\atk.kr(0.01), \rls.kr(0.08), curve: \crv.kr(-4.0)).kr(2);
+    env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     freqs = freqArray.collect({
         |f, i|
         [(f- (f/10)), f,  f+ (f/10)];
@@ -161,16 +161,16 @@ SynthDef(\crisps, {
     }).flat;
     trig = Dust.kr(\trg.kr(4));
     SendTrig.kr(trig);
-    freqMod = TRand.kr( 1, 5, trig)  ;
+    freqMod = TRand.kr( 0.8, 1.5, trig);
     exc = WhiteNoise.ar(\punch.kr(0.1)) * Decay2.kr(trig, 0.001, \dec.kr(0.9));
     sig = DynKlank.ar(`[
-        freqs ,
+        freqs,
         amps.ampdb.normalizeSum,
         rings
     ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
-    sig = sig * \amp.kr(0.3) ;
+    sig = sig * \amp.kr(0.3) * env;
     sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000), \rq.kr(1.0)), \pan.kr(0.0));
-    Out.ar(\out.kr, sig);
+    Out.ar(\out.kr(0), sig);
 }).add;
 
 //https://www.youtube.com/watch?v=xYc7_PbbtuE&t=1579s  ab 30:00
@@ -216,7 +216,7 @@ SynthDef(\array_1b, { |out = 0, freq = 440, dampExp = 0,
     sig = 3.collect({
         var fmod, ampmod;
         fmod = {ExpRand(0.98, 1.02)};
-        ampmod = Dust.kr(50).bipolar(0.03);
+        ampmod = SinOsc.kr(\ampMod.kr(200)).bipolar(0.03);
         SinOscFB.ar(freqs * fmod, \feedb.kr(pi/4), amps + ampmod);
     }).sum;
     env = EnvGen.ar(Env.asr(atk, 1, rls), gate, doneAction: 2);
@@ -244,21 +244,20 @@ SynthDef(\tgrains_live, {
         centerPos: pos, // Sekunden
         dur: \grainDur.kr(1.5),
         pan: 0,
-        amp: \grainAmp.kr(0.3),
+        amp: \grainAmp.kr(0.5),
         interp: 2
     );
     fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.3))), \fmDur.kr(0.5),
     \carfreq.kr(400), \modfreq.kr(2), \index.kr(1), //release Phase Nitrifikation
     \fmAmp.kr(0.5)
     );
-    fm = BPF.ar(fm, \fmffreq.kr(1500), 0.5);
-    //sig = Splay.ar([sig, fm]) * env;
+    fm = RLPF.ar(fm, \fmffreq.kr(1500), 0.5) * env;
     //sig = CombL.ar(sig, \maxdelTime.kr(0.2), \delTime.kr(0.1), \decayTime.kr(1.0));
     sig = RLPF.ar(sig, \ffreq.kr(2000).varlag(\lg.kr(0.3)), \rq.kr(0.4));
     //dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig  * \amp.kr(0.4) * \fade.kr(1) * env;
-    Out.ar(\out.kr(0), sig);
+    Out.ar(\out.kr(0), [sig, fm]);
 
 }).add;
 
@@ -367,7 +366,6 @@ SynthDef(\grainBuf2, {
     var env, sig, ptr, ptrOffset, totalDelay, durCtrl, maxGrainDur, rateCtrl;
     durCtrl = baseDur * durRand;
     rateCtrl = rate * rateRand ;
-    ///ptrOffset = LFTri.ar(ptrMod).bipolar(ptrRandSamples); // zitter effekt
     totalDelay =  max( ptrSampleDelay, minPtrDelay);
     ptr =  In.ar(ptrBus, 1) - totalDelay;
     ptr = ptr/BufFrames.kr(buf) + TRand.kr(0, 0.01, Impulse.kr(dens));
