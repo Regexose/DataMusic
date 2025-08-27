@@ -10,13 +10,13 @@ SynthDef(\bpfstack, {
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
-    //env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:0); //mit Env endet der Synth vorzeitig
+    env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:0); //mit Env endet der Synth vorzeitig
     ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
     vowel = Vowel.basicNew(freqs, dBs, widths);
     sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel, \freqMods.kr(0.5), \ampMods.kr(0.5),  \widthMods.kr(1));
-    sig = sig * \amp.kr(0.4) * \fade.kr(1); // * env;
+    sig = sig * \amp.kr(0.4) * \fade.kr(1) * env; // * env;
     sig = RLPF.ar(sig, \ffreq.kr(4000));
-    dry = BufRd.ar(1, buf, ptr); // * env;
+    dry = BufRd.ar(1, buf, ptr) * env; // * env;
     sig = (sig * (1.0 - \drywet.kr(0))) + (dry * \drywet.kr(0));
     Out.ar(\out.kr(0), sig!2);
     Out.ar(\outdry.kr(0), dry);
@@ -47,7 +47,7 @@ SynthDef(\vowelklank, {
     //ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr);
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.2) * \fade.kr(1.0);
+    sig = sig * \amp.kr(0.2) * \fade.kr(1.0) * env;
     Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -72,7 +72,7 @@ SynthDef(\voweltrig, {
 
     sig = BPF.ar(sig, \ffreq.kr(500), \rq.kr(0.3));
     sig = Pan2.ar(sig, \pan.kr(0));
-    sig = sig * env * \amp.kr(0.2) * \fade.kr(0.4);
+    sig = sig * env * \amp.kr(0.2) * \fade.kr(1.0);
     Out.ar(\out.kr(0), sig);
     Out.ar(\outdry.kr(2), exc);
 }).add;
@@ -168,7 +168,7 @@ SynthDef(\crisps, {
         amps.ampdb.normalizeSum,
         rings
     ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
-    sig = sig * \amp.kr(0.3) * env;
+    sig = sig * \amp.kr(0.3) * env * \fade.kr(1.0);
     sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000), \rq.kr(1.0)), \pan.kr(0.0));
     Out.ar(\out.kr(0), sig);
 }).add;
@@ -193,8 +193,8 @@ SynthDef(\snare, {
 
 
 SynthDef(\arrayarg, { |out=0, amp = 0.1, gate = 1|
-    var freqs = NamedControl.kr(\freq, [200, 400]);
-    var mods = NamedControl.kr(\mods, [ 0, 0, 0]);
+    var freqs = NamedControl.kr(\freq, [200, 400, 500]);
+    var mods = NamedControl.kr(\mods, [0, 0, 0]);
     var env,sines, sines2, sig, lagF, lagM;
     env = Linen.kr(gate,\atk.kr(0.1), 1, \rls.kr(1), 2) ;
     lagF = ExpRand(\flg1.kr(0.2), \flg2.kr(0.4));
@@ -233,8 +233,9 @@ SynthDef(\tgrains_live, {
     env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     ptr =  In.ar(ptrBus, 1) - ptrDelay;
     ptr = ptr/BufFrames.kr(buf);
-    pos = (ptr/s.sampleRate) -1;
-    pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
+    pos = (ptr/s.sampleRate) -0.005;
+    //pos = 2.0;
+    pos = pos + TRand.kr(0, 0.01, Impulse.ar(\imp.kr(20)));
     rate =  \rate.kr(1) * \harm.kr([0, 0]).midiratio;
     sig = TGrains.ar(
         numChannels: 2,
@@ -247,17 +248,12 @@ SynthDef(\tgrains_live, {
         amp: \grainAmp.kr(0.5),
         interp: 2
     );
-    fm = FMGrain.ar(Blip.kr(\fmdens.kr(1), \numharm.kr(2).varlag(\lg.kr(0.3))), \fmDur.kr(0.5),
-    \carfreq.kr(400), \modfreq.kr(2), \index.kr(1), //release Phase Nitrifikation
-    \fmAmp.kr(0.5)
-    );
-    fm = RLPF.ar(fm, \fmffreq.kr(1500), 0.5) * env;
-    //sig = CombL.ar(sig, \maxdelTime.kr(0.2), \delTime.kr(0.1), \decayTime.kr(1.0));
+
     sig = RLPF.ar(sig, \ffreq.kr(2000).varlag(\lg.kr(0.3)), \rq.kr(0.4));
     //dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig  * \amp.kr(0.4) * \fade.kr(1) * env;
-    Out.ar(\out.kr(0), [sig, fm]);
+    Out.ar(\out.kr(0), sig);
 
 }).add;
 
@@ -384,7 +380,7 @@ SynthDef(\grainBuf2, {
         \pan.kr(0),
         -1);
     sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0.2)), \rq.kr(0.5));
-    sig = sig * env * amp;
+    sig = sig * env * amp * \fade.kr(1.0);
     Out.ar(out, sig);
     Out.ar(\outfx.kr(3), sig * \send.kr(0));
 }).add;

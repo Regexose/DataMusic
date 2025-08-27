@@ -3,9 +3,9 @@
 ~recordingPath = PathName(~projectRoot).parentPath ++ "recordings";
 ~samplesPath = PathName(~projectRoot).parentPath ++ "samples";
 ~t = TempoClock(120/60).permanent_(true);
+~tdOSC = NetAddr.new("127.0.0.1", 7000);
 ~buffersByName = Dictionary.new;
 ~buffersByCat = Dictionary.with(*[\base -> List.new, \tension -> List.new, \relax -> List.new]);
-~liveBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~grainBuffer = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~userSound = Buffer.alloc(s, 4 * s.sampleRate, 1);
 ~currentSample = Dictionary.new;
@@ -14,7 +14,9 @@
 ~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
-~currentData = (\td:  (\sm1 : 0, \trock01 : 0, \trock02 : 0, \temp_winter: 0, \temp2 : 0, \drone: 0, \humid2 : 0));
+~currentData = (\td:  (\sm1 : 0, \trock01 : 0, \trock02 : 0, \temp_winter: 0, \temp2 : 0, \drone: 0, \humid2 : 0),
+    \fade: ()
+);
 ~activeRoutines = ();
 // für spectral delay
 ~size = 128;

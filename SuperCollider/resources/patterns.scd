@@ -67,6 +67,7 @@ Pbindef(\percvowel,
 
 Pbindef(\snarl,
     \instrument, \oddeven,
+    \buf, ~buffersByName[\boris][\tension].normalize,
     \dur, 1,
     \amp, 0.05,
     \baseFreq, Pseq([Pn([60, 63, 68], 7), [72, 75, 80]], inf).midicps,

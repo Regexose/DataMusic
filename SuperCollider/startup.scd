@@ -76,7 +76,7 @@ s.queryAllNodes;
 (
 ~recordUser.("nitro","tension");
 ~recordUser.("boris", "tension");
-~recordUser.("boris", "relax");
+~recordUser.("boris", "gras");
 OSCdef(\listener).free
 )
 

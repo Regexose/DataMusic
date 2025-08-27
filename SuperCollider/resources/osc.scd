@@ -37,6 +37,16 @@ OSCdef(\resetAll, {|msg, time, addr, recvPort|
     '/reset'
 );
 
+OSCdef(\record, {|msg, time, addr, recvPort|
+    var user, kind;
+    msg.postln;
+    user = msg[1];
+    kind = msg[2];
+    ~recordUser.(user, kind)
+},
+    '/record'
+);
+
 
 OSCdef(\sm1, {|msg, time, addr, recvPort|
     //"receiving sm1 %".format(msg[1]).postln;
@@ -44,11 +54,17 @@ OSCdef(\sm1, {|msg, time, addr, recvPort|
 },
     '/sm1'
 );
-OSCdef(\trock01, {|msg, time, addr, recvPort|
-   //msg[1].postln;
-    ~currentData[\td][\trock01] = msg[1];
+
+OSCdef(\fade, {|msg, time, addr, recvPort|
+    var key, val;
+   //msg.postln;
+    key = msg[1];
+    val = msg[2];
+    [key, val].postln;
+    ~currentData[\fade][key.asSymbol] = val.asFloat;
+
 },
-    '/trock01'
+    '/fade'
 );
 OSCdef(\trock02, {|msg, time, addr, recvPort|
     //msg[1].postln;
@@ -70,3 +86,6 @@ OSCdef(\drone, {|msg, time, addr, recvPort|
 },
     '/drone'
 );
+
+
+

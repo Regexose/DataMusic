@@ -29,7 +29,9 @@ s.sync;
 
 s.sync;
 
-
+(48 .. 72).do({|n|
+    ~currentData[\fade].put(n.asSymbol, 1.0)
+});
 
 
 MIDIClient.init;
@@ -59,6 +61,9 @@ PathName(~samplesPath).entries.do({
         {sampleName.asString == "base"}{~buffersByCat[\base].add(sample.normalize)}
         {sampleName.asString == "tension"}{~buffersByCat[\tension].add(sample.normalize)}
         {sampleName.asString == "relax"}{~buffersByCat[\relax].add(sample.normalize)}
+        {sampleName.asString == "gras"}{~buffersByCat[\gras].add(sample.normalize)}
+        {sampleName.asString == "mega"}{~buffersByCat[\mega].add(sample.normalize)}
+        {sampleName.asString == "nema"}{~buffersByCat[\nema].add(sample.normalize)}
         {true}{"no samplename".postln};
 
         //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;

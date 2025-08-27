@@ -1,72 +1,83 @@
 ~td = (
     // on Off Play
-    \48 : {
-        /* am besten mit Zischgeräuschen
-        */
-        var key= \48, data,  buf, syn,  mn, mx;
-        //"play TD %  sm %".format(key, ~sm1).postln;
-        buf = ~grainBuffer.normalize;
-        # mn, mx = [100, 130];
-        s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rq, 0.2, \dens, 20, \rls, 2, \lg, 0.4], ~sourceGrp);
 
-        ~activeSynths.put(key, [syn]);
-        loop{
-            data = ~currentData.td[\sm1];
-            //"data 48 %".format(data).postln;
-            syn.set(\ffreq, data.linlin(mn, mx, 800, 2000),
-                \rate, data.linlin(mn, mx, 0.9, 1.1),
-                \dens, data.linlin(mn, mx, 10, 20),
-                \baseDur, data.linlin(mn, mx, 1, 5),
-            );
-
-            0.1.wait};
-
-    },
-    \50 :{// geht mit fast allen Sounds
+    \48 :{// geht mit fast allen Sounds
         // der FM Teil indiziert Aktivität
         // der Grainsynth ist pitch Sonifikation
-        var key= \50, data, buf, syn, mn, mx;
+        var key= \48, data, buf, syn, mn, mx;
         //Grains mit dezidierter ptrPos und pan
-        buf = ~buffersByName[\boris][\base];
-        # mn, mx =[30,120];
+        buf = ~buffersByName[\boris][\gras].normalize;
+        //buf = ~grainBuffer.normalize;
+        # mn, mx =[50,130];
         s.sync;
-        syn = Synth(\tgrains_live, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 20, \lg, 0.5,
-            \fmffreq, 200, \fmAmp, 0.06, \numharm, 2, \index, 1,
+        syn = Synth(\tgrains_live, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 20, \lg, 0.1, \grainDur, 0.9, \rate, 1.5,
             \out, 0, \fade, 0.9, \outfx, 3], ~grainGrp);
         ~activeSynths.put(key, [syn]);
         loop{
             var harm, dFactor;
             data = ~currentData.td[\trock02];
             dFactor = data.linlin(mn, mx, 0.0, 1.5);
-            harm = data.linlin(mn, mx, [-12, -2] , [12, 2]);
+            harm = data.linlin(mn, mx, [-12, -6] , [12, 6]);
             //"data 50 %".format(data).postln;
             syn.set(
                 \harm, harm,
-                \grainDur, data.linlin(mn, mx, 0.1, 0.5),
+                \grainDur, data.linlin(mn, mx, 0.1, 0.9),
                 \fmdens, data.linlin(mn, mx, 0.5, 3.0),
-                \modfreq, data.linlin(mn, mx, 10, 1),
+                \fade, ~currentData.fade[key]
             );
             0.05.wait};
+    },
+     \50 : {
+        /* am besten mit Zischgeräuschen
+        */
+        var key= \50, data,  buf, syn, fx, mn, mx;
+        //"play TD %  sm %".format(key, ~sm1).postln;
+        buf =~buffersByName[\boris][\mega].normalize;
+        # mn, mx = [-1, 30];
+        s.sync;
+        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4], ~grainGrp);
+        fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
+        ~activeSynths.put(key, [syn, fx]);
+        loop{
+            data = ~currentData.td[\temp_winter];
+            //"data 48 %".format(data).postln;
+            syn.set(\ffreq, data.linlin(mn, mx, 500, 3000),
+                \rate, data.linlin(mn, mx, 0.5, 1.5),
+                \dens, data.linlin(mn, mx, 10, 40),
+                \baseDur, data.linlin(mn, mx, 0.8, 0.4),
+                \pan, data.linlin(mn, mx, -1.0, 1),
+                \fade, ~currentData.fade[key]
+            );
+            fx.set(\delTime, data.linlin(mn, mx, 0.24, 0.04),
+                \decayTime, data.linlin(mn, mx, 0.3, 1.5),
+                \fade, ~currentData.fade[key]
+            );
+
+            0.1.wait};
+
     },
 
 
     \52 :{
-        var key= \52, data, buf, syn, mn, mx;
+        var key= \52, data, data2, buf, syn, mn, mx;
         //Grains mit dezidierter ptrPos und pan
         // Die Aktivität kommt zum Erliegen
-        buf = ~grainBuffer.normalize;
+       //buf = ~grainBuffer.normalize;
+        buf =  ~buffersByName[\boris][\nema].normalize;
         # mn, mx =[-2.0, 30.0];
         s.sync;
         syn = Synth(\grainScrub, [\amp, 0.7, \ptrBus, ~ptrBus, \buf, buf, \tr, 0.2, \out,0], ~grainGrp);
         ~activeSynths.put(key, [syn]);
         loop{
-            data = ~currentData.td[\sm1];
+            data = ~currentData.td[\trock02];
+            data2 = ~currentData.td[\temp_winter];
+            [data, data2].postln;
             syn.set(
                 \pan, data.linlin(mn, mx, -1, 1),
                 \pos, data.linlin(mn, mx, 0.0, buf.numFrames / s.sampleRate),
                 \tr, data.linlin(mn, mx, 0.05, 5),
-                \harm, data.linlin(mn, mx,-12,8)
+                \harm, data.linlin(mn, mx,-12,8),
+                \fade, ~currentData.fade[key]
             );
             0.1.wait};
     },
@@ -91,7 +102,8 @@
             {true}{"end of case".postln};
             //"data % \t ffreq % \t deltime %".format(data, data.linlin(0, 1, 1500, 3500), data.linlin(0, 1, 0.02, 0.8) ).postln;
             syn.set(\ffreq, data.linlin(mn, mx, 1500, 3500),
-                \vow, v, \trg, data.linlin(mn, mx, 2, 30, \freqScale, data.linlin(mn, mx, 0.1, 0.9), \decayScale, data.linlin(mn, mx, 0.1, 0.9), \att, data.linlin(mn, mx, 0.04, 0.3), \dec, data.linlin(mn, mx, 0.1, 0.33))
+                \vow, v, \trg, data.linlin(mn, mx, 2, 30, \freqScale, data.linlin(mn, mx, 0.1, 0.9), \decayScale, data.linlin(mn, mx, 0.1, 0.9), \att, data.linlin(mn, mx, 0.04, 0.3), \dec, data.linlin(mn, mx, 0.1, 0.33)),
+                \fade, ~currentData.fade[key]
             );
             0.5.wait};
     },
@@ -116,6 +128,7 @@
                 \freqScale, data.linlin(mn, mx, 0.1, 1.0),
                 \decayScale, data.linlin(mn, mx, 0.1, 1.2),
                 \pan,  data.linlin(mn, mx, -1, 1),
+                \fade, ~currentData.fade[key]
             );
             0.05.wait};
     },
@@ -128,12 +141,12 @@
         fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
         ~activeSynths.put(key, [syn, fx]);
         loop{
-            data = ~currentData.td[\sm1];
+            data = ~currentData.td[\trock02];
             //"data % \t ffreq % \t deltime %".format(data, data.linlin(0, 1, 1500, 3500), data.linlin(0, 1, 0.02, 0.8) ).postln;
-            syn.set(\ffreq, data.linlin(mn, mx, 600, 3500));//);
+            syn.set(\ffreq, data.linlin(mn, mx, 600, 3500),\fade, ~currentData.fade[key]);//);
             //fx.set(\delTime, data.linlin(0, 1, 0.005, 0.5));
             fx.set(\delTime, data.linlin(mn, mx, 0.08, 0.5),
-                \decayTime, data.linlin(mn, mx, 2, 0.5)
+                \decayTime, data.linlin(mn, mx, 2, 0.5),\fade, ~currentData.fade[key]
             );
             0.05.wait};
     },
@@ -183,21 +196,27 @@
     \60 : {
         /* am besten mit Zischgeräuschen
         */
-        var key= \60, data,  buf, syn,  mn, mx;
-        //"play TD %  sm %".format(key, ~sm1).postln;
+        var key= \60, data,  buf, syn, fx, mn, mx;
+             //"play TD %  sm %".format(key, ~sm1).postln;
         buf = ~grainBuffer.normalize;
-        # mn, mx = [100, 130];
+        # mn, mx = [50, 130];
         s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rq, 0.2, \dens, 20, \rls, 2, \lg, 0.4], ~sourceGrp);
-
-        ~activeSynths.put(key, [syn]);
+        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4], ~grainGrp);
+        fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
+        ~activeSynths.put(key, [syn, fx]);
         loop{
-            data = ~currentData.td[\sm1];
+            data = ~currentData.td[\trock02];
             //"data 48 %".format(data).postln;
-            syn.set(\ffreq, data.linlin(mn, mx, 800, 2000),
-                \rate, data.linlin(mn, mx, 0.1, 1.9),
-                \dens, data.linlin(mn, mx, 10, 20),
-                \baseDur, data.linlin(mn, mx, 1, 6),
+            syn.set(\ffreq, data.linlin(mn, mx, 800, 3000),
+                \rate, data.linlin(mn, mx, 0.9, 1.1),
+                \dens, data.linlin(mn, mx, 10, 40),
+                \baseDur, data.linlin(mn, mx, 0.5, 0.8),
+                \pan, data.linlin(mn, mx, -1.0, 1),
+                \fade, ~currentData.fade[key]
+            );
+            fx.set(\delTime, data.linlin(mn, mx, 0.08, 0.14),
+                \decayTime, data.linlin(mn, mx, 0.3, 1.5),
+                \fade, ~currentData.fade[key]
             );
 
             0.1.wait};
