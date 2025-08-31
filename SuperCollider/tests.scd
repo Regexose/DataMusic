@@ -4,7 +4,7 @@ s.queryAllNodes
 
 SynthDescLib.at(\livegran).controlDict
 ~routines[\patFunc][0]
-~currentData.dark[\in]
+~grainBuffer.plot
 
 //~buffersByName[\boris][\gras].play
 
@@ -67,38 +67,14 @@ z.free
 ~fxOnOff.(true)
 ~fxOnOff.(false)
 
-
-(
-x = Synth(\pvDelay, [
-    \inMix, 0.5,
-    \inbus, ~micBus,
-    \fftBuf, ~fftBuffer.bufnum,
-    \delayBuf, ~delTimeBuffer.bufnum,
-    \fbBuf, ~fbAmtBuffer.bufnum,
-    \out, 0,
-    \amp, 0.5]
-)
-)
-x.set(\inMix, 0.5)
-x.free
-
-(
-Pbindef(\spec,
-		\instrument, \pvDelay,
-		\inMix, 1,
-        \inbus, ~micBus,
-		\fftBuf, ~fftBuffer,
-		\delayBuf, ~delTimeBuffer,
-		\fbBuf, ~fbAmtBuffer,
-        \dur, 1.5,
-		\out, 0,
-		\amp, 0.5,
-).play;
-)
-Pbindef(\spec, \inMix, 0.7, \maxdel, 0.3)
-Pbindef(\spec).stop
+762304.0
+764224.0
+(766144.0- 764224.0)
 
 
+767500.0
+
+~buffersByName[\boris][\atem].play
 Pbindef.all.do(_.stop)
 Pbindef.all.do({|k| k.key.postln})
 
@@ -108,17 +84,11 @@ Pbindef(\quirkator, \atk, Prand([0.01, 0.04, 0.08], inf), \rls, 0.1, \sustain, 0
 Pbindef(\quirkator, \ffreq, Pwhite(500, 2000, inf), \rq, Prand([0.3, 0.13, 0.5], inf), \rls, 0.9, \atk, 0.1, \dur, Pseq([Pn(0.5, 45), Pn(0.25, 16)], inf) )
 Pbindef(\quirkator).stop
 Pbindef(\dark).play
-Pbindef(\percvowel).isPlaying
-Pbindef(\snarl).stop
-Pbindef(\arp1).play
-Pbindef(\arp1, \fade, 1, \otLag, 0.4, \dur, Pseq([Pn(1, 12), Pn(0.25, 16)], inf), \atk, 0.2, \rls, 0.8, )
-Pbindef(\array01).play
-Pbindef(\array01, \mods, [3.1, 0.4], \lg, 1, \freq, Pfunc({ var d = ~currentData.td[\temp_winter]; Array.fill(2, {[d *50, d*100]})}) )
-Pbindef(\array01).stop
-Pbindef(\arp2, \fade, 1).stop
-Pbindef(\arp2, \rls, 0.4)
-Pbindef(\percvowel, \amp, 0.1, \dur, 4).play
-Pbindef(\percvowel, \ampMods, 1, \dur, 6, \amp, 0.05)
+Pbindef(\dark, \ampMod, Pseq([2, 5, 10, 30], inf), \ffreq, Pwhite(200, 1000, inf, \otFreqs, Array.fill(4, {[120, 125, 90, 201, 223].choose})), \otAmps, Array.fill(4, {[0.5, 0.25, 1, 2, 4].choose}), \ampA, Pwhite(0.1, 0.6, inf));
+
+Pbindef(\array01, \dur, 4, \rls, Pfunc({Array.rand(5, 0.1, 0.3)}), \freqMods, Pwhite(0.01, 1.1, inf), \rls, 0.4, \freq, Pfunc({Array.fill(2, {rrand(30, 71).asInteger})}), \mods,  Pfunc({Array.fill(2, {rrand(0, 1)})}))
+Pbindef(\voc2).play
+Pbindef(\voc2, \atk, 0.75, \rls, 0.75, \vow, Pseq([0, 5, 9, 15], inf), \fScale,  Pwhite(0.1, 0.7, inf),\dur, 2, \decayScale, Pwhite(0.1, 0.5, inf))
 
 Pbindef(\dark, \freq, Pfunc({var data, d; data = ~currentData.td[\temp_winter]; d = data.linlin(0, 30, 20, 36).midicps; [d, d +5, d +12, d-6].choose})).play
 

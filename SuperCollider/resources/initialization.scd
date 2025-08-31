@@ -64,6 +64,7 @@ PathName(~samplesPath).entries.do({
         {sampleName.asString == "gras"}{~buffersByCat[\gras].add(sample.normalize)}
         {sampleName.asString == "mega"}{~buffersByCat[\mega].add(sample.normalize)}
         {sampleName.asString == "nema"}{~buffersByCat[\nema].add(sample.normalize)}
+        {sampleName.asString == "atem"}{~buffersByCat[\atem].add(sample.normalize)}
         {true}{"no samplename".postln};
 
         //"foldername % samplename % is %".format(subfolder.folderName, sampleName, sampleName.asString == "base").postln;

@@ -1,9 +1,5 @@
 /*
-in diesem Branch will ich Patterns mit LiveStimmManipulation kombinieren
-Pattern 1: Klick/Perc Impulse als 1/8 oder 1/16 Noten, die Tonal von einem Datensatz beeinflusst werden
-Pattern 2 : Arpeggii oder Akkorde als musikalisches Pattern, willkürlich festgelegt, die Synths werden ebenso variiert von Daten
-Pattern 3 : Live Stimme mit ein oder zwei Datensätzen sonifiziert
-Pattern 4 : Evtl.. Erzählstimme
+
 */
 (
 ServerTree.removeAll; // löscht alle funktionen
@@ -17,6 +13,7 @@ Server.default.options.outDevice_(~audioOut);
 Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
 Server.default.options.numOutputBusChannels_(16);
+Server.default.options.sampleRate_(48000);
 Server.default.options.memSize_(100.pow(2));
 s.options.numWireBufs = 200;
 
@@ -54,6 +51,7 @@ s.waitForBoot({
     ServerTree.add(~makeNodes);
     ServerTree.run;
     s.sync;
+
     ~patches = (~resourcePath ++ "fx_patches.scd").load;
     (~resourcePath ++ "initialization.scd").load;
     s.sync;
@@ -76,7 +74,7 @@ s.queryAllNodes;
 (
 ~recordUser.("nitro","tension");
 ~recordUser.("boris", "tension");
-~recordUser.("boris", "gras");
+~recordUser.("boris", "atem");
 OSCdef(\listener).free
 )
 

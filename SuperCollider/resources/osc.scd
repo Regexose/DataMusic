@@ -4,7 +4,7 @@ Hier werden die Oscdefs zur Kommunikation mit Touchdesigner geladen
 
 
 OSCdef(\TDOnKeyhold, {|msg, time, addr, recvPort|
-    var key, buf, syn,  rout, funcDict;
+    var key, rout, funcDict;
     key = msg[1].asSymbol;
     funcDict = ~td;
     "receiving  NoteOn from TD Onkeyhold:key %  funcDict %".format(key, funcDict[key]).postln;
@@ -29,6 +29,17 @@ OSCdef(\TDOffKeyhold, {|msg, time, addr, recvPort|
 '/OffKeyhold'
 );
 
+OSCdef(\TDOffPattern, {|msg, time, addr, recvPort|
+    var key, funcDict, rout;
+    key = msg[1].asSymbol;
+    rout = ~activeRoutines[\td][key];
+    rout.stop;
+    if (key == \71, {Pbindef(\voc2).stop}, {Pbindef(\array01).stop});
+    "stopped rout %  activesynths % routine active= %".format(key, ~activeSynths, rout.isActive).postln;
+},
+'/OffPattern'
+);
+
 
 OSCdef(\resetAll, {|msg, time, addr, recvPort|
     msg[1].postln;
@@ -48,16 +59,9 @@ OSCdef(\record, {|msg, time, addr, recvPort|
 );
 
 
-OSCdef(\sm1, {|msg, time, addr, recvPort|
-    //"receiving sm1 %".format(msg[1]).postln;
-    ~currentData[\td][\sm1] = msg[1].asInteger;
-},
-    '/sm1'
-);
-
 OSCdef(\fade, {|msg, time, addr, recvPort|
     var key, val;
-   //msg.postln;
+   msg.postln;
     key = msg[1];
     val = msg[2];
     [key, val].postln;
@@ -65,26 +69,34 @@ OSCdef(\fade, {|msg, time, addr, recvPort|
 
 },
     '/fade'
+
+);
+
+OSCdef(\sm, {|msg, time, addr, recvPort|
+   //"receiving sm1 %".format(msg[1]).postln;
+    ~currentData[\td][\sm] = msg[1].asInteger;
+},
+    '/sm'
 );
 OSCdef(\trock02, {|msg, time, addr, recvPort|
     //msg[1].postln;
-    ~currentData[\td][\trock02] = msg[1].asInteger;
+    ~currentData[\td][\sm] = msg[1].asInteger;
 },
     '/trock02'
 );
 
-OSCdef(\temp1, {|msg, time, addr, recvPort|
+OSCdef(\temp, {|msg, time, addr, recvPort|
     //msg[1].postln;
-    ~currentData[\td][\temp_winter] = msg[1].asFloat;
+    ~currentData[\td][\temp] = msg[1].asFloat;
 },
-    '/temp_winter'
+    '/temp'
 );
 
-OSCdef(\drone, {|msg, time, addr, recvPort|
-     //"receiving drone %".format(msg[1]).postln;
-    ~currentData[\td][\drone] = msg[1];
+OSCdef(\evap, {|msg, time, addr, recvPort|
+     //"receiving evap %".format(msg[1]).postln;
+    ~currentData[\td][\evap] = msg[1];
 },
-    '/drone'
+    '/evap'
 );
 
 

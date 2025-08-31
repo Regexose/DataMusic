@@ -10,7 +10,7 @@ SynthDef(\bpfstack, {
     freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
-    env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:0); //mit Env endet der Synth vorzeitig
+    env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:2); //mit Env endet der Synth vorzeitig
     ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
     vowel = Vowel.basicNew(freqs, dBs, widths);
     sig = BPFStack.ar(BufRd.ar(1, buf, ptr, loop:1), vowel, \freqMods.kr(0.5), \ampMods.kr(0.5),  \widthMods.kr(1));
@@ -31,19 +31,19 @@ SynthDef(\vowelklank, {
     dBs = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.1);
     //vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(1)!5;
-    env = Env.asr(\atk.ir(0.1),1,\rls.ir(1)).kr(2, gate);
-    ptr = In.ar(ptrBus, 1) - 1000;
+    env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:2);
+    ptr = Phasor.ar(0, 1, 0, BufFrames.kr(buf));
     exc = BufRd.ar(1, buf, ptr);
     //exc = WhiteNoise.ar(0.5);
     sig = DynKlank.ar(
         `[
-            freqs,
+            freqs * \fScale.kr(100),
             dBs.dbamp.normalizeSum,
             phases
     ], exc, freqscale: freqScale,  decayscale: decayScale);
 
     sig = RHPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));// um die tiefen Resonanzen etwas zu zähmen
-    sig = Pan2.ar(sig, \pan.kr(0)) * env;
+    sig = Pan2.ar(sig, \pan.kr(0));
     //ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr);
     sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
@@ -65,7 +65,7 @@ SynthDef(\voweltrig, {
     exc = BufRd.ar(1, buf, Phasor.ar(0, 1, 0, BufFrames.ir(buf))) * Decay2.kr(trig, \att.kr(0.001), \dec.kr(0.9));
     sig = DynKlank.ar(
         `[
-            freqs * \fScale.kr(1),
+            freqs.poll * \fScale.kr(1),
             dBs.dbamp.normalizeSum,
             phases
     ], exc, freqscale: freqScale,  decayscale: decayScale);
@@ -74,7 +74,7 @@ SynthDef(\voweltrig, {
     sig = Pan2.ar(sig, \pan.kr(0));
     sig = sig * env * \amp.kr(0.2) * \fade.kr(1.0);
     Out.ar(\out.kr(0), sig);
-    Out.ar(\outdry.kr(2), exc);
+    //Out.ar(\outdry.kr(2), exc);
 }).add;
 
 SynthDef(\oddeven, {
@@ -169,7 +169,7 @@ SynthDef(\crisps, {
         rings
     ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
     sig = sig * \amp.kr(0.3) * env * \fade.kr(1.0);
-    sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(1000), \rq.kr(1.0)), \pan.kr(0.0));
+    sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(3000), \rq.kr(1.0)), \pan.kr(0.0));
     Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -202,7 +202,7 @@ SynthDef(\arrayarg, { |out=0, amp = 0.1, gate = 1|
     sines = SinOsc.ar(freqs.varlag(lagF) + mods.varlag(lagM), SinOsc.kr(\phsMod.kr(0.2))).sum;
     sines = Splay.ar(sines, 1) ;
     sines =  RLPF.ar(sines, \ffreq.kr(1000), \rq.kr(0.5));
-    sig = sines * env * amp;
+    sig = sines * env * amp * \fade.kr(1);
     Out.ar(out, sig);
 }).add;
 
@@ -245,7 +245,7 @@ SynthDef(\tgrains_live, {
         centerPos: pos, // Sekunden
         dur: \grainDur.kr(1.5),
         pan: 0,
-        amp: \grainAmp.kr(0.5),
+        amp: \grainAmp.kr(0.9),
         interp: 2
     );
 
@@ -291,15 +291,15 @@ SynthDef(\tgrains, {
 // Scrubbing GrainSynth von Tgrains2 helpfile
 SynthDef(\grainScrub, {
     |buf=0,  ptrBus=0, tr= 0.2|
-    var sig, dry,  trSpec, dur, clk, posSpec, pos, pan, env;
+    var sig, dry,  trSpec, dur, clk, posSpec, pos, env;
     //trSpec =  [0.01, 60, \lin].asSpec;
-    posSpec = [0, BufDur.kr(buf), \lin].asSpec;
-    //pos = posSpec.map(\pos.kr(0));
-    //pos = In.ar(ptrBus, 1);
+   // posSpec = [0, BufDur.kr(buf), \lin].asSpec;
+   // pos = posSpec.map(\pos.kr(0));
+    pos = In.ar(ptrBus, 1);
     //tr = trSpec.map(\tr.kr(0.2));// trigger Rate: wie oft wird ein Grain abgespielt
     dur = (12 / tr); // Grain Länge: bei langer trigger Rate längere Grains
     clk = Dust.kr(tr); // triggert die Grains, relativ zu ihrer Dauer
-    pos = \pos.kr(0) + TRand.kr(0, 0.01, clk); // das TRand macht einen "an der POsition stehenbleiben"- Effekt, ohne den wäre die Position zu scharfkantig
+    pos = pos + TRand.kr(0, 0.01, clk); // das TRand macht einen "an der POsition stehenbleiben"- Effekt, ohne den wäre die Position zu scharfkantig
     //pan = WhiteNoise.kr(\pan.kr(0.5));
     sig = TGrains2.ar(
         numChannels: 2,
@@ -313,10 +313,8 @@ SynthDef(\grainScrub, {
         att: dur * 0.3,
         dec: dur * 0.5);
     env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    sig = RLPF.ar(sig, \ffreq.kr(5500), \rq.kr(0.9)) * env;
-    //dry = TGrains2.ar(2, clk, buf, 1, pos, dur, pan, 0.1, dur * 0.3, dur * 0.5);
-    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.3) * env;
+    sig = RLPF.ar(sig, \ffreq.kr(5500), \rq.kr(0.22)) * env;
+    sig = sig * \amp.kr(0.3) * env * \fade.kr(1);
     Out.ar(\out.kr(0), sig);
 }).add;
 
@@ -338,7 +336,7 @@ SynthDef(\grainBuf, {
     durCtrl = min(durCtrl, maxGrainDur);
     env = EnvGen.kr(
         Env([0, 1, 0], [\atk.kr(0.1), \rls.kr(1)], \sin, 1),
-        gate, doneAction: 2);
+        gate, doneAction: 2).poll;
     sig = GrainBuf.ar(2,
         Dust.kr(dens),
         durCtrl,
@@ -380,6 +378,7 @@ SynthDef(\grainBuf2, {
         \pan.kr(0),
         -1);
     sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0.2)), \rq.kr(0.5));
+    sig = Pan2.ar(sig, \pan.kr(0));
     sig = sig * env * amp * \fade.kr(1.0);
     Out.ar(out, sig);
     Out.ar(\outfx.kr(3), sig * \send.kr(0));
@@ -393,9 +392,9 @@ SynthDef(\br, {
     ptr2 = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr2) * env;
     sig = 2.collect({
-        var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
+        var lag = LFNoise1.kr(\lg1.kr(1)).range(\lg2.kr(0.1));
         lag = lag * s.sampleRate;
-        BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
+        BufRd.ar(1, buf, ptr - lag, \lp.kr(1.0));
     }).sum ;
     sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
     sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
@@ -448,17 +447,19 @@ SynthDef(\userrec, {
     var ptr, sig;
     ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf));
     sig = SoundIn.ar(micIn, 1);
-    SendReply.kr(Impulse.kr(100), '/cursor', ptr);
+    SendReply.kr(Impulse.kr(200), '/cursor', ptr);
     BufWr.ar(sig, buf, ptr);
 }).add;
 
 
 //playback
 SynthDef(\playback, {
-    var sig;
-    sig = PlayBuf.ar(1, \buf.kr(0));
-    FreeSelfWhenDone.kr(sig);
-    Out.ar(\out.kr(0), sig!2);
+    |gate=1|
+    var sig, env;
+    env = EnvGen.kr(Env.linen(\atk.ir(0.03),\sus.ir(3.7),\rls.ir(0.25)), gate, doneAction:2);
+    sig = PlayBuf.ar(1, \buf.kr(0), \rate.kr(0.5), doneAction:2) ;
+    //FreeSelfWhenDone.kr(sig);
+    Out.ar(\out.kr(0), sig!2 * env);
 }).add;
 
 

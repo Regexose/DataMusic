@@ -1,6 +1,8 @@
-//ServerOptions.devices;
-~audioOut= "Scarlett 4i4 USB";
-~audioIn = "Scarlett 4i4 USB";
+ServerOptions.devices;
+//~audioOut= "Scarlett 4i4 USB";
+//~audioIn = "Scarlett 4i4 USB";
+~audioOut= "Scarlett Solo USB";
+~audioIn = "Scarlett Solo USB";
 //~audioIn = "Scarlett 4i4 USB";
 //~audioOut = "MacBook Pro-Lautsprecher";
 //~audioOut = "Externe Kopfhöre";

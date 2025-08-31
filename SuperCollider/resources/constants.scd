@@ -14,8 +14,9 @@
 ~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
 
 ~activeSynths = ();
-~currentData = (\td:  (\sm1 : 0, \trock01 : 0, \trock02 : 0, \temp_winter: 0, \temp2 : 0, \drone: 0, \humid2 : 0),
-    \fade: ()
+~currentData = (\td:  (\sm : 0, \temp: 0, \evap: 0),
+    \fade: (),
+
 );
 ~activeRoutines = ();
 // für spectral delay

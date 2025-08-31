@@ -31,8 +31,9 @@
     rec = Synth(\userrec, [\buf, ~userSound, \ptrIn, ~userPtr, \micIn, 0]);
     o = OSCdef(\listener, { |msg|
         var tdmsg = ["Done", typename];
-        if(msg[3] > (~userSound.numFrames-500), {
-            "record done".postln;
+        msg[3].postln;
+        if(msg[3] > (~userSound.numFrames-1920), {
+            "record done  msg %".format(msg[3]).postln;
             ~tdOSC.sendMsg('/recdone', *tdmsg);
             msg.postln;
             ptr.free;
