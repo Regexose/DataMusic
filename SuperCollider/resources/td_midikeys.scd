@@ -1,28 +1,36 @@
 ~td = (
     // on Off Play
     \48 : {
-        /* am besten mit Zischgeräuschen
+        /*
+        Idee: ein Grundton im grainBuffer wird entlang bestimmter Scales erweitert
         */
-        var key= \48, data,  buf, syn,  mn, mx;
+        var key= \48, data1, data2,  buf, synths,  mn, mx, scales;
         //"play TD %  sm %".format(key, ~sm1).postln;
-        buf = ~grainBuffer.normalize;
-        # mn, mx = [100, 130];
+        buf = ~buffersByName[\boris][\gras].normalize;
+        scales = [Scale.lydian, Scale.dorian];
+        # mn, mx = [50, 130];
         s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rq, 0.2, \dens, 20, \rls, 2, \lg, 0.4], ~sourceGrp);
+        synths = scales[1].degrees.collect({|d, i| Synth(\tgrains_live, [\amp, 0.1, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rate, 1.8, \harm, d, \rq, 0.2, \dens, 20, \rls, 1.5, \lg, 0.4], ~sourceGrp);
 
-        ~activeSynths.put(key, [syn]);
-        loop{
-            data = ~currentData.td[\sm1];
-            //"data 48 %".format(data).postln;
-            syn.set(\ffreq, data.linlin(mn, mx, 800, 2000),
-                \rate, data.linlin(mn, mx, 0.9, 1.1),
-                \dens, data.linlin(mn, mx, 10, 20),
-                \baseDur, data.linlin(mn, mx, 1, 5),
-            );
+        });
+        synths.postln;
+        ~activeSynths.put(key, synths);
 
-            0.1.wait};
+        loop{var degrees;
+            data1 = ~currentData.td[\sm1];
+            data2 = ~currentData.td[\sm2];
+            case
+            {data1.asInteger % 2 == 0}{degrees = scales[0].degrees }
+            {data1.asInteger % 2 != 0}{degrees = scales[1].degrees }
+            {true}{"no more scales".postln};
+
+           "data 48 lo? %  degrees %".format((data1.asInteger % 2 == 0),  degrees).postln;
+            synths.do({|syn, i| syn.set(\harm, degrees[i])});
+
+            0.3.wait};
 
     },
+
     \50 :{// geht mit fast allen Sounds
         // der FM Teil indiziert Aktivität
         // der Grainsynth ist pitch Sonifikation

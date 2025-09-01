@@ -234,8 +234,8 @@ SynthDef(\tgrains_live, {
     ptr =  In.ar(ptrBus, 1) - ptrDelay;
     ptr = ptr/BufFrames.kr(buf);
     pos = (ptr/s.sampleRate) -1;
-    pos = pos + LFNoise1.kr(100).bipolar(\jitter.kr(0.0));
-    rate =  \rate.kr(1) * \harm.kr([0, 0]).midiratio;
+    pos = pos + LFNoise1.kr(10).bipolar(\jitter.kr(0.0));
+    rate =  \rate.kr(1) * \harm.kr(0).midiratio;
     sig = TGrains.ar(
         numChannels: 2,
         trigger: Impulse.kr(\dens.kr(40)),
@@ -257,7 +257,7 @@ SynthDef(\tgrains_live, {
     //dry = BufRd.ar(1, buf, ptr) * 0.04 * env ;
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig  * \amp.kr(0.4) * \fade.kr(1) * env;
-    Out.ar(\out.kr(0), [sig, fm]);
+    Out.ar(\out.kr(0), sig);
 
 }).add;
 

@@ -6,7 +6,7 @@ SynthDescLib.at(\livegran).controlDict
 ~routines[\patFunc][0]
 ~currentData.dark[\in]
 
-~userSound.numFrames
+Scale.directory
 
 x = Synth(\voweltrig, [\amp, 0.5, \buf, ~buffersByName[\boris][\tension], \rls, 4, \out, 0], ~grainGrp);
 x.set(\vow, 3, \dec, 0.1, \ffreq, 1200, \trg, 30, \freqScale, 0.9, \decayScale, 0.1, \att, 0.04)

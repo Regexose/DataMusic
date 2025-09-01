@@ -44,24 +44,36 @@ OSCdef(\sm1, {|msg, time, addr, recvPort|
 },
     '/sm1'
 );
-OSCdef(\trock01, {|msg, time, addr, recvPort|
-   //msg[1].postln;
-    ~currentData[\td][\trock01] = msg[1];
+OSCdef(\sm2, {|msg, time, addr, recvPort|
+    //"receiving sm1 %".format(msg[1]).postln;
+    ~currentData[\td][\sm2] = msg[1].asInteger;
 },
-    '/trock01'
+    '/sm2'
 );
-OSCdef(\trock02, {|msg, time, addr, recvPort|
-    //msg[1].postln;
-    ~currentData[\td][\trock02] = msg[1].asInteger;
+OSCdef(\sm3, {|msg, time, addr, recvPort|
+    //"receiving sm1 %".format(msg[1]).postln;
+    ~currentData[\td][\sm3] = msg[1].asInteger;
 },
-    '/trock02'
+    '/sm3'
+);
+OSCdef(\temp1, {|msg, time, addr, recvPort|
+   //msg[1].postln;
+    ~currentData[\td][\temp1] = msg[1];
+},
+    '/temp1'
+);
+OSCdef(\temp2, {|msg, time, addr, recvPort|
+    //msg[1].postln;
+    ~currentData[\td][\temp2] = msg[1].asInteger;
+},
+    '/temp2'
 );
 
-OSCdef(\temp1, {|msg, time, addr, recvPort|
+OSCdef(\temp3, {|msg, time, addr, recvPort|
     //msg[1].postln;
-    ~currentData[\td][\temp_winter] = msg[1].asFloat;
+    ~currentData[\td][\temp3] = msg[1].asFloat;
 },
-    '/temp_winter'
+    '/temp3'
 );
 
 OSCdef(\drone, {|msg, time, addr, recvPort|
