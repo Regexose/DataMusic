@@ -11,7 +11,8 @@
 ~currentSample = Dictionary.new;
 ~vowelDict = Dictionary.new;
 ~vowelIndex = 0;
-~posX = 0; //position of the cursor in ~dataView, manipulated by ~moveCursor
+~patternOn01 = true;
+~patternOn02 = true;
 
 ~activeSynths = ();
 ~currentData = (\td:  (\sm : 0, \temp: 0, \evap: 0),

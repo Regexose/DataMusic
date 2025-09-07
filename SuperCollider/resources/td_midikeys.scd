@@ -2,7 +2,7 @@
     // on Off Play
 
     \48 :{// geht mit fast allen Sounds
-        // der FM Teil indiziert Aktivität
+        // Daten manipulieren hauptsächlich Pitch
         // der Grainsynth ist pitch Sonifikation
         var key= \48, data, buf, syn, mn, mx;
         //Grains mit dezidierter ptrPos und pan
@@ -29,7 +29,7 @@
     },
 
     \49 :{// geht mit fast allen Sounds
-        // der FM Teil indiziert Aktivität
+        // Daten manipulieren hauptsächlich Pitch
         // der Grainsynth ist pitch Sonifikation
         var key= \49, data, buf, syn, mn, mx;
         //Grains mit dezidierter ptrPos und pan
@@ -38,7 +38,7 @@
         # mn, mx =[50,130];
         s.sync;
         syn = Synth(\tgrains_live, [\amp, 0.3, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 20, \lg, 0.1, \grainDur, 0.9, \rate, 1.5,
-            \out, 0, \fade, 0.9, \outfx, 3], ~grainGrp);
+            \out, 0, \fade, 0.9, \outfx, ~fxBus ], ~grainGrp);
         ~activeSynths.put(key, [syn]);
         loop{
             var harm, dFactor;
@@ -50,20 +50,22 @@
                 \harm, harm,
                 \grainDur, data.linlin(mn, mx, 0.1, 0.9),
                 \fmdens, data.linlin(mn, mx, 0.5, 3.0),
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\48]
             );
             0.05.wait};
     },
 
     \50 : {
         /* am besten mit Zischgeräuschen
+        bacillus megaterium und Temperatur - Aufspaltung von Weizenglutenen
+        Klicks und transientenreich für das Delay
         */
         var key= \50, data,  buf, syn, fx, mn, mx;
         //"play TD %  sm %".format(key, ~sm1).postln;
         buf =~buffersByName[\boris][\mega].normalize;
         # mn, mx = [-1, 30];
         s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.5, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4], ~grainGrp);
+        syn = Synth(\grainBuf2, [\amp, 0.5, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4, \send, 0, \outfx, ~fxBus], ~grainGrp);
         fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
         ~activeSynths.put(key, [syn, fx]);
         loop{
@@ -74,6 +76,7 @@
                 \dens, data.linlin(mn, mx, 10, 40),
                 \baseDur, data.linlin(mn, mx, 0.8, 0.4),
                 \pan, data.linlin(mn, mx, -1.0, 1),
+                \send, data.linlin(mn, mx, 0.0, 0.8),
                 \fade, ~currentData.fade[key]
             );
             fx.set(\delTime, data.linlin(mn, mx, 0.24, 0.04),
@@ -87,13 +90,15 @@
 
     \51 : {
         /* am besten mit Zischgeräuschen
+        bacillus megaterium und Temperatur - Aufspaltung von Weizenglutenen
+        Klicks und transientenreich für das Delay
         */
         var key= \51, data,  buf, syn, fx, mn, mx;
         //"play TD %  sm %".format(key, ~sm1).postln;
         buf = ~grainBuffer.normalize;
         # mn, mx = [-1, 30];
         s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.5, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4], ~grainGrp);
+        syn = Synth(\grainBuf2, [\amp, 0.5, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4, \send, 0.9, \outfx, ~fxBus], ~grainGrp);
         fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
         ~activeSynths.put(key, [syn, fx]);
         loop{
@@ -104,11 +109,12 @@
                 \dens, data.linlin(mn, mx, 10, 40),
                 \baseDur, data.linlin(mn, mx, 0.8, 0.4),
                 \pan, data.linlin(mn, mx, -1.0, 1),
-                \fade, ~currentData.fade[key]
+
+                \fade, ~currentData.fade[\50]
             );
             fx.set(\delTime, data.linlin(mn, mx, 0.24, 0.04),
                 \decayTime, data.linlin(mn, mx, 0.3, 1.5),
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\50]
             );
 
             0.1.wait};
@@ -117,17 +123,21 @@
 
 
     \52 :{
-        var key= \52, data, data2, buf, syn, smaz, mn, mx, mn2, mx2;
-        //Grains mit dezidierter ptrPos und pan
-        // Die Aktivität kommt zum Erliegen
+        var key= \52, data, data2, buf, syn, smaz, fx, mn, mx, mn2, mx2;
+        /*Grains mit dezidierter ptrPos und pan
+        Nematode Häufigkeit (smaz + Delay) und Fressaktivität (pitch und pan und auch trigger)
+
+        Die Aktivität kommt im Winter zum Erliegen
+        */
         //buf = ~grainBuffer.normalize;
         buf =  ~buffersByName[\boris][\nema].normalize;
         # mn, mx =[0, 130];
         # mn2, mx2 =[-2.0, 35.0];
         s.sync;
         syn = Synth(\grainScrub, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf, \tr, 0.2, \out,0], ~grainGrp);
-        smaz = Synth(\crisps, [\amp, 0.5, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.9, \decayScale, 0.5, \out, 0]);
-        ~activeSynths.put(key, [syn, smaz]);
+        smaz = Synth(\crisps, [\amp, 0.5, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.1, \decayScale, 0.5, \out, 0, \outfx, ~fxBus, \send, 0.5]);
+        fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
+        ~activeSynths.put(key, [syn, smaz, fx]);
         loop{
             var freqs;
             data = ~currentData.td[\sm];
@@ -142,7 +152,12 @@
                 \fade, ~currentData.fade[key]
             );
             smaz.set(\freq, freqs, \pan, data2.linlin(mn2, mx2, -1, 1),
-                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),  \fade, ~currentData.fade[key]);
+                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),
+                \send, data2.linlin(mn2, mx2, 0.1, 0.8),
+                \fade, ~currentData.fade[key]);
+            fx.set(\delTime, data.linlin(mn, mx, 0.24, 0.04),
+                \decayTime, data.linlin(mn, mx, 0.3, 1.5),
+                \fade, ~currentData.fade[key]);
             0.1.wait;
 
         };
@@ -150,17 +165,19 @@
 
     \54 :{
         var key= \54, data, data2, buf, syn, smaz, mn, mx, mn2, mx2;
-        //Grains mit dezidierter ptrPos und pan
-        // Die Aktivität kommt zum Erliegen
+        /*Grains mit dezidierter ptrPos und pan
+        Nematode Häufigkeit (smaz + Delay) und Fressaktivität (pitch und pan und auch trigger)
 
+        Die Aktivität kommt im Winter zum Erliegen
+        */
         buf =  ~grainBuffer.normalize;
         # mn, mx =[0, 130];
         # mn2, mx2 =[-2.0, 35.0];
         s.sync;
 
         syn = Synth(\tgrains_live, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 20, \lg, 0.1, \grainDur, 0.9, \rate, 1.5,
-            \out, 0, \fade, 0.9, \outfx, 3], ~grainGrp);
-        smaz = Synth(\crisps, [\amp, 0.5, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.9, \decayScale, 0.5, \out, 0]);
+            \out, 0, \fade, 0.9], ~grainGrp);
+        smaz = Synth(\crisps, [\amp, 0.5, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.1, \decayScale, 0.5, \out, 0]);
         ~activeSynths.put(key, [syn, smaz]);
         loop{
             var freqs;
@@ -173,16 +190,21 @@
                 \pan, data.linlin(mn, mx, -1, 1),
                 \dens, data.linlin(mn, mx, 0.5, 8),
                 \grainDur, data.linlin(mn, mx, 1.5, 0.25),
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\52]
             );
             smaz.set(\freq, freqs, \pan, data2.linlin(mn2, mx2, -1, 1),
-                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),  \fade, ~currentData.fade[key]);
+                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),  \fade, ~currentData.fade[\52]);
             0.1.wait;
 
         };
     },
 
     \53 : {
+        /*
+        Alle drei Aktanten
+        Hier soll auch der Zusammenhang aller drei hörbar werden.
+        fade kontrollieren.
+        */
         var key= \53, data1, data2, buf1, buf2, buf3, gras, mega, nema, fx, smaz,
         mn1, mx1, mn2, mx2,  mn3, mx3;
 
@@ -191,11 +213,11 @@
         buf2 = ~buffersByName[\boris][\mega].normalize;
         buf3 = ~buffersByName[\boris][\nema].normalize;
         s.sync;
-        gras = Synth(\tgrains_live, [\amp, 0.2, \ptrBus, ~ptrBus, \buf,  buf1, \rq, 0.2, \dens, 20, \lg, 0.1, \grainDur, 0.9, \rate, 1.5,
+        gras = Synth(\tgrains_live, [\amp, 0.1, \ptrBus, ~ptrBus, \buf,  buf1, \rq, 0.2, \dens, 20, \lg, 0.1, \grainDur, 0.9, \rate, 1.5,
             \out, 0, \fade, 0.9, \outfx, 3], ~grainGrp);
-        mega = Synth(\grainBuf2, [\amp, 0.3, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf2, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4], ~grainGrp);
-        nema = Synth(\grainScrub, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf3, \tr, 0.2, \out,0], ~grainGrp);
-        smaz = Synth(\crisps, [\amp, 0.3, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.9, \decayScale, 0.5, \out, 0]);
+        mega = Synth(\grainBuf2, [\amp, 0.15, \ptrBus, ~ptrBus, \minPtrDelay, 1500, \buf, buf2, \rq, 0.15, \dens, 20, \rls, 2, \lg, 0.4, \outfx, ~fxBus, \send, 0.9], ~grainGrp);
+        nema = Synth(\grainScrub, [\amp, 0.5, \ptrBus, ~ptrBus, \buf, buf3, \tr, 0.2, \pos, (buf3.numFrames/s.sampleRate )/2,  \out,0], ~grainGrp);
+        smaz = Synth(\crisps, [\amp, 0.15, \trg, 5, \freq, [80, 120, 350, 1010], \rq, 0.14, \punch, 0.4, \dec, 0.9, \decayScale, 0.5, \out, 0, \outfx, ~fxBus, \send, 0.5]);
         fx = Synth(\combdelay, [\bus, ~fxBus, \maxDelTime, 3, \decayTime, 3, \blend, 1, \out, 0], ~fxGrp);
         ~activeSynths.put(key, [gras, mega, nema, smaz, fx]);
 
@@ -204,35 +226,36 @@
             data1 = ~currentData.td[\sm];
             data2 = ~currentData.td[\temp];
             harm = data1.linlin(mn1, mx1, [-12, -6] , [12, 6]);
-            nemafac = data2.linlin(mn1, mx1, 1.0, 0.0);
+            nemafac = data1.linlin(mn1, mx1, 1.0, 0.0);
             megafac = data2.linlin(mn2, mx2, 1.0, 0.0);
             gras.set(
                 \harm, harm * megafac,
                 \grainDur, data1.linlin(mn1, mx1, 0.1, 0.9) * megafac,
                 \fmdens, data1.linlin(mn1, mx1, 0.5, 3.0) * megafac,
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\48]
             );
             mega.set(\ffreq, data2.linlin(mn2, mx2, 500, 3000) * nemafac,
                 \rate, data2.linlin(mn2, mx2, 0.5, 1.5) * nemafac,
                 \dens, data2.linlin(mn2, mx2, 10, 40) * nemafac,
                 \baseDur, data2.linlin(mn2, mx2, 0.8, 0.4) * nemafac,
                 \pan, data2.linlin(mn2, mx2, -1.0, 1) * nemafac,
-                \fade, ~currentData.fade[key]
+                \send, data2.linlin(mn2, mx2, 0.0, 1.0) * nemafac,
+                \fade, ~currentData.fade[\50]
             );
             fx.set(\delTime, data2.linlin(mn2, mx2, 0.24, 0.04),
                 \decayTime, data2.linlin(mn2, mx2, 0.3, 1.5),
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\50]
             );
             nema.set(
                 \harm, data1.linlin(mn1, mx1,-12,8),
                 \pan, data1.linlin(mn1, mx1, -1, 1),
                 \pos, data1.linlin(mn1, mx1, 0.0, buf3.numFrames / s.sampleRate),
                 \tr, data1.linlin(mn1, mx1, 0.05, 5),
-                \fade, ~currentData.fade[key]
+                \fade, ~currentData.fade[\52]
             );
             freqs = Array.fill(4, {|n| var fac = (n+1) * 2; data2.linlin(mn2, mx2, 60 * fac, 80 * fac) });
             smaz.set(\freq, freqs, \pan, data2.linlin(mn2, mx2, -1, 1),
-                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),  \fade, ~currentData.fade[key] );
+                \trg, data2.linlin(mn2, mx2, 4, 15), \ffreq, data2.linlin(mn2, mx2, 200, 3500),  \fade, ~currentData.fade[\50] );
 
             0.1.wait
         };
@@ -313,21 +336,21 @@
 
     \59 : {
         // drone1. arbeitet mit der realen Verdunstung
-        var key=\59, data,  mn, mx,  drone, baseFreq=100, fac1, fac2, fac3,
+        var key=\59, data,  mn, mx,  drone, baseFreq=80, fac1, fac2, fac3,
         freq1, freq2, freq3, df1, df2, df3;
         data = ~currentData.td[\evap];
         //"play TD %  drone %".format(key, data).postln;
         # mn, mx =[0.0, 4.5];
-        # fac1, fac2, fac3 = [1, 2.2, 3.4];
+        # fac1, fac2, fac3 = [1, 1.2, 1.8];
         # freq1, freq2, freq3 = [fac1, fac2, fac3].collect({|f| baseFreq * f});
         # df1, df2, df3 = [1.8, 1.2, 1.05]; // datafactor
-        drone = Synth(\arrayarg, [\freq, [freq1, freq2, freq3], \flg1, 3.1, \flg2, 7.0, \mlg1, 2.0, \mlg2, 7.0]);
+        drone = Synth(\arrayarg, [\freq, [freq1, freq2, freq3], \flg1, 5.1, \flg2, 9.0, \mlg1, 2.0, \mlg2, 8.0]);
         ~activeSynths.put(key, [drone]);
         loop{
             data = ~currentData.td[\evap];
             //"play TD %  drone %".format(key, data).postln;
             drone.set(\mods, Array.fill(3, {var m = data.linlin(mn, mx, 0.05, 0.12); [m * fac1, m*fac2, m*fac3 ]}),
-                \freq, Array.fill(3, {[(data * fac1 * df1 * baseFreq), (data * fac2 * df2 * baseFreq), (data * fac3 * df3 * baseFreq)]}, \phsMod, data.linlin(mn, mx, 0.2, 12)), \fade, ~currentData.fade[key]);
+                \freq, Array.fill(3, {[(data * fac1 * df1 * baseFreq), (data * fac2 * df2 * baseFreq), (data * fac3 * df3 * baseFreq)]}), \phsMod, data.linlin(mn, mx, 0.2, 12), \fade, ~currentData.fade[key]);
             0.05.wait};
     },
 
@@ -422,35 +445,53 @@
     },
 
     \71:{
-        var key = \71, data, mn, mx, vow=0;
+        /*
+        Atemgeräusch, ist eher atmosphärisch
+        evtl mit \dark kombinieren?
+        */
+        var key = \71, data, mn, mx;
 
-        # mn, mx = [0.0, 4.0];
-        Pbindef(\voc2).play;
-        loop{
+        # mn, mx = [0.0, 10.0];
+
+        if (~patternOn01 == true, {"starting pattern %".format(key).postln; Pbindef(\voc2).play;   Pbindef(\dark).play;  ~patternOn01 = false},
+            {"stopping pattern %".format(key).postln;[\voc2, \dark].do({|k|Pbindef(k).stop}); ~patternOn01 = true});
+
+        loop{var vow=0, phs;
             data = ~currentData.td[\evap];
             case
-            {data < 1.0}{vow = 0}
-            {(data >= 1.0) && (data <2.0)}{vow = 5}
+            {data < 1.0}{vow = 2}
+            {(data >= 1.0) && (data <2.0)}{vow = 5;}
             {(data >= 2.0) && (data <3.0)}{vow = 10}
             {(data >= 3.0) && (data < 4.0)}{vow = 15}
-            {true}{"no more vows".postln};
+            {(data >= 4.0) && (data < 10.0)}{vow = 12}
+            {true}{"no more vows data %".format(data).postln};
+            phs = Array.fill(5, {|n| data.linlin(mn, mx, 0.9 , 1.1)});
 
-            Pbindef(\voc2, \vow, Pfunc({vow}), \fScale,  Pwhite(0.1, 0.7, inf), \decayScale, Pfunc(0.1, 0.5, inf), \fade, Pfunc({~currentData.fade[key]}));
+            "data % vow % ".format(data, vow).postln;
+            Pbindef(\voc2,  \vow, Pfunc({vow}), \phs, Pfunc({phs}), \fade, Pfunc({~currentData.fade[key]})).quant_(0);
+            Pbindef(\dark,  \freq, Pseq([Pn(24, 7), Prand([24, 36, 48, 60, 72].midicps, 1)], inf) * Pxrand([1.98, 0.11, 3.09, 0.21, 1.32], inf), \fade, Pfunc({~currentData.fade[key]})).quant_(0);
 
-            1.wait;
+            0.5.wait;
         }
 
     },
 
     \72:{
+        /*
+        dies soll dem Pattern von E Autos nahekommen.
+        */
         var key = \72, data, mn, mx, fr, mods;
-
         # mn, mx = [0.0, 4.0];
-        Pbindef(\array01).play;
+        if (~patternOn02 == true, {"starting pattern %".format(key).postln; Pbindef(\array01).play; ~patternOn02 = false},
+            {"stopping pattern %".format(key).postln; Pbindef(\array01).stop; ~patternOn02 = true});
+        //Pbindef(\array01).play;
         loop{
             data = ~currentData.td[\evap];
-
-            Pbindef(\array01, \freq, Pfunc({var d1 = data.linlin(mn, mx, 30, 42).midicps, d2= data.linlin(mn, mx, 40, 52).midicps; [d1, d2]}), \fade, Pfunc({~currentData.fade[key]}));
+            Pbindef(\array01,
+            \freq, Pfunc({Array.fill(3,
+                {[data.linlin(mn, mx, 90, 100), data.linlin(mn, mx, 100, 140) , data.linlin(mn, mx, 120, 180) ]})}),
+            \mods, Pfunc({Array.fill(3, {|n| var m = data.linlin(mn, mx, 0.05, 0.12); m * n})}).trace,
+            \fade, Pfunc({~currentData.fade[key]}));
 
             1.wait;
         }

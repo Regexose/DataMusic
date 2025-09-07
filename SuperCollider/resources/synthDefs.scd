@@ -26,9 +26,9 @@ SynthDef(\vowelklank, {
     |vow=1, freqScale=0.1, ptrBus=0, decayScale=0.1, buf=0, gate=1|
     var sig, dry, ptr, env, vowel, baseIndex, freqs, widths, dBs, phases, exc;
     baseIndex = vow * 15; //jeder Vokal hat 15 Werte, Index=0 -> erster Vokal
-    freqs = Select.kr(baseIndex + (0..4), ~vowelArray).varlag(0.2);
+    freqs = Select.kr(baseIndex + (0..4), ~vowelArray);
     widths = Select.kr(baseIndex + (5..9), ~vowelArray);
-    dBs = Select.kr(baseIndex + (10..14), ~vowelArray).varlag(0.1);
+    dBs = Select.kr(baseIndex + (10..14), ~vowelArray);
     //vowel = Vowel.basicNew(freqs, dBs, widths);
     phases = \phs.kr(1)!5;
     env = EnvGen.kr(Env([0, 1, 0],[\atk.kr(0.5), \rls.kr(0.5)]), doneAction:2);
@@ -37,18 +37,18 @@ SynthDef(\vowelklank, {
     //exc = WhiteNoise.ar(0.5);
     sig = DynKlank.ar(
         `[
-            freqs * \fScale.kr(100),
+            freqs.poll * \fScale.kr(100),
             dBs.dbamp.normalizeSum,
             phases
     ], exc, freqscale: freqScale,  decayscale: decayScale);
 
     sig = RHPF.ar(sig, \ffreq.kr(500).varlag(0.2), \rq.kr(0.5));// um die tiefen Resonanzen etwas zu zähmen
-    sig = Pan2.ar(sig, \pan.kr(0));
+    //sig = Pan2.ar(sig, \pan.kr(0));
     //ptr = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
     dry = BufRd.ar(1, buf, ptr);
-    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     sig = sig * \amp.kr(0.2) * \fade.kr(1.0) * env;
-    Out.ar(\out.kr(0), sig);
+    Out.ar(\out.kr(0), sig!2);
 }).add;
 
 SynthDef(\voweltrig, {
@@ -147,7 +147,7 @@ SynthDef(\crisps, {
     var ampArray = NamedControl.kr(\levels, [0.5, 0.24, 0.14, 0.423]);
     var ringArray = NamedControl.kr(\ring, [0.1, 0.04, 0.04, 0.023]);
     env = Env.asr(\atk.ir(0.1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    freqs = freqArray.collect({
+  /*  freqs = freqArray.collect({
         |f, i|
         [(f- (f/10)), f,  f+ (f/10)];
     }).flat;
@@ -158,19 +158,20 @@ SynthDef(\crisps, {
     rings = ringArray.collect({
         |r|
         [(r- (r/10)), r,  r+ (r/10)]
-    }).flat;
+    }).flat;*/
     trig = Dust.kr(\trg.kr(4));
     SendTrig.kr(trig);
     freqMod = TRand.kr( 0.8, 1.5, trig);
     exc = WhiteNoise.ar(\punch.kr(0.1)) * Decay2.kr(trig, 0.001, \dec.kr(0.9));
     sig = DynKlank.ar(`[
-        freqs,
-        amps.ampdb.normalizeSum,
-        rings
+        freqArray,
+        ampArray.ampdb.normalizeSum,
+        ringArray
     ], exc, \freqScale.kr(1), \freqOffset.kr(0), \decayScale.kr(0.1));
     sig = sig * \amp.kr(0.3) * env * \fade.kr(1.0);
     sig = Pan2.ar(BPF.ar(sig, \ffreq.kr(3000), \rq.kr(1.0)), \pan.kr(0.0));
     Out.ar(\out.kr(0), sig);
+    Out.ar(\outfx.kr(3), sig * \send.kr(0));
 }).add;
 
 //https://www.youtube.com/watch?v=xYc7_PbbtuE&t=1579s  ab 30:00

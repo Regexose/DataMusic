@@ -41,7 +41,7 @@ x.set(\ffreq, 3000, \dens, 32, \fmdens, 4, \numharm, 3, \carfreq, 200, \modfreq,
 )
 
 x = Synth(\crisps, [\freqs, 3500!3, \rings, 0.3!3, \amps, rrand(0.1, 0.3)!3, \out,0])
-x.setn(\freqScale, rrand(0.1, 0.5)!3, \decayScale, rrand(0.1, 0.5)!3, \dec, 6, \freqs, exprand(100, 1200)!3,  \rings, rrand(0.1, 0.9)!3, \amps, rrand(0.01, 0.9)!3,)
+x.setn(\freqScale, rrand(0.1, 0.5)!3, \decayScale, rrand(0.1, 0.5)!3, \dec, 6, \freqs, exprand(100, 1200)!3,  \rings, rrand(0.1, 0.9)!3, \amps, rrand(0.01, 0.9)!3)
 x.isPlaying;
 x.free
 //////////////////////////////
@@ -71,8 +71,8 @@ z.free
 764224.0
 (766144.0- 764224.0)
 
-
-767500.0
+~td[\71].stop
+~currentData.td[\evap] = 1.1
 
 ~buffersByName[\boris][\atem].play
 Pbindef.all.do(_.stop)
@@ -88,9 +88,12 @@ Pbindef(\dark, \ampMod, Pseq([2, 5, 10, 30], inf), \ffreq, Pwhite(200, 1000, inf
 
 Pbindef(\array01, \dur, 4, \rls, Pfunc({Array.rand(5, 0.1, 0.3)}), \freqMods, Pwhite(0.01, 1.1, inf), \rls, 0.4, \freq, Pfunc({Array.fill(2, {rrand(30, 71).asInteger})}), \mods,  Pfunc({Array.fill(2, {rrand(0, 1)})}))
 Pbindef(\voc2).play
-Pbindef(\voc2, \atk, 0.75, \rls, 0.75, \vow, Pseq([0, 5, 9, 15], inf), \fScale,  Pwhite(0.1, 0.7, inf),\dur, 2, \decayScale, Pwhite(0.1, 0.5, inf))
+Pbindef(\voc2).stop
 
-Pbindef(\dark, \freq, Pfunc({var data, d; data = ~currentData.td[\temp_winter]; d = data.linlin(0, 30, 20, 36).midicps; [d, d +5, d +12, d-6].choose})).play
+Pbindef(\voc2, \atk, 0.75, \rls, 0.75, \vow, Pseq([0, 5, 9, 15], inf), \fScale,  Pwhite(0.1, 0.7, inf),\dur, 2, \decayScale, Pwhite(0.1, 0.5, inf))
+Pbindef(\dark).play
+Pbindef(\dark).stop
+Pbindef(\dark, \freq, Pfunc({var data, d; data = ~currentData.td[\temp]; d = data.linlin(0, 30, 20, 36).midicps; [d, d +5, d +12, d-6].choose})).play
 
 ~currentData.keys.do({
     |k|

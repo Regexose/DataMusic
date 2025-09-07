@@ -32,9 +32,10 @@ OSCdef(\TDOffKeyhold, {|msg, time, addr, recvPort|
 OSCdef(\TDOffPattern, {|msg, time, addr, recvPort|
     var key, funcDict, rout;
     key = msg[1].asSymbol;
+
     rout = ~activeRoutines[\td][key];
     rout.stop;
-    if (key == \71, {Pbindef(\voc2).stop}, {Pbindef(\array01).stop});
+    if (key == \71, {[\voc2, \dark].do({|k|Pbindef(k).stop})}, {Pbindef(\array01).stop});
     "stopped rout %  activesynths % routine active= %".format(key, ~activeSynths, rout.isActive).postln;
 },
 '/OffPattern'

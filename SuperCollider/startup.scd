@@ -14,8 +14,8 @@ Server.default.options.inDevice_(~audioIn);
 Server.default.options.numInputBusChannels_(1);
 Server.default.options.numOutputBusChannels_(16);
 Server.default.options.sampleRate_(48000);
-Server.default.options.memSize_(100.pow(2));
-s.options.numWireBufs = 200;
+Server.default.options.memSize_(80.pow(2));
+s.options.numWireBufs = 128;
 
 s.waitForBoot({
     //s.dumpOSC(1);
@@ -29,20 +29,11 @@ s.waitForBoot({
     /// load SynthDefs, Constants, Functions
     //"busses \n".postln;
     (~resourcePath ++ "constants.scd").load;
-//"constants.scd \n".postln;
-   // (~resourcePath ++ "rf_midikeys.scd").load;
-//"midikeys.scd \n".postln;
     (~resourcePath ++ "td_midikeys.scd").load;
-//"midikeys.scd \n".postln;
-  //  (~resourcePath ++ "rf_patterns.scd").load;
-//"patterns.scd \n".postln;
-   // (~resourcePath ++ "rf_live.scd").load;
-//"live.scd \n".postln;
-
     (~resourcePath ++ "synthDefs.scd").load;
    // "synthdefs \n".postln;
-      (~resourcePath ++ "osc.scd").load;
-   // "synthdefs \n".postln;
+    (~resourcePath ++ "osc.scd").load;
+    // "synthdefs \n".postln;y
     s.sync;
     (~resourcePath ++ "functions.scd").load;
    // "functions\n ".postln;
@@ -57,19 +48,16 @@ s.waitForBoot({
     s.sync;
     (~resourcePath ++ "patterns.scd").load;
     //"patterns".postln;
-    //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_constructor.scd");
-    //thisProcess.interpreter.executeFile(~projectRoot +/+ "GUI/GUI_make.scd");
-    //"GUI".postln;
-    // Send Objekte machen
 
     ~initCurrent.();
     s.sync;
-
 
     "done".postln;
 
 })
 )
+s.makeWindow
+
 s.queryAllNodes;
 (
 ~recordUser.("nitro","tension");
