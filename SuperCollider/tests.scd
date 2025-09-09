@@ -6,12 +6,35 @@ SynthDescLib.at(\livegran).controlDict
 ~routines[\patFunc][0]
 ~currentData.dark[\in]
 
-Scale.directory
+x = Synth(\br, [\buf, ~buffersByName[\boris][\gras].normalize, \rate, 1 ])
+x.free
+
+
+Scale.choose(size:7).name
+(
+var key = \48;
+~loops = 100;
+Routine(~td[key]).play
+)
+(
+var key=\48;
+Routine(~td[key]).stop;
+~activeSynths[key].do({|x| x.set(\gate, 0)});
+Pbindef.all.do(_.stop)
+
+)
+
+(var ranges = [[0.0, 4.0], [4.0, 7.0], [7.0, 11.0], [11.0, 15.0], [15.0, 18.0], [18.0, 21.0], [21.0, 24.0], [24.0, 27.0], [27.0, 30.0] ];
+var r1Index, data1 = 12.2;
+ranges.do({|n,i| if (((data1 >= n[0]) && (data1 < n[1])), {r1Index = i}; )});
+r1Index.postln;
+)
+~activeSynths[\49].do({|x| x.set(\gate, 0)});
+~currentData.td[\sm1] = 1
 
 x = Synth(\voweltrig, [\amp, 0.5, \buf, ~buffersByName[\boris][\tension], \rls, 4, \out, 0], ~grainGrp);
 x.set(\vow, 3, \dec, 0.1, \ffreq, 1200, \trg, 30, \freqScale, 0.9, \decayScale, 0.1, \att, 0.04)
 x.free
-
 y= Synth(\combdelay, [\bus, ~fxBus, \decayTime, 1, \blend,1, \out, 0], ~fxGrp);
 y.set(\maxDelTime, 5, \delTime, 0.05, \decayTime, 5)
 y.free
@@ -34,51 +57,6 @@ z = Routine({
 z.stop
 y.free;
 
-x = Synth(\tgrains, [\buf, ~grainBuffer, \grainDur, 0.1, \out, 0, \amp, 0.5])
-x.set(\ffreq, 3000, \dens, 32, \fmdens, 4, \numharm, 3, \carfreq, 200, \modfreq, 2, \index, 2, \grainDur, 0.55, \drywet, 1, \grainAmp, 0.2, \ampmod, 1,  \amp, 0.1, \rate, 0.3, \harm, [0.0, -3.6] *2
-)
-
-x = Synth(\crisps, [\freqs, 3500!3, \rings, 0.3!3, \amps, rrand(0.1, 0.3)!3, \out,0])
-x.setn(\freqScale, rrand(0.1, 0.5)!3, \decayScale, rrand(0.1, 0.5)!3, \dec, 6, \freqs, exprand(100, 1200)!3,  \rings, rrand(0.1, 0.9)!3, \amps, rrand(0.01, 0.9)!3,)
-x.isPlaying;
-x.free
-//////////////////////////////
-//////////////////////////////
-// Touchdesigner Delay  Test
-x = Synth(\livegran, [\atk, 0.1, \select, 0, \ptrBus, ~ptrBus, \ptrSampleDelay, 2000, \amp, 0.75, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.05, \out, 0], ~grainGrp);
-
-x = Synth(\grainBuf, [\ptrBus, ~ptrBus, \ptrSampleDelay, 800, \amp, 0.5, \buf, ~grainBuffer, \dens, 20, \baseDur, 0.1, \out, ~fxBus], ~grainGrp);
-x.set(\out, ~fxBus)
-x.set( \amp, 0.5)
-x.free
-)
-
-y = Synth(\combdelay, [\bus, ~fxBus, \blend, 0.8, \maxDelTime, 2, \out, 0], ~fxGrp );
-y.set(\delTime, 0.1, \decayTime, 2)
-y.free;
-
-z = Synth(\ptrTest, [\ptrBus, ~ptrBus])
-z.free
-~ptrBus.get({|val| val.postln} )
-~grainBuffer.plot
-~data.keys
-~fxOnOff.(true)
-~fxOnOff.(false)
-
-
-(
-x = Synth(\pvDelay, [
-    \inMix, 0.5,
-    \inbus, ~micBus,
-    \fftBuf, ~fftBuffer.bufnum,
-    \delayBuf, ~delTimeBuffer.bufnum,
-    \fbBuf, ~fbAmtBuffer.bufnum,
-    \out, 0,
-    \amp, 0.5]
-)
-)
-x.set(\inMix, 0.5)
-x.free
 
 (
 Pbindef(\spec,
@@ -101,48 +79,11 @@ x.set(\)
 Pbindef.all.do(_.stop)
 Pbindef.all.do({|k| k.key.postln})
 
-Pbindef(\klank).play(~t, quant:4)
-Pbindef(\klank, \dec, 3, \dur, 2.2, \rls, 2)
-Pbindef(\quirkator, \atk, Prand([0.01, 0.04, 0.08], inf), \rls, 0.1, \sustain, 0.1, \otAmps, Pfunc({rrand(0.01, 0.1)}!4),     \otFreqs, Pfunc({rrand(0.081, 1.6)}!4), \feedb, pi * 1/8, \freqLag, 0.9, \dampExp, 0.02, \otLag, 0.3, \ampA, Prand([0.4, 0.6, 0.77], inf), \ffreq, Pwhite(300, 3000, inf)).play
-Pbindef(\quirkator).stop
-Pbindef(\dark).stop
-Pbindef(\dark).isPlaying
-
-
-~data.keys.do({
-    |k|
-    ~data[k].size.postln;
-})
-~data.temp.size
-~sm50.minutes.size
-currentEnvironment[\sm50][\minutes]
-~currentData[\48][\out]
-
 [0.1, 0.25, 0.5, 0.75, 1.0, 1.25].collect({|n| ~data.temp.maxItem *n})
 ~sends.keys.do({
     |k|
     k.postln
 
 })
-~master.postSettings
-~perc.inbus.index
-~sends.perc_snd_vrb1.level= 0.5
-~sends.ch1_snd_ring.level=0.6
-~sends.perc_snd_chrs.level=0.0
-
-~fx.rev.synth.run(true)
-~fx.perc_cmp.synth.run(true)
-~fx.utt_cmp.synth.run(false)
-
-~fx.keys.do({
-    |k|
-    k.synth.postln;
-})
-PeakMonitor(~perc);
-PeakMonitor(~chorus);
-PeakMonitor(~master)
-
 
 Instr.at([\busfx, \singleDelay]).listArgs
-~mixer = nil
-~activeRoutines.live

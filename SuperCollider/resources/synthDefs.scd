@@ -390,22 +390,21 @@ SynthDef(\grainBuf2, {
 }).add;
 
 SynthDef(\br, {
-    arg buf=0, rate=1, start=0, end;
-    var sig, dry, ptr, ptr2, env;
+    arg buf=0, rate=1, start=0;
+    var sig, dry, ptr, ptr2, env, end;
     env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate * \harm.kr(0).midiratio, start, end);
-    ptr2 = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
-    dry = BufRd.ar(1, buf, ptr2) * env;
-    sig = 2.collect({
-        var lag = LFNoise1.kr(\lg1.kr(0)).bipolar(\lg2.kr(0.0));
-        lag = lag * s.sampleRate;
-        BufRd.ar(1, buf, ptr + lag, \lp.kr(1.0));
-    }).sum ;
-    sig = RLPF.ar(sig, \ffreq.kr(200), \rq.kr(0.5));
+    end = BufFrames.kr(buf);
+    ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate.varlag(\lg.kr(0.5)) * \harm.kr(0).midiratio.varlag(\lg.kr(0.5)), start, end);
+    //ptr2 = Phasor.ar(0, BufRateScale.kr(buf), 0, BufFrames.kr(buf)-1);
+    //dry = BufRd.ar(1, buf, ptr2) * env;
+    sig = BufRd.ar(1, buf, ptr);
+    sig = Mix.ar(sig);
+    sig = RLPF.ar(sig, \ffreq.kr(2200), \rq.kr(0.2));
+    sig = Pan2.ar(sig, \pan.kr(0));
     sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
-    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
+    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     Out.ar(\out.kr(0), sig);
-    Out.ar(\outdry.kr(0), dry);
+    //Out.ar(\outdry.kr(0), dry);
 }).add;
 
 SynthDef(\brsaw, {
@@ -414,7 +413,7 @@ SynthDef(\brsaw, {
     env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
     // garantiert die Originalgeschwindigkeit, \freq ist speedcontrol
     ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
-    sig = BufRd.ar(1, buf, ptr );
+    sig = BufRd.ar(1, buf, ptr);
     sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
     sig = Pan2.ar(sig, \pan.kr(0)) * env;
     dry = BufRd.ar(1, buf, ptr) * env;

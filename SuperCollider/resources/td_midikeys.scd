@@ -4,30 +4,72 @@
         /*
         Idee: ein Grundton im grainBuffer wird entlang bestimmter Scales erweitert
         */
-        var key= \48, data1, data2,  buf, synths,  mn, mx, scales;
+        var key= \48, data1, data2,  buf, synths1, synths2,  mn, mx, scales, rates, ranges;
+        //"play TD %  sm %".format(key, ~sm1).postln;
+        ranges = [[0.0, 4.0], [4.0, 7.0], [7.0, 9.0], [9.0, 10.0], [10.0, 11.0], [11.0, 12.0], [13.0, 14.0], [14.0, 21.0], [21.0, 24.0], [24.0, 27.0], [27.0, 30.0] ];
+        buf = ~buffersByName[\boris][\gras].normalize;
+        scales = 10.collect({Scale.choose(size:7)});
+        rates = 10.collect({Tuning.choose(size:12)});
+        # mn, mx = [0.0, 30.0];
+        s.sync;
+        synths1 = scales[0].degrees.collect({|d, i| Synth(\br, [\amp, 0.02 * i,  \buf, buf, \rate, 1.0, \harm, d, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, -1])});
+        synths2 = scales[1].degrees.collect({|d, i| Synth(\br, [\amp,0.02 * i,  \buf, buf, \rate, 1.0, \harm, d, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, 1])});
+
+        ~activeSynths.put(key, [synths1, synths2].flat);
+
+        inf.do({|n|
+            var degrees1, degrees2, r1Index, r2Index;
+            data1 = ~currentData.td[\sm1];
+            data2 = ~currentData.td[\sm2];
+            ranges.do({|n,i| if (((data1 >= n[0]) && (data1 < n[1])), {r1Index = i})});
+            ranges.do({|n,i| if (((data2 >= n[0]) && (data2 < n[1])), {r2Index = i})});
+
+            "noch % loops  data1  % data2 % r1 % r2 %".format((~loops -n), data1, data2, r1Index, r2Index).postln;
+            synths1.do({|syn, i | syn.set(\harm, scales[r1Index].degrees[i], \ffreq, data1.linlin(mn, mx, 500, 3000))});
+            synths2.do({|syn, i| syn.set(\harm, scales[r2Index].degrees[i], \ffreq, data2.linlin(mn, mx, 500, 3000))});
+
+            0.2.wait};
+        )
+
+    },
+
+    // on Off Play
+   /*
+        Idee: ein Pattern mit variierenden degrees
+        */
+    \49 : {
+
+        var key= \49, data1, data2,  buf, synths,  mn, mx, scales;
         //"play TD %  sm %".format(key, ~sm1).postln;
         buf = ~buffersByName[\boris][\gras].normalize;
-        scales = [Scale.lydian, Scale.dorian];
+        scales = 10.collect({Scale.choose(size:7)});
         # mn, mx = [50, 130];
         s.sync;
-        synths = scales[1].degrees.collect({|d, i| Synth(\tgrains_live, [\amp, 0.1, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rate, 1.8, \harm, d, \rq, 0.2, \dens, 20, \rls, 1.5, \lg, 0.4], ~sourceGrp);
+        Pbindef(\harmonizer).play;
 
-        });
-        synths.postln;
-        ~activeSynths.put(key, synths);
-
-        loop{var degrees;
+        ~loops.do({|n|
+            var degrees;
             data1 = ~currentData.td[\sm1];
             data2 = ~currentData.td[\sm2];
             case
-            {data1.asInteger % 2 == 0}{degrees = scales[0].degrees }
-            {data1.asInteger % 2 != 0}{degrees = scales[1].degrees }
+            {(data1 >= 0) && (data1 < 1)}{degrees = scales[0].degrees }
+            {(data1 >= 1) && (data1 < 2)}{degrees = scales[1].degrees }
+            {(data1 >= 2) && (data1 < 3)}{degrees = scales[2].degrees }
+            {(data1 >= 3) && (data1 < 4)}{degrees = scales[3].degrees }
+            {(data1 >= 4) && (data1 < 5)}{degrees = scales[4].degrees }
+            {(data1 >= 5) && (data1 < 6)}{degrees = scales[5].degrees }
+            {(data1 >= 6) && (data1 < 7)}{degrees = scales[6].degrees }
+            {(data1 >= 7) && (data1 < 8)}{degrees = scales[7].degrees }
+            {(data1 >= 9) && (data1 < 10)}{degrees = scales[8].degrees }
+            {(data1 >= 10) && (data1 < 11)}{degrees = scales[9].degrees }
+
             {true}{"no more scales".postln};
 
-           "data 48 lo? %  degrees %".format((data1.asInteger % 2 == 0),  degrees).postln;
-            synths.do({|syn, i| syn.set(\harm, degrees[i])});
+            "noch % loops  data 48 lo? %  degrees %".format((~loops - n), (data1.asInteger % 2 == 0),  degrees).postln;
+            Pbindef(\harmonizer, \harm, Pfunc({degrees}).trace);
 
-            0.3.wait};
+            0.9.wait};
+        )
 
     },
 
@@ -94,8 +136,8 @@
             {(data > 18.0) && (data < 23.0)}{v = 3}
             {(data > 10.0) && (data < 18.0)}{v = 11}
             {(data > 5.0) && (data < 10.0)}{v = 12}
-             {(data > 0.0) && (data < 6.0)}{v = 13}
-             {data < 0.0}{v = 5}
+            {(data > 0.0) && (data < 6.0)}{v = 13}
+            {data < 0.0}{v = 5}
             {true}{"end of case".postln};
             //"data % \t ffreq % \t deltime %".format(data, data.linlin(0, 1, 1500, 3500), data.linlin(0, 1, 0.02, 0.8) ).postln;
             syn.set(\ffreq, data.linlin(mn, mx, 1500, 3500),
@@ -116,7 +158,7 @@
             var fr;
             data = ~currentData.td[\trock02];
             fr = Array.fill(4, {|n| (n+1) * data});
-           //data.postln;
+            //data.postln;
             syn.set(\ffreq, data.linlin(mn, mx, 400, 2800),
                 \freq, fr,
                 \trg, data.linlin(mn, mx, 2, 25),

@@ -40,13 +40,13 @@ OSCdef(\resetAll, {|msg, time, addr, recvPort|
 
 OSCdef(\sm1, {|msg, time, addr, recvPort|
     //"receiving sm1 %".format(msg[1]).postln;
-    ~currentData[\td][\sm1] = msg[1].asInteger;
+    ~currentData[\td][\sm1] = msg[1].asFloat;
 },
     '/sm1'
 );
 OSCdef(\sm2, {|msg, time, addr, recvPort|
     //"receiving sm1 %".format(msg[1]).postln;
-    ~currentData[\td][\sm2] = msg[1].asInteger;
+    ~currentData[\td][\sm2] = msg[1].asFloat;
 },
     '/sm2'
 );
