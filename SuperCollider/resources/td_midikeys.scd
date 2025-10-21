@@ -4,31 +4,32 @@
         /*
         Idee: ein Grundton im grainBuffer wird entlang bestimmter Scales erweitert
         */
-        var key= \48, data1, data2,  buf, synths1, synths2,  mn, mx, scales, rates, ranges;
+        var key= \48, data1, data2,  buf, synths1, synths2,  mn, mx, scales, ranges;
         //"play TD %  sm %".format(key, ~sm1).postln;
-        ranges = [[0.0, 4.0], [4.0, 7.0], [7.0, 9.0], [9.0, 10.0], [10.0, 11.0], [11.0, 12.0], [13.0, 14.0], [14.0, 21.0], [21.0, 24.0], [24.0, 27.0], [27.0, 30.0] ];
-        buf = ~buffersByName[\boris][\gras].normalize;
-        scales = 10.collect({Scale.choose(size:7)});
-        rates = 10.collect({Tuning.choose(size:12)});
-        # mn, mx = [0.0, 30.0];
+        ranges = [[0.0, 4.0], [4.0, 7.0], [7.0, 9.0], [9.0, 10.0], [10.0, 11.0], [11.0, 12.0], [12.0, 14.0], [14.0, 21.0], [21.0, 25.0], [25.0, 30.0]];
+        buf = ~liveBuffer.normalize;
+        //buf = ~buffersByName[\boris][\gras].normalize;
+        scales = [Scale.major, Scale.minor, Scale.ionian, Scale.phrygian, Scale.spanish, Scale.purvi, Scale.marva, Scale.major, Scale.minor,  Scale.lydian];
+        # mn, mx = [7.0, 25.0];
         s.sync;
-        synths1 = scales[0].degrees.collect({|d, i| Synth(\br, [\amp, 0.02 * i,  \buf, buf, \rate, 1.0, \harm, d, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, -1])});
-        synths2 = scales[1].degrees.collect({|d, i| Synth(\br, [\amp,0.02 * i,  \buf, buf, \rate, 1.0, \harm, d, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, 1])});
+        synths1 = scales[0].degrees.collect({|d, i| Synth(\brLive, [\amp, 0.7 - (0.04* i), \ptrBus, ~ptrBus,  \buf, buf, \rate, 1.0, \harm, d * [-1,1].choose, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, -1+ (i * 0.05), \out, i], ~sourceGrp)});
+        //synths2 = scales[0].degrees.collect({|d, i| Synth(\bellFm, [\amp, 0.051 - (0.01* i), \freq, 60.midicps, \lg, 0.3, \rls, 1.8, \pan, 1 - (i * 0.05)], ~sourceGrp)});
 
         ~activeSynths.put(key, [synths1, synths2].flat);
-
-        inf.do({|n|
-            var degrees1, degrees2, r1Index, r2Index;
+        inf.do({|x|
+            var degrees1, degrees2, r1Index, r2Index, freq1, freq2;
             data1 = ~currentData.td[\sm1];
             data2 = ~currentData.td[\sm2];
             ranges.do({|n,i| if (((data1 >= n[0]) && (data1 < n[1])), {r1Index = i})});
             ranges.do({|n,i| if (((data2 >= n[0]) && (data2 < n[1])), {r2Index = i})});
+            //[scales[r1Index].name, r1Index].postln;
 
-            "noch % loops  data1  % data2 % r1 % r2 %".format((~loops -n), data1, data2, r1Index, r2Index).postln;
+            //"noch % loops  data1  % data2 % r1 % r2 %".format((~loops -n), data1, data2, r1Index, r2Index).postln;
             synths1.do({|syn, i | syn.set(\harm, scales[r1Index].degrees[i], \ffreq, data1.linlin(mn, mx, 500, 3000))});
-            synths2.do({|syn, i| syn.set(\harm, scales[r2Index].degrees[i], \ffreq, data2.linlin(mn, mx, 500, 3000))});
+            //synths2.do({|syn, i|   syn.set(\freq, (data1.linlin(mn, mx, 48, 60).asInteger + scales[r1Index].degrees[i]).midicps)
+            //});
 
-            0.2.wait};
+            0.1.wait};
         )
 
     },
@@ -66,16 +67,14 @@
             {true}{"no more scales".postln};
 
             "noch % loops  data 48 lo? %  degrees %".format((~loops - n), (data1.asInteger % 2 == 0),  degrees).postln;
-            Pbindef(\harmonizer, \harm, Pfunc({degrees}).trace);
+            Pbindef(\harmonizer, \harm, Pfunc({degrees}));
 
             0.9.wait};
         )
 
     },
 
-    \50 :{// geht mit fast allen Sounds
-        // der FM Teil indiziert Aktivität
-        // der Grainsynth ist pitch Sonifikation
+    \50 :{/* */
         var key= \50, data, buf, syn, mn, mx;
         //Grains mit dezidierter ptrPos und pan
         buf = ~buffersByName[\boris][\base];
@@ -187,28 +186,7 @@
             );
             0.05.wait};
     },
-    //
-    // \59 : {
-    //     // drone1. arbeitet mit der realen Verdunstung
-    //     var key= \59, data,  mn, mx, drone, baseFreq=110, facs,
-    //     freqs, dfs;
-    //     data = ~currentData.td[\drone];
-    //     //"play TD %  drone %".format(key, data).postln;
-    //     # mn, mx =[0.0, 4.5];
-    //     facs = Array.fill(8, {rrand(1.02, 1.6)});
-    //     freqs = facs.collect({|f| [0.5, 0.25, 1, 2, 4].choose});
-    //     dfs = Array.fill(8, {rrand(1.02, 1.96)});// datafactor
-    //     drone = Synth(\array_1b, [\freq, baseFreq, \ffreq, 1500, \otFreqs, freqs, \freqLag, 2, \otLag, 0.7]);
-    //     ~activeSynths.put(key, [drone]);
-    //     loop{
-    //         data = ~currentData.td[\drone];
-    //         //"play TD %  drone %".format(key, data).postln;
-    //         drone.set(\otAmps, Array.fill(8, {|n| var m = data.linlin(mn, mx, 0.05, 0.12); m * facs[n]}),
-    //             \otFreqs, Array.fill(8, {|n| data * dfs[n] }),
-    //             \ampMod, data.linlin(mn, mx, 80, 200)
-    //         );
-    //     0.05.wait};
-    // },
+
 
     \59 : {
         // drone1. arbeitet mit der realen Verdunstung
@@ -231,52 +209,56 @@
     },
 
     \60 : {
-        /* am besten mit Zischgeräuschen
+        /* \sm1 entscheidet über Scale
+        \sm1-4 entscheiden über Lautstärke
         */
-        var key= \60, data,  buf, syn,  mn, mx;
-        //"play TD %  sm %".format(key, ~sm1).postln;
-        buf = ~grainBuffer.normalize;
-        # mn, mx = [100, 130];
+        var key= \60, data, buf, synths, syn, ranges, mn, mx, scales,scaleSelect;
+
+        "play TD % ".format(key).postln;
+        buf = ~liveBuffer.normalize;
+        # mn, mx = [0, 30];
+        ranges = [[0.0, 10.0], [10.0, 17.0], [17.0, 21.0], [21.0, 24.0]];
         s.sync;
-        syn = Synth(\grainBuf2, [\amp, 0.7, \ptrBus, ~ptrBus, \minPtrDelay, 3000, \buf, buf, \rq, 0.2, \dens, 20, \rls, 2, \lg, 0.4], ~sourceGrp);
+
+       synths = 4.collect({|n, i|
+            Synth(\brLive, [\amp, 0.2 , \ptrBus, ~ptrBus, \buf, buf, \rate, 1.0, \harm, 0, \rq, 0.2,  \rls, 1.4, \lg, 0.4, \pan, -1 + (n * 0.5), \out, n], ~sourceGrp)
+        });
 
         ~activeSynths.put(key, [syn]);
         loop{
-            data = ~currentData.td[\sm1];
-            //"data 48 %".format(data).postln;
-            syn.set(\ffreq, data.linlin(mn, mx, 800, 2000),
-                \rate, data.linlin(mn, mx, 0.1, 1.9),
-                \dens, data.linlin(mn, mx, 10, 20),
-                \baseDur, data.linlin(mn, mx, 1, 6),
-            );
 
-            0.1.wait};
+            data = [\sm1, \sm2, \sm3, \sm4].collect({|n| ~currentData.td[n]});
+
+            scaleSelect = ranges.detectIndex({|r, j| ((data[0] >= r[0]) && (data[0] < r[1]))});
+            "data 60 % scaleSelect %".format(data,  ~scales[scaleSelect].semitones).postln;
+            synths.do({|syn,i|
+
+                syn.set(\harm, ~scales[scaleSelect].semitones[i+1], \amp, data[i].linlin(mn, mx, 0.01, 0.3))
+            });
+
+            0.2.wait};
 
     },
-    \62 :{// geht mit fast allen Sounds
-        // Fm zeigt auf die quantität der
-        var key= \62, data, buf, syn, mn, mx;
-        //Grains mit dezidierter ptrPos und pan
-        buf = ~grainBuffer.normalize;
-        # mn, mx =[30,120];
+    \62 :{// Synth Arpeggio mit syn.set
+        var key= \62, data, buf, syn, mn, mx, ranges, harms, scaleIndex, harmIndex=0;
+
+        buf = ~liveBuffer.normalize;
+        # mn, mx = [0.0, 8.0];
+        ranges = [[0.0,4.0], [4.0, 6.0], [6.0,7.0], [7.0, 8.0]];
         s.sync;
-        syn = Synth(\tgrains_live, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \dens, 20, \lg, 0.5,
-            \fmffreq, 200, \fmAmp, 0.06, \numharm, 2, \index, 1,
-            \out, 0, \fade, 0.9, \outfx, 3], ~grainGrp);
+        syn = Synth(\brLive, [\amp, 0.5, \buf,  buf, \rq, 0.2, \harm, 2, \out, 0, \fade, 0.9], ~sourceGrp);
         ~activeSynths.put(key, [syn]);
         loop{
-            var harm, dFactor;
-            data = ~currentData.td[\trock02];
-            dFactor = data.linlin(mn, mx, 0.0, 1.5);
-            harm = data.linlin(mn, mx, [-12, -2] , [12, 2]);
+            var nextHarm;
+            data = ~currentData.td[\sm3];
+            scaleIndex = ranges.detectIndex({|r, j| ((data >= r[0]) && (data < r[1]))});
+            harms = ~scales[scaleIndex].degrees;
+            nextHarm = harms[harmIndex % harms.size];
+            [scaleIndex, nextHarm].postln;
+            syn.set(\harm, nextHarm);
             //"data 50 %".format(data).postln;
-            syn.set(
-                \harm, harm,
-                \grainDur, data.linlin(mn, mx, 0.1, 0.5),
-                \fmdens, data.linlin(mn, mx, 0.5, 3.0),
-                \modfreq, data.linlin(mn, mx, 10, 1),
-            );
-            0.05.wait};
+            harmIndex = harmIndex +1;
+            ~t.beatDur.wait};
     },
     \64 :{
         var key= \64, data, buf, syn, mn, mx;
@@ -296,6 +278,27 @@
                 \harm, data.linlin(mn, mx,-12,8)
             );
             0.1.wait};
+    },
+       \72:{
+        /*
+       Arpeggios des Live Buffer
+        */
+        var key = \72, data, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees;
+        # mn, mx = [0.0, 8.0];
+        ranges = [[0.0,4.0], [4.0, 6.0], [6.0,7.0], [7.0, 8.0]];
+        if (~patternOn[\1] == false, {"starting pattern %".format(key).postln;
+            Pbindef(\arpeggio, \harm, Pfunc({~scales[scaleIndex][idx % degrees.size]})).play(~t); ~patternOn[\1] = true},
+            {"stopping pattern %".format(key).postln; Pbindef(\arpeggio).stop; ~patternOn[\1] = false});
+
+        loop{
+            data = [\sm1, \sm2, \sm3, \sm4].collect({|n| ~currentData.td[n]});
+            scaleIndex = ranges.detectIndex({|r, j| ((data[2] >= r[0]) && (data[2] < r[1]))});
+            degrees = ~scales[scaleIndex].degrees;
+
+            "data 72 % scaleSelect %".format(data[2], ~scales[scaleIndex].name).postln;
+            idx = idx +1;
+            1.wait;
+        }
     },
 );
 

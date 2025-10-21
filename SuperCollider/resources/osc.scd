@@ -2,12 +2,12 @@
 Hier werden die Oscdefs zur Kommunikation mit Touchdesigner geladen
 */
 
-
+// Keyhold
 OSCdef(\TDOnKeyhold, {|msg, time, addr, recvPort|
     var key, buf, syn,  rout, funcDict;
     key = msg[1].asSymbol;
     funcDict = ~td;
-    "receiving  NoteOn from TD Onkeyhold:key %  funcDict %".format(key, funcDict[key]).postln;
+    "receiving  NoteOn from TD OnKeyhold:key %  funcDict %".format(key, funcDict[key]).postln;
      ~activeRoutines[\td].put(key, Routine(funcDict[key]));
     rout = ~activeRoutines[\td][key];
     if ((rout.notNil && rout.isPlaying), {"stopping rout".postln; rout.stop});
@@ -23,11 +23,13 @@ OSCdef(\TDOffKeyhold, {|msg, time, addr, recvPort|
     rout = ~activeRoutines[\td][key];
     rout.stop;
     //~activeRoutines[\td].removeAt(key);
-    ~activeSynths[key].do({|x| x.set(\gate, 0);});
+    ~activeSynths[key].do({|x|  x.set(\gate, 0);});
     "stopped rout %  activesynths % routine active= %".format(key, ~activeSynths, rout.isActive).postln;
 },
 '/OffKeyhold'
 );
+
+
 
 
 OSCdef(\resetAll, {|msg, time, addr, recvPort|
@@ -56,11 +58,11 @@ OSCdef(\sm3, {|msg, time, addr, recvPort|
 },
     '/sm3'
 );
-OSCdef(\temp1, {|msg, time, addr, recvPort|
+OSCdef(\sm4, {|msg, time, addr, recvPort|
    //msg[1].postln;
-    ~currentData[\td][\temp1] = msg[1];
+    ~currentData[\td][\sm4] = msg[1];
 },
-    '/temp1'
+    '/sm4'
 );
 OSCdef(\temp2, {|msg, time, addr, recvPort|
     //msg[1].postln;

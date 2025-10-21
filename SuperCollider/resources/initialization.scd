@@ -29,7 +29,7 @@ s.sync;
 
 s.sync;
 
-
+~scales = [Scale.new(#[0, 4, 7, 10], name: "eins"), Scale.new(#[0, 2, 6, 8], name: "zwei"), Scale.new(#[0, 1, 3, 7], name: "drei"), Scale.new(#[0, 11, 24, 36], name: "vier") ];
 
 
 MIDIClient.init;

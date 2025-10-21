@@ -1,4 +1,21 @@
 
+SynthDef.new(\bellFm, {
+	// Fm so wie https://www.youtube.com/watch?v=dLMSR2Kjq6Y -> 11:30
+	//
+	|freq=200, index=1, mRatio=1, cRatio=1, atk=0.4, rls=2, crv= 5, bpf=100, gate=1|
+	var sig, sig2, env, volMod, trem;
+	env = EnvGen.kr(Env.adsr(atk, 0.1, 1,  rls, curve: crv), gate, doneAction:2);
+	volMod = SinOsc.kr(\vibF.kr(0.2), 0, \vibVol.kr(30))  ; // vol modulation
+	trem = Vibrato.kr(\trmF.kr(1), \trmRate.kr(2), \trmDep.kr(0.0), \trmDel.kr(1), \onset.kr(2), \rateVar.kr(0.5), \varDur.kr(1));
+	sig2 =  SinOsc.ar(freq * XLine.kr(mRatio, mRatio * cRatio, \fmDur.kr(0.02)), mul:freq * mRatio * index);
+	sig =  SinOsc.ar((freq * trem  + sig2).varlag(\lg.kr(0.1)) , mul: volMod);
+	sig = Compander.ar(sig, sig, \thr.kr(0.65), 1, 0.3, 0.3, 0.4, \cgain.kr(1));
+	//sig = MidEQ.ar(sig, SinOsc.kr(\bpf3.kr(0.2), 0, 24, 84).midicps, \bpfQ.kr(0.9), \bpfMul.kr(2));
+	sig = Pan2.ar(sig * env * \amp.kr(0.1) ,\pan.kr(0.0));
+	Out.ar(\out.kr(0), sig);
+}).add;
+
+
 // Vowel Synthesis
 SynthDef(\bpfstack, {
     |vow=0, buf=0|
@@ -231,7 +248,7 @@ SynthDef(\tgrains_live, {
     |ptrBus=0, ptrDelay=3000|
     var sig, dry, fm, env, mic, pos, ptr, buf=\buf.kr(0), rate;
     env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    ptr =  In.ar(ptrBus, 1) - ptrDelay;
+    ptr =  In.ar(ptrBus, 1).poll - ptrDelay;
     ptr = ptr/BufFrames.kr(buf);
     pos = (ptr/s.sampleRate) -1;
     pos = pos + LFNoise1.kr(10).bipolar(\jitter.kr(0.0));
@@ -407,20 +424,25 @@ SynthDef(\br, {
     //Out.ar(\outdry.kr(0), dry);
 }).add;
 
-SynthDef(\brsaw, {
-    arg buf=0, rate=1, start=0, end;
-    var sig, dry, ptr, ptr2, env;
-    env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
-    // garantiert die Originalgeschwindigkeit, \freq ist speedcontrol
-    ptr = LFSaw.ar(BufDur.ir(buf).reciprocal * \freq.kr(1)).range(0, BufFrames.ir(buf));
+SynthDef(\brLive, {
+   |buf=0, rate=1, ptrBus=0, ptrDelay=1000, gate=1|
+    var sig, ptr, env, delay, minDelay=1000, har;
+    env = Env.asr(\atk.ir(0.2),\sus.ir(1),\rls.ir(0.8)).kr(2, gate);
+
+   //ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate.varlag(\lg.kr(0.5)) * \harm.kr(0).midiratio.varlag(\lg.kr(0.5)), start, 20000);
+    har = rate.varlag(\lg.kr(0.5)) * \harm.kr(0).midiratio.varlag(\lg.kr(0.5));
+    delay = max(minDelay, (ptrDelay * har));
+    //ptr = (In.ar(ptrBus, 1) * har) - delay;
+    ptr =  Phasor.ar(0, BufRateScale.kr(buf) * har , 0, BufFrames.kr(buf));
     sig = BufRd.ar(1, buf, ptr);
-    sig = RLPF.ar(sig, \ffreq.kr(4000).varlag(\lg.kr(0)), \rq.kr(0.1));
-    sig = Pan2.ar(sig, \pan.kr(0)) * env;
-    dry = BufRd.ar(1, buf, ptr) * env;
-    sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
-    sig = sig * \amp.kr(0.3) * \fade.kr(1);
+    sig = RLPF.ar(sig, \ffreq.kr(2200), \rq.kr(0.2));
+    sig = Pan2.ar(sig, \pan.kr(0));
+    sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
+    //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     Out.ar(\out.kr(0), sig);
+    //Out.ar(\outdry.kr(0), dry);
 }).add;
+
 
 
 SynthDef(\routing, {

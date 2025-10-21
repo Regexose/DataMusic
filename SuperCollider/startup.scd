@@ -37,15 +37,11 @@ s.waitForBoot({
 //"midikeys.scd \n".postln;
     (~resourcePath ++ "td_midikeys.scd").load;
 //"midikeys.scd \n".postln;
-  //  (~resourcePath ++ "rf_patterns.scd").load;
-//"patterns.scd \n".postln;
-   // (~resourcePath ++ "rf_live.scd").load;
-//"live.scd \n".postln;
+  (~resourcePath ++ "osc.scd").load;
+
 
     (~resourcePath ++ "synthDefs.scd").load;
-   // "synthdefs \n".postln;
-      (~resourcePath ++ "osc.scd").load;
-   // "synthdefs \n".postln;
+
     s.sync;
     (~resourcePath ++ "functions.scd").load;
    // "functions\n ".postln;
@@ -54,7 +50,7 @@ s.waitForBoot({
     ServerTree.add(~makeNodes);
     ServerTree.run;
     s.sync;
-    ~patches = (~resourcePath ++ "fx_patches.scd").load;
+
     (~resourcePath ++ "initialization.scd").load;
     s.sync;
     (~resourcePath ++ "patterns.scd").load;

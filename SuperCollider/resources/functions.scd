@@ -15,11 +15,12 @@
         ~ptrGrp = Group.after(~micGrp);
         ~recGrp = Group.after(~ptrGrp);
         ~grainGrp = Group.after(~recGrp);
+        ~liveGrp = Group.after(~recGrp);
         Synth(\routing, [in: 0, fade: 0.85, out: ~micBus], ~micGrp);
-        Synth(\pointer, [\buf, ~grainBuffer, \out, ~ptrBus], ~ptrGrp);
-        Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~grainBuffer ], ~recGrp);
+        Synth(\pointer, [\buf, ~liveBuffer, \out, ~ptrBus], ~ptrGrp);
+        Synth(\rec, [\ptrIn, ~ptrBus, \micIn, ~micBus, \buf, ~liveBuffer ], ~recGrp);
 
-        ~sourceGrp = Group.after(~grainGrp);
+        ~sourceGrp = Group.after(~liveGrp);
         ~fxGrp = Group.after(~sourceGrp);
     };
 };

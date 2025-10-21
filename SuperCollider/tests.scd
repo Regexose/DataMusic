@@ -3,26 +3,44 @@ s.defaultGroup
 s.queryAllNodes
 
 SynthDescLib.at(\livegran).controlDict
-~routines[\patFunc][0]
-~currentData.dark[\in]
 
-x = Synth(\br, [\buf, ~buffersByName[\boris][\gras].normalize, \rate, 1 ])
+
+NetAddr.langPort
+x = Synth(\brLive, [\buf, ~liveBuffer.normalize,  \ptrBus, ~ptrBus ], ~sourceGrp);
+//x = Synth(\grainBuf2, [\buf, ~liveBuffer.normalize, \rate, 1, \ptrBus, ~ptrBus ]);
+x = Synth(\tgrains_live, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  ~liveBuffer], ~grainGrp);
 x.free
 
-
-Scale.choose(size:7).name
 (
-var key = \48;
-~loops = 100;
-Routine(~td[key]).play
+var key = \48;i
+//~loops = 100;
+(
+x = Routine({var syn, harms, buf;
+    buf = ~liveBuffer.normalize;
+    syn = Synth(\brLive, [\amp, 0.5, \ptrBus, ~ptrBus, \buf,  buf, \rq, 0.2, \harm, 2, \out, 0, \fade, 0.9], ~sourceGrp);
+    harms = Pseq(~scales[1].degrees, inf).asStream;
+    loop{var nextHarm;
+
+        nextHarm = harms.next;
+        nextHarm.postln;
+        syn.set(\harm, nextHarm);
+        ~t.beatDur.wait;
+
+    }
+
+}).play
 )
+x.stop
+
 (
 var key=\48;
 Routine(~td[key]).stop;
-~activeSynths[key].do({|x| x.set(\gate, 0)});
+~activeSynths[\60].do({|x| x.postln});
+~sourceGrp.all.do(_.free);
 Pbindef.all.do(_.stop)
-
+[Scale.major, Scale.minor, Scale.chromatic, Scale.mixolydian].do({|sc| "name % semi % \n".format(sc.name, sc.semitones).postln})
 )
+s.makeWindow
 
 (var ranges = [[0.0, 4.0], [4.0, 7.0], [7.0, 11.0], [11.0, 15.0], [15.0, 18.0], [18.0, 21.0], [21.0, 24.0], [24.0, 27.0], [27.0, 30.0] ];
 var r1Index, data1 = 12.2;
@@ -56,20 +74,10 @@ z = Routine({
 )
 z.stop
 y.free;
-
+~ptrBus.get
 
 (
-Pbindef(\spec,
-		\instrument, \pvDelay,
-		\inMix, 1,
-        \inbus, ~micBus,
-		\fftBuf, ~fftBuffer,
-		\delayBuf, ~delTimeBuffer,
-		\fbBuf, ~fbAmtBuffer,
-        \dur, 1.5,
-		\out, 0,
-		\amp, 0.5,
-).play;
+Pbindef(\arpeggio).play;
 )
 Pbindef(\spec, \inMix, 0.7, \maxdel, 0.3)
 Pbindef(\spec).stop
