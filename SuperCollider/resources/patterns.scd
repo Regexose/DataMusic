@@ -26,21 +26,26 @@ Pbindef(\klic,
     \ffreq, 5000,
     \pan, 0,
     \pLag, 0.26,
-    \out, 0,
+    \out, 5,
 );
 
 
 Pbindef(\arpeggio,
     \instrument, \brLive,
     \buf, ~liveBuffer.normalize,
-    \harm, 0,
-    \dur, 1,
+    //\dur, Pwrand([2, 1, 0.5, 0.25], [0.5, 0.2, 0.01, 0.3].normalizeSum, inf),
+    \dur, 2,
     \atk, 0.1,
     \rls, 1,
+    \send, 0.5,
     \amp, 0.5,
-    \out, 0,
+
 );
 
+Pbindef(\arp67, \out, 0, \outfx, ~fxGrp);
+Pbindef(\arp69, \out, 1, \outfx, ~fxGrp);
+Pbindef(\arp71,\out, 2, \outfx, ~fxGrp);
+Pbindef(\arp72, \out, 3, \outfx, ~fxGrp);
 
 
 Pbindef(\percvowel,
@@ -59,7 +64,7 @@ Pbindef(\percvowel,
 );
 
 
-Pbindef(\arp2,
+Pbindef(\arps2,
     \instrument, \vowelklank,
     \dur, 0.5,
     \amp, 0.4,
@@ -94,7 +99,7 @@ Pbindef(\array01,
 );
 
 
-Pbindef(\arp1,
+Pbindef(\arps1,
     \instrument, \array_1b,
     \dur, 0.25,
     \freq, Pseq([Pn(200, 7), Prand([800, 400, 600, 795, 402, 596], 1)], inf) * Pxrand([0.99, 1.01, 2.99, 3.01], inf),

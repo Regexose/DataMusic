@@ -428,19 +428,17 @@ SynthDef(\brLive, {
    |buf=0, rate=1, ptrBus=0, ptrDelay=1000, gate=1|
     var sig, ptr, env, delay, minDelay=1000, har;
     env = Env.asr(\atk.ir(0.2),\sus.ir(1),\rls.ir(0.8)).kr(2, gate);
-
-   //ptr = Phasor.ar(0, BufRateScale.kr(buf) * rate.varlag(\lg.kr(0.5)) * \harm.kr(0).midiratio.varlag(\lg.kr(0.5)), start, 20000);
     har = rate.varlag(\lg.kr(0.5)) * \harm.kr(0).midiratio.varlag(\lg.kr(0.5));
     delay = max(minDelay, (ptrDelay * har));
     //ptr = (In.ar(ptrBus, 1) * har) - delay;
     ptr =  Phasor.ar(0, BufRateScale.kr(buf) * har , 0, BufFrames.kr(buf));
     sig = BufRd.ar(1, buf, ptr);
     sig = RLPF.ar(sig, \ffreq.kr(2200), \rq.kr(0.2));
-    sig = Pan2.ar(sig, \pan.kr(0));
+    //sig = Pan2.ar(sig, \pan.kr(0));
     sig = sig * env * \amp.kr(0.3) * \fade.kr(1);
     //sig = (dry * (1.0 - \drywet.kr(0).varlag(0.3))) + (sig * \drywet.kr(0).varlag(0.3));
     Out.ar(\out.kr(0), sig);
-    //Out.ar(\outdry.kr(0), dry);
+    Out.ar(\outfx.kr(0), sig * \send.kr(0));
 }).add;
 
 
@@ -497,6 +495,16 @@ SynthDef(\combdelay, {
     sig = input.blend(delay, \blend.kr(0.5));
     sig = sig * \amp.kr(1) * env;
     Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\vibrato, {
+    |bus|
+    var input, vib, sig, env;
+    env = Env.asr(\atk.ir(1),\sus.ir(1),\rls.ir(1)).kr(2, \gate.kr(1));
+    input = In.ar(bus, 1); // als SynthDef kann der Channelwert nicht dynamisch sein
+    vib = SinOsc.ar(\vFreq.kr(0.5));
+    sig = input * vib  * \amp.kr(1) * env;
+    Out.ar(\out.kr(4), sig);
 }).add;
 
 

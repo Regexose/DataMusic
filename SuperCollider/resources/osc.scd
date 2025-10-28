@@ -18,13 +18,16 @@ OSCdef(\TDOnKeyhold, {|msg, time, addr, recvPort|
 );
 
 OSCdef(\TDOffKeyhold, {|msg, time, addr, recvPort|
-    var key, funcDict, rout;
+    var key, funcDict, rout, patName;
     key = msg[1].asSymbol;
+    patName = ("arp" ++msg[1]).asSymbol;
     rout = ~activeRoutines[\td][key];
     rout.stop;
     //~activeRoutines[\td].removeAt(key);
-    ~activeSynths[key].do({|x|  x.set(\gate, 0);});
-    "stopped rout %  activesynths % routine active= %".format(key, ~activeSynths, rout.isActive).postln;
+    ~activeSynths[key].do({|x| x.set(\gate, 0);});
+    Pbindef(patName).stop;
+    Pbindef(\arpeggio).stop;
+    "stopped rout %  activesynths % pattern %".format(key, ~activeSynths, Pbindef(patName).isPlaying).postln;
 },
 '/OffKeyhold'
 );
@@ -37,6 +40,17 @@ OSCdef(\resetAll, {|msg, time, addr, recvPort|
     ~activeRoutines[\td].keys.do({|k| ~activeRoutines[\td].removeAt(k) })
 },
     '/reset'
+);
+
+OSCdef(\stopPattern, {|msg, time, addr, recvPort|
+    //msg[1].postln;
+    var patName;
+    "stop Patterns".postln;
+    patName = ("arp" ++ msg[1]).asSymbol;
+    Pbindef(patName).stop;
+    Pbindef.all.do(_.stop);
+},
+'/stopPattern'
 );
 
 

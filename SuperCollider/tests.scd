@@ -85,6 +85,7 @@ Pbindef(\spec).stop
 x = Synth(\array_1b)
 x.set(\)
 Pbindef.all.do(_.stop)
+Pbindef.all.do(_.isPlaying)
 Pbindef.all.do({|k| k.key.postln})
 
 [0.1, 0.25, 0.5, 0.75, 1.0, 1.25].collect({|n| ~data.temp.maxItem *n})

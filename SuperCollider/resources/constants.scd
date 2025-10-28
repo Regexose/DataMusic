@@ -13,7 +13,9 @@
 ~vowelIndex = 0;
 ~scales = List.new;
 
-~patternOn = (\1: false, \2: false);
+~patternOn = (\1: false, \2: false, \3: false, \4: false);
+~patternVals = (\67: (\on: false, \harm: 0, \ffreq: 3000, \send: 0), \69: (\on: false, \harm: 0, \ffreq: 3000, \send: 0),
+    \71: (\on: false, \harm: 0, \ffreq: 3000, \send: 0), \72: (\on: false, \harm: 0, \ffreq: 3000, \send: 0));
 
 ~activeSynths = ();
 ~currentData = (\td:  (\sm1 : 0, \temp1 : 0, \sm2 : 0, \temp2 : 0, \sm3 : 0, \temp3 : 0, \sm4 : 0),
@@ -24,9 +26,6 @@
 ~size = 128;
 ~fftSize = 2 * ~size;
 
-~fftBuffer = Buffer.alloc(s, ~fftSize, 1);
-~delTimeBuffer = Buffer.alloc(s, ~size, 1);
-~fbAmtBuffer = Buffer.alloc(s, ~size, 1);
 
 
 

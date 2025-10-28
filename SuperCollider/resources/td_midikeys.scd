@@ -279,23 +279,126 @@
             );
             0.1.wait};
     },
+       \67:{
+        /*
+       Arpeggios des Live Buffer
+        */
+        var key = \67, patName, data, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees, fx;
+        # mn, mx = [7.5, 24.0];
+        patName = ("arp" ++ key).asSymbol;
+        ranges = [[0.0, 8.5], [8.51, 10.75], [10.75,17.0], [17.01, 21.0],[21.0, 24.0]];
+        degrees = ~scales[0].degrees;
+        Pbindef(\klic).play(~t);
+        if (~patternVals[key][\on] == false, {"starting pattern %".format(key).postln;
+            Pchain(Pbindef(\arpeggio), Pbindef(patName,
+                \harm, Pfunc({~patternVals[key][\harm]}),
+                \ffreq, Pfunc({~patternVals[key][\ffreq]})
+            )).play(~t);
+            ~patternVals[key][\on]  = true},
+            {"stopping pattern %".format(key).postln; Pbindef(patName).stop; ~patternVals[key][\on]  = false});
+          fx = Synth(\vibrato, [\bus, ~fxGrp ]);
+         ~activeSynths.put(key, [fx]);
+        loop{
+            data = ~currentData.td[\sm1];
+            fx.set(\vFreq, data.linlin(mn, mx, 0.2, 10));
+            ~patternVals[key][\ffreq] = data.linlin(mn, mx, 100, 3000);
+            ~patternVals[key][\harm] = degrees[idx % degrees.size];
+            scaleIndex = ranges.detectIndex({|r, j| ((data >= r[0]) && (data < r[1]))});
+            degrees = ~scales[scaleIndex].degrees[0..3];
+            "data 67 % scaleSelect %  idx % ".format(data, ~scales[scaleIndex].name, idx).postln;
+            idx = idx +1;
+            1.wait;
+        }
+    },
+       \69:{
+        /*
+       Arpeggios des Live Buffer
+        */
+        var key = \69, patName, data, fx, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees;
+        # mn, mx = [6.0, 30.0];
+         patName = ("arp" ++ key).asSymbol;
+        ranges = [[0.0, 7.8], [7.8, 11.5], [11.5, 14.0], [14.0, 20.0], [20.0, 30.0]];
+         degrees = ~scales[1].degrees;
+        if (~patternVals[key][\on] == false, {"starting pattern %".format(key).postln;
+            Pchain(Pbindef(\arpeggio), Pbindef(patName,
+                \harm, Pfunc({~patternVals[key][\harm]}),
+                \ffreq, Pfunc({~patternVals[key][\ffreq]})
+        )).play(~t);
+            ~patternVals[key][\on]= true},
+            {"stopping pattern %".format(key).postln; Pbindef(patName).stop;
+            ~patternVals[key][\on]  = false});
+        fx = Synth(\vibrato, [\bus, ~fxGrp ]);
+         ~activeSynths.put(key, [fx]);
+        loop{
+            data =  ~currentData.td[\sm2];
+            fx.set(\vFreq, data.linlin(mn, mx, 0.2, 10));
+            scaleIndex = ranges.detectIndex({|r, j| ((data >= r[0]) && (data < r[1]))});
+            degrees = ~scales[scaleIndex].degrees[0..3];
+            ~patternVals[key][\ffreq] = data.linlin(mn, mx, 100, 3000);
+            ~patternVals[key][\harm] = degrees[idx % degrees.size];
+           "data 69 % scaleSelect %  idx % ".format(data, ~scales[scaleIndex].name, idx).postln;
+            idx = idx +1;
+            1.wait;
+        }
+    },
+       \71:{
+        /*
+       Arpeggios des Live Buffer
+        */
+        var key = \71, patName, data, fx, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees;
+        # mn, mx = [0.0, 8.0];
+        patName = ("arp" ++ key).asSymbol;
+        ranges = [[0.0, 4.0], [4.0, 6.0], [6.0, 6.6], [6.6, 7.1], [7.1, 8.0]];
+         degrees = ~scales[2].degrees;
+        if (~patternVals[key][\on] == false, {"starting pattern %".format(key).postln;
+             Pchain(Pbindef(\arpeggio), Pbindef(patName,
+                \harm, Pfunc({~patternVals[key][\harm]}),
+                \ffreq, Pfunc({~patternVals[key][\ffreq]})
+            )).play(~t);
+             ~patternVals[key][\on]= true},
+            {"stopping pattern %".format(key).postln; Pbindef(patName).stop;
+            ~patternVals[key][\on] = false});
+            fx = Synth(\vibrato, [\bus, ~fxGrp ]);
+         ~activeSynths.put(key, [fx]);
+        loop{
+            data = ~currentData.td[\sm3];
+            fx.set(\vFreq, data.linlin(mn, mx, 0.2, 10));
+            scaleIndex = ranges.detectIndex({|r, j| ((data >= r[0]) && (data < r[1]))});
+            degrees = ~scales[scaleIndex].degrees[0..3];
+                ~patternVals[key][\ffreq] = data.linlin(mn, mx, 100, 3000);
+            ~patternVals[key][\harm] = degrees[idx % degrees.size];
+            "data 71% scaleSelect % ".format(data, ~scales[scaleIndex].name).postln;
+            idx = idx +1;
+            1.wait;
+        }
+    },
        \72:{
         /*
        Arpeggios des Live Buffer
         */
-        var key = \72, data, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees;
-        # mn, mx = [0.0, 8.0];
-        ranges = [[0.0,4.0], [4.0, 6.0], [6.0,7.0], [7.0, 8.0]];
-        if (~patternOn[\1] == false, {"starting pattern %".format(key).postln;
-            Pbindef(\arpeggio, \harm, Pfunc({~scales[scaleIndex][idx % degrees.size]})).play(~t); ~patternOn[\1] = true},
-            {"stopping pattern %".format(key).postln; Pbindef(\arpeggio).stop; ~patternOn[\1] = false});
-
+        var key = \72, patName, fx, data, ranges, mn, mx, fr, idx=0, scaleIndex=0, degrees;
+        # mn, mx = [0.0, 5.0];
+        patName = ("arp" ++ key).asSymbol;
+        ranges = [[0.0, 1.2], [1.2, 2.0], [2.0, 2.8], [2.8, 3.5], [3.5, 5.0]];
+         degrees = ~scales[3].degrees;
+        if (~patternVals[key][\on] == false, {"starting pattern %".format(key).postln;
+             Pchain(Pbindef(\arpeggio), Pbindef(patName,
+                \harm, Pfunc({~patternVals[key][\harm]}),
+                \ffreq, Pfunc({~patternVals[key][\ffreq]})
+            )).play(~t);
+             ~patternVals[key][\on]= true},
+            {"stopping pattern %".format(key).postln; Pbindef(patName).stop;
+            ~patternVals[key][\on] = false});
+         fx = Synth(\vibrato, [\bus, ~fxGrp ]);
+         ~activeSynths.put(key, [fx]);
         loop{
-            data = [\sm1, \sm2, \sm3, \sm4].collect({|n| ~currentData.td[n]});
-            scaleIndex = ranges.detectIndex({|r, j| ((data[2] >= r[0]) && (data[2] < r[1]))});
-            degrees = ~scales[scaleIndex].degrees;
-
-            "data 72 % scaleSelect %".format(data[2], ~scales[scaleIndex].name).postln;
+            data =~currentData.td[\sm4];
+            fx.set(\vFreq, data.linlin(mn, mx, 0.2, 10));
+            scaleIndex = ranges.detectIndex({|r, j| ((data >= r[0]) && (data < r[1]))});
+            degrees = ~scales[scaleIndex].degrees[0..3].scramble;
+             ~patternVals[key][\ffreq] = data.linlin(mn, mx, 100, 3000);
+            ~patternVals[key][\harm] = degrees[idx % degrees.size];
+             "data 72 % scaleSelect %  degree % ".format(data, ~scales[scaleIndex].name, degrees[idx % degrees.size]).postln;
             idx = idx +1;
             1.wait;
         }
